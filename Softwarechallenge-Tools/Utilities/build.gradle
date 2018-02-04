@@ -1,0 +1,24 @@
+
+
+/*buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}*/
+
+apply plugin: 'java'
+apply plugin: 'idea'
+//apply plugin: 'com.github.johnrengelman.shadow'
+//sourceCompatibility = 1.8
+//targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.commons:commons-lang3:3.6'
+}
