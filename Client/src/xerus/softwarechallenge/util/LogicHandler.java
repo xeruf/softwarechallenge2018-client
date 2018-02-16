@@ -1,11 +1,12 @@
 package xerus.softwarechallenge.util;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import java.security.SecureRandom;
 import java.util.*;
 
 import javax.swing.JFrame;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sc.plugin2018.*;
@@ -27,15 +28,15 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	private Starter client;
 
-	public LogicHandler(Starter client, String params, int debug, String version) {
+	public LogicHandler(Starter client, String params, int debug, String identifier) {
 		this.client = client;
-		log = LoggerFactory.getLogger(this.getClass());
-		log.warn(version + " - Parameter: " + params);
+		log = (Logger) LoggerFactory.getLogger(this.getClass());
+		log.warn(identifier + " - Parameter: " + params);
 		if (debug == 2) {
-			((ch.qos.logback.classic.Logger) log).setLevel(ch.qos.logback.classic.Level.DEBUG);
+			log.setLevel(Level.DEBUG);
 			log.info("Debug enabled");
 		} else if (debug == 1) {
-			((ch.qos.logback.classic.Logger) log).setLevel(ch.qos.logback.classic.Level.INFO);
+			log.setLevel(Level.INFO);
 			log.info("Info enabled");
 		}
 		this.params = !params.isEmpty() ? StringTools.split(params) : defaultParams();
@@ -53,18 +54,23 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			move = findBestMove();
 			if (move == null || testmove(currentGameState, move) == null) {
 				log.info("Kein gueltiger Move gefunden! Suche Simplemove...");
-				move = simplemove();
+				move = simpleMove();
 			}
 		} catch (CloneNotSupportedException e) {
 			log.error("Fehler beim klonen!\n");
 			e.printStackTrace();
 		}
 
+		log.warn("Punkte: " + currentGameState.getPointsForPlayer(myColor));
 		sendAction(move);
 		log.info(String.format("Zeit: %sms moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth));
 	}
 
-	protected Move findBestMove() throws CloneNotSupportedException {
+	// region Zugsuche
+
+	/** Findet den Move der beim aktuellen GameState am besten ist<br>
+	 * verweist standardmäßig auf die breitensuche */
+	protected Move findBestMove() {
 		return breitensuche();
 	}
 
@@ -82,22 +88,18 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	protected int depth;
 	private int lastdepth;
 
-	/** sucht den besten Move per breitensuche basierend auf dem aktuellen GameState
-	 * @return bester gefundener Move */
-	protected Move breitensuche() throws CloneNotSupportedException {
+	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
+	protected Move breitensuche() {
 		// Variablen vorbereiten
-		Queue<Node> queue = new LinkedList();
+		Queue<Node> queue = new LinkedList<>();
 		depth = 0;
-		MP bestmove = new MP();
-		GameState nodestate;
-		Node node;
-		Collection<Move> moves;
+		MP bestMove = new MP();
 
-		// Queue f�llen
+		// Queue füllen
 		initplayer();
-		moves = findMoves(currentGameState);
+		Collection<Move> moves = findMoves(currentGameState);
 		if (log.isDebugEnabled())
-			log.debug("Gefundene Zuege:\n{}", tostring(moves));
+			log.debug("Gefundene Zuege:\n{}", toString(moves));
 		if (moves.size() == 1)
 			return moves.iterator().next();
 
@@ -109,14 +111,15 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				return move;
 			Node newnode = new Node(newstate, move);
 			queue.add(newnode);
-			bestmove.update(move, evaluate(newstate));
+			bestMove.update(move, evaluate(newstate));
 		}
 		// Breitensuche
+		Node node;
 		breitensuche: while (depth < 7 && runtime() < 1700) {
 			if ((node = queue.poll()) == null)
 				break;
 			depth = node.depth;
-			nodestate = node.gamestate;
+			GameState nodestate = node.gamestate;
 			initplayer(nodestate);
 			findMoves(nodestate);
 			// sinnlosen Zug ausschliessen
@@ -132,32 +135,30 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				Node newnode = node.update(newstate);
 				double points = evaluate(node.gamestate) + node.bonus - node.depth;
 				// Aussortieren
-				if (points + 5 < bestmove.points)
+				if (points + 5 < bestMove.points)
 					continue;
 				queue.add(newnode);
 				// Aktualisierung der Bestpunktzahl
-				if (bestmove.update(node.move, points)) {
+				if (bestMove.update(node.move, points)) {
 					lastdepth = depth;
 					if (log.isDebugEnabled())
-						log.debug(String.format("Neuer bester Zug bei Tiefe %s: %s Punkte %s - %s", depth, tostring(node.move), points, tostring(nodestate.getCurrentPlayer())));
+						log.debug(String.format("Neuer bester Zug bei Tiefe %s: %s Punkte %s - %s", depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())));
 				}
 			}
 		}
-		if (evaluate(currentGameState) > bestmove.points)
+		if (evaluate(currentGameState) > bestMove.points)
 			log.warn("Bin wahrscheinlich in Sackgasse!");
-		return bestmove.obj;
+		return bestMove.obj;
 	}
 
-	/** stellt m�gliche Moves zusammen basierend auf dem gegebenen GameState<br>
-	 * Diese Methode wird f�r die Tiefensuche genutzt<br>
-	 * �berschreiben ist
+	/** stellt mögliche Moves zusammen basierend auf dem gegebenen GameState<br>
+	 * Diese Methode wird für die Tiefensuche genutzt<br>
+	 * muss überschrieben werden um die {@link #breitensuche} zu nutzen
 	 * @param state gegebener GameState
 	 * @return ArrayList mit gefundenen Moves */
-	protected Collection<Move> findMoves(GameState state) throws CloneNotSupportedException {
-		throw new UnsupportedOperationException("Es wurde keine Methode f�r das ermitteln der moves f�r die Tiefensuche definiert!");
+	protected Collection<Move> findMoves(GameState state) {
+		throw new UnsupportedOperationException("Es wurde keine Methode für das ermitteln der moves für die Tiefensuche definiert!");
 	}
-
-	protected static final Random rand = new SecureRandom();
 
 	private class Node {
 
@@ -183,11 +184,11 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			bonus = b;
 		}
 
-		/** gibt eine neue Node zur�ck mit dem neuen GameState und einer um 1 erh�hten Tiefe
-		 * @param s der neue GameState
-		 * @return neue Node mit Ver�nderungen */
-		public Node update(GameState s) {
-			return new Node(s, move, bonus, depth + 1);
+		/** gibt eine neue Node zurück
+		 * @param newState der neue GameState
+		 * @return neue Node mit dem GameState und depth + 1 */
+		public Node update(GameState newState) {
+			return new Node(newState, move, bonus, depth + 1);
 		}
 
 	}
@@ -196,24 +197,21 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	@Override
 	public void sendAction(Move move) {
-		if (move != null)
-			log.debug("Sende {}\n", tostring(move));
-		else {
+		if (move == null) {
 			log.warn("Kein Zug mehr m�glich!");
 			client.sendMove(move());
+			return;
 		}
+		log.debug("Sende {}\n", toString(move));
 		move.setOrderInActions();
 		client.sendMove(move);
 	}
 
-	protected void initplayer() {
-	}
+	protected void initplayer() {}
 
-	@SuppressWarnings("unused")
-	protected void initplayer(GameState nodestate) {
-	}
+	protected void initplayer(GameState nodestate) {}
 
-	PlayerColor myColor;
+	protected PlayerColor myColor;
 
 	@Override
 	public void onUpdate(GameState state) {
@@ -224,7 +222,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			myColor = client.getColor();
 			log.info("Ich bin {}", myColor);
 		}
-		log.info("Zug: {} Dran: {} - " + tostring(dran), state.getTurn(), isme(dran.getPlayerColor()));
+		log.info("Zug: {} Dran: {} - " + toString(dran), state.getTurn(), isme(dran.getPlayerColor()));
 	}
 
 	public static void display(GameState state) {
@@ -248,26 +246,27 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return color == myColor ? "ich" : "nicht ich";
 	}
 
-	protected String tostring(Collection<Move> moves) {
-		String out = "";
+	protected static String toString(Collection<Move> moves) {
+		StringBuilder out = new StringBuilder();
 		for (Move m : moves)
-			out += "| " + tostring(m) + "\n";
-		return out;
+			out.append("| ").append(toString(m)).append("\n");
+		return out.toString();
 	}
 
-	protected String tostring(Move m) {
-		String out = "Zug: ";
-		for (Action a : m.actions)
-			out += a.toString() + ", ";
+	protected static String toString(Move m) {
+		StringBuilder out = new StringBuilder("Zug: ");
+		for (Action action : m.actions)
+			out.append(action.toString()).append(", ");
 		return out.substring(0, out.length() - 2);
 	}
 
-	protected abstract String tostring(Player player);
+	protected abstract String toString(Player player);
 
 	protected abstract boolean gewonnen(GameState state);
 
 	// Zugmethoden
 
+	/** constructs a new Move containing the given actions */
 	protected Move move(Action... actions) {
 		return new Move(Arrays.asList(actions));
 	}
@@ -300,13 +299,13 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			if (log.isDebugEnabled()) {
 				String message = e.getMessage();
 				// if(!message.equals("Die maximale Geschwindigkeit von 6 darf nicht überschritten werden."))
-				log.info("FEHLERHAFTER ZUG: {} - {} FEHLER: " + message, tostring(state.getCurrentPlayer()), tostring(m));
+				log.info("FEHLERHAFTER ZUG: {} - {} FEHLER: " + message, toString(state.getCurrentPlayer()), toString(m));
 			}
 		}
 		return null;
 	}
 
-	protected abstract Move simplemove() throws CloneNotSupportedException;
+	protected abstract Move simpleMove() throws CloneNotSupportedException;
 
 	protected GameState clone(GameState s) {
 		try {
@@ -338,5 +337,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	private static int getScore(List<PlayerScore> scores, PlayerColor color) {
 		return scores.get(color.ordinal()).getValues().get(1).intValue();
 	}
+
+	public final Random rand = new SecureRandom();
 
 }

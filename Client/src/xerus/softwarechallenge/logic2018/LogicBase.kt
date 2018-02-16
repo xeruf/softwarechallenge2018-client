@@ -1,8 +1,5 @@
 package xerus.softwarechallenge.logic2018
 
-import java.util.ArrayList
-
-import sc.plugin2018.Action
 import sc.plugin2018.Advance
 import sc.plugin2018.Card
 import sc.plugin2018.CardType
@@ -15,9 +12,10 @@ import sc.plugin2018.Player
 import sc.plugin2018.util.Constants
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.LogicHandler
+import java.util.ArrayList
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel  */
-abstract class LogicBase(client: Starter, params: String, debug: Int, version: String): LogicHandler(client, params, debug, "Jumper "+version) {
+abstract class LogicBase(client: Starter, params: String, debug: Int, version: String): LogicHandler(client, params, debug, "Jumper " + version) {
 
     override fun evaluate(state: GameState): Double {
         var points = state.getPointsForPlayer(currentGameState.currentPlayerColor).toDouble()
@@ -30,13 +28,13 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: S
 
     override fun defaultParams() = doubleArrayOf(5.0)
 
-    override fun tostring(player: Player): String =
-        String.format("Player %s Feld: %s Gemuese: %s/%s", player.playerColor, player.fieldIndex, player.salads, player.carrots)
+    override fun toString(player: Player): String =
+            "Player %s Field: %s Greenstuff: %s/%s".format(player.playerColor, player.fieldIndex, player.salads, player.carrots)
 
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
 
-    override fun simplemove(): Move {
+    override fun simpleMove(): Move {
         val state = currentGameState
         val possibleMove = state.possibleMoves // EnthÃ¤lt mindestens ein Element
         val saladMoves = ArrayList<Move>()
@@ -84,15 +82,14 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: S
         }
         val move = if (!winningMoves.isEmpty()) {
             log.info("Sende Gewinnzug")
-            winningMoves[LogicHandler.rand.nextInt(winningMoves.size)]
+            winningMoves[rand.nextInt(winningMoves.size)]
         } else if (!saladMoves.isEmpty()) {
-            // es gibt die Möglichkeit einen Salat zu essen
             log.info("Sende Zug zum Salatessen")
-            saladMoves[LogicHandler.rand.nextInt(saladMoves.size)]
+            saladMoves[rand.nextInt(saladMoves.size)]
         } else if (!selectedMoves.isEmpty()) {
-            selectedMoves[LogicHandler.rand.nextInt(selectedMoves.size)]
+            selectedMoves[rand.nextInt(selectedMoves.size)]
         } else {
-            possibleMove[LogicHandler.rand.nextInt(possibleMove.size)]
+            possibleMove[rand.nextInt(possibleMove.size)]
         }
         move.orderActions()
         return move

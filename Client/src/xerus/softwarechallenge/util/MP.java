@@ -3,7 +3,7 @@ package xerus.softwarechallenge.util;
 import sc.plugin2018.Move;
 import xerus.util.Rater;
 
-/** speichert einen Zug und die dazugehörige Punktzahl */
+/** speichert einen Zug und die dazugehÃ¶rige Punktzahl */
 public class MP extends Rater<Move> {
 
 	/** erzeugt einen leeren MP */
