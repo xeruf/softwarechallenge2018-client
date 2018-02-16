@@ -47,25 +47,22 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: S
         for (move in possibleMove) {
             for (action in move.actions) {
                 if (action is Advance) {
-                    if (action.distance+index==Constants.NUM_FIELDS-1) {
-                        // Zug ins Ziel
-                        winningMoves.add(move)
-                    } else if (state.board.getTypeAt(action.distance+index)==FieldType.SALAD) {
-                        // Zug auf Salatfeld
-                        saladMoves.add(move)
-                    } else {
-                        // Ziehe VorwÃ¤rts, wenn mÃ¶glich
-                        selectedMoves.add(move)
+                    when {
+                        action.distance+index==Constants.NUM_FIELDS-1 -> // Zug ins Ziel
+                            winningMoves.add(move)
+                        state.board.getTypeAt(action.distance+index)==FieldType.SALAD -> // Zug auf Salatfeld
+                            saladMoves.add(move)
+                        else -> // Ziehe Vorwärts, wenn möglich
+                            selectedMoves.add(move)
                     }
                 } else if (action is Card) {
                     if (action.type==CardType.EAT_SALAD) {
                         // Zug auf Hasenfeld und danch Salatkarte
                         saladMoves.add(move)
-                    } // Muss nicht zusÃ¤tzlich ausgewÃ¤hlt werden, wurde schon durch Advance ausgewÃ¤hlt
+                    } // Muss nicht zusätzlich ausgewählt werden, wurde schon durch Advance ausgewählt
                 } else if (action is ExchangeCarrots) {
                     if (action.value==10 && currentPlayer.carrots<30 && index<40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
-                        // Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal
-                        // hintereinander
+                        // Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal hintereinander
                         selectedMoves.add(move)
                     } else if (action.value==-10 && currentPlayer.carrots>30 && index>=40) {
                         // abgeben von Karotten ist nur am Ende sinnvoll
@@ -73,14 +70,14 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: S
                     }
                 } else if (action is FallBack) {
                     if (index>56 /* letztes Salatfeld */ && currentPlayer.salads>0) {
-                        // Falle nur am Ende (index > 56) zurÃ¼ck, auÃer du musst noch einen Salat loswerden
+                        // Falle nur am Ende (index > 56) zurück, außer du musst noch einen Salat loswerden
                         selectedMoves.add(move)
                     } else if (index<=56 && index-state.getPreviousFieldByType(FieldType.HEDGEHOG, index)<5) {
-                        // Falle zurÃ¼ck, falls sich RÃ¼ckzug lohnt (nicht zu viele Karotten aufnehmen)
+                        // Falle zurück, falls sich Rückzug lohnt (nicht zu viele Karotten aufnehmen)
                         selectedMoves.add(move)
                     }
                 } else {
-                    // FÃ¼ge Salatessen oder Skip hinzu
+                    // Füge Salatessen oder Skip hinzu
                     selectedMoves.add(move)
                 }
             }

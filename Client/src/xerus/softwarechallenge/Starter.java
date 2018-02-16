@@ -38,7 +38,7 @@ public class Starter extends AbstractClient {
 
 	}
 
-	public static void main(String[] args) throws IllegalOptionValueException, UnknownOptionException, IOException {
+	public static void main(String[] args) {
 		System.setProperty("file.encoding", "UTF-8");
 
 		// you may use this code to enable debug output:

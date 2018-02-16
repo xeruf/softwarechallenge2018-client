@@ -1,0 +1,3 @@
+rootProject.name = "Softwarechallenge2018"
+
+includeBuild '../Softwarechallenge-Tools'

@@ -44,8 +44,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	@Override
 	public void onRequestAction() {
 		start();
-		gueltig = 0;
-		ungueltig = 0;
+		gueltigeZuege = 0;
+		ungueltigeZuege = 0;
 		lastdepth = 0;
 		Move move = null;
 
@@ -61,7 +61,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		}
 
 		sendAction(move);
-		log.info(String.format("Zeit: %sms moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltig, ungueltig, depth, lastdepth));
+		log.info(String.format("Zeit: %sms moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth));
 	}
 
 	protected Move findBestMove() throws CloneNotSupportedException {
@@ -264,6 +264,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	protected abstract String tostring(Player player);
 
+	protected abstract boolean gewonnen(GameState state);
+
 	// Zugmethoden
 
 	protected Move move(Action... actions) {
@@ -279,31 +281,22 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		}
 	}
 
-	// Feldmethoden
-
-	protected boolean fieldistype(Field field, FieldType type) {
-		return field.getType().equals(type);
-	}
-
-	protected abstract boolean gewonnen(GameState state);
-
-	int gueltig;
-	int ungueltig;
+	int gueltigeZuege;
+	int ungueltigeZuege;
 
 	/** testet einen Move mit dem gegebenen GameState
 	 * @param state gegebener State
 	 * @param m der zu testende Move
-	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
-	 * @throws CloneNotSupportedException */
+	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move */
 	protected GameState testmove(GameState state, Move m) {
 		GameState newstate = clone(state);
 		try {
 			m.setOrderInActions();
 			m.perform(newstate);
-			gueltig++;
+			gueltigeZuege++;
 			return newstate;
 		} catch (InvalidMoveException e) {
-			ungueltig++;
+			ungueltigeZuege++;
 			if (log.isDebugEnabled()) {
 				String message = e.getMessage();
 				// if(!message.equals("Die maximale Geschwindigkeit von 6 darf nicht überschritten werden."))
