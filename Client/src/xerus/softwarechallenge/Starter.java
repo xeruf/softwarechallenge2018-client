@@ -1,13 +1,8 @@
 package xerus.softwarechallenge;
 
-import java.io.IOException;
-
+import jargs.gnu.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jargs.gnu.CmdLineParser;
-import jargs.gnu.CmdLineParser.IllegalOptionValueException;
-import jargs.gnu.CmdLineParser.UnknownOptionException;
 import sc.plugin2018.AbstractClient;
 import sc.plugin2018.IGameHandler;
 import sc.shared.SharedConfiguration;
