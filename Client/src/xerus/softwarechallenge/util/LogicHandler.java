@@ -19,7 +19,7 @@ import xerus.util.swing.table.MyTable;
 import xerus.util.swing.table.ScrollableJTable;
 import xerus.util.tools.StringTools;
 
-/** schafft Grundlagen f�r eine Logik */
+/** schafft Grundlagen fuer eine Logik */
 public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	protected final Logger log;
@@ -38,7 +38,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			((ch.qos.logback.classic.Logger) log).setLevel(ch.qos.logback.classic.Level.INFO);
 			log.info("Info enabled");
 		}
-		this.params = params != "" ? StringTools.split(params) : defaultParams();
+		this.params = !params.isEmpty() ? StringTools.split(params) : defaultParams();
 	}
 
 	@Override

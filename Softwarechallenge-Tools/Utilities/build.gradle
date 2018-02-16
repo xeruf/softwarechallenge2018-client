@@ -11,6 +11,9 @@
 
 apply plugin: 'java'
 apply plugin: 'idea'
+
+sourceSets.main.java.srcDir("src")
+
 //apply plugin: 'com.github.johnrengelman.shadow'
 //sourceCompatibility = 1.8
 //targetCompatibility = 1.8
