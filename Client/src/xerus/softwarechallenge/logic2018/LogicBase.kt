@@ -18,15 +18,20 @@ import java.util.ArrayList
 abstract class LogicBase(client: Starter, params: String, debug: Int, version: String): LogicHandler(client, params, debug, "Jumper " + version) {
 
     override fun evaluate(state: GameState): Double {
-        var points = state.getPointsForPlayer(currentGameState.currentPlayerColor).toDouble()
-        points += if (gewonnen(state))
-            Double.MAX_VALUE - state.currentPlayer.carrots * 5
-        else
-            state.currentPlayer.carrots.div(params[0])
+        var points = params[0] * state.getPointsForPlayer(myColor).toDouble()
+        val player = state.currentPlayer
+        points -= player.salads * 5
+        val distanceToGoal = 65 - player.fieldIndex
+        points += 10 + distanceToGoal/2 - (player.carrots/distanceToGoal - 2-distanceToGoal/5)
         return points
     }
 
-    override fun defaultParams() = doubleArrayOf(5.0)
+    // feld 0  -> mehr Karotten sind besser
+    // feld 64(Ziel) -> maximal 10 Karotten
+    // -(x/65-fieldIndex-4)²+10+fieldIndex
+    // benötigte Karotten für x Felder: 0,5x2 + 0,5x
+
+    override fun defaultParams() = doubleArrayOf(1.4, 5.0)
 
     override fun toString(player: Player): String =
             "Player %s Field: %s Greenstuff: %s/%s".format(player.playerColor, player.fieldIndex, player.salads, player.carrots)
