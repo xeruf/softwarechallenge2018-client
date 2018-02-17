@@ -1,5 +1,7 @@
-import xerus.util.SimpleLogger.SysoutListener;
-import xerus.util.Timer;
+import jargs.gnu.CmdLineParser;
+import jargs.gnu.CmdLineParser.IllegalOptionValueException;
+import jargs.gnu.CmdLineParser.UnknownOptionException;
+import xerus.util.SysoutListener;
 import xerus.util.tools.FileTools;
 import xerus.util.tools.StringTools;
 import xerus.util.tools.Tools;
@@ -7,11 +9,8 @@ import xerus.util.tools.Tools;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import jargs.gnu.CmdLineParser;
-import jargs.gnu.CmdLineParser.IllegalOptionValueException;
-import jargs.gnu.CmdLineParser.UnknownOptionException;
 
 public class Evolution {
 
@@ -21,6 +20,7 @@ public class Evolution {
 	private static String bestfile;
 
 	private static boolean debug;
+
 	public static void main(String[] args) throws IOException, InterruptedException, UnknownOptionException, IllegalOptionValueException {
 		CmdLineParser parser = new CmdLineParser();
 		CmdLineParser.Option option = parser.addIntegerOption('l', "line");
@@ -28,7 +28,7 @@ public class Evolution {
 		CmdLineParser.Option debugOption = parser.addBooleanOption('d', "debug");
 		parser.parse(args);
 
-		basepath = (String)parser.getOptionValue(path, System.getProperty("user.dir") + "/");
+		basepath = (String) parser.getOptionValue(path, System.getProperty("user.dir") + "/");
 		debug = (Boolean) parser.getOptionValue(debugOption, false);
 		Process server = startServer();
 		ailoc = basepath + "Elbdampfer3.4.jar";
@@ -37,8 +37,8 @@ public class Evolution {
 		FileTools.handle(e -> System.out.println(e.getMessage()));
 
 		try {
-			new Evolution((Integer)parser.getOptionValue(option, 0));
-			while(true)
+			new Evolution((Integer) parser.getOptionValue(option, 0));
+			while (true)
 				new Evolution();
 		} finally {
 			server.destroy();
@@ -54,10 +54,11 @@ public class Evolution {
 
 	Strategy strategy;
 	int line;
+
 	public Evolution(int lineparam) throws InterruptedException {
 		String[] file = FileTools.readall(datafile, 0, true).toArray(new String[0]);
 		line = lineparam;
-		if(lineparam == 0) {
+		if (lineparam == 0) {
 			line = file.length;
 			strategy = new Strategy(file[0]);
 		} else {
@@ -65,34 +66,38 @@ public class Evolution {
 			strategy = new Strategy(false, file[line]);
 		}
 		try {
-			while(strategy.games < 200) {
+			while (strategy.games < 200) {
 				Process AI = startAIs();
 				started = false;
-				SysoutListener.addObserver(e -> { if(e.contains("Ich bin")) working(); });
+				SysoutListener.addObserver(e -> {
+					if (e.contains("Ich bin")) working();
+				});
 				Thread.sleep(6000);
-				if(!started)
+				if (!started)
 					buildAI().start();
-				if(AI.waitFor(2, TimeUnit.MINUTES))
+				if (AI.waitFor(2, TimeUnit.MINUTES))
 					strategy.write(AI.exitValue());
 			}
 			strategy.writeEnd("Finished");
-		} catch(IOException e) {
+		} catch (IOException e) {
 			strategy.writeEnd("Error:" + e.getMessage());
 		}
 	}
 
 	private boolean started;
+
 	public void working() {
 		started = true;
 	}
 
-	public Evolution() throws IOException, InterruptedException {
-		this(0); }
+	public Evolution() throws InterruptedException {
+		this(0);
+	}
 
 	private Process startAIs() throws IOException {
 		buildAI().start();
 		ProcessBuilder pb = buildAI();
-		if(debug)
+		if (debug)
 			Collections.addAll(pb.command(), "-s", strategy.joinparams());
 		else
 			Collections.addAll(pb.command(), "-s", strategy.joinparams(), "-d", "0");
@@ -112,13 +117,14 @@ public class Evolution {
 		int score;
 
 		Strategy(String input) {
-			this(true, input); }
+			this(true, input);
+		}
 
 		Strategy(boolean mutate, String info) {
 			String[] infos = info.split(";");
 			params = StringTools.split(infos[0]);
 			variation = StringTools.split(infos[1]);
-			if(mutate)
+			if (mutate)
 				mutate();
 			else {
 				c = 2;
@@ -130,8 +136,8 @@ public class Evolution {
 		}
 
 		void mutate() {
-			for (int i=0; i<params.length; i++) {
-				variation[i] = Tools.round((Math.random()*2-1)*variation[i]);
+			for (int i = 0; i < params.length; i++) {
+				variation[i] = Tools.round((Math.random() * 2 - 1) * variation[i]);
 				params[i] += variation[i];
 			}
 			games = 0;
@@ -140,27 +146,28 @@ public class Evolution {
 		}
 
 		int bestline;
+
 		void write(int exitvalue) {
-			if(exitvalue > 0) {
+			if (exitvalue > 0) {
 				games++;
-				if(exitvalue/100 >= 1)
+				if (exitvalue / 100 >= 1)
 					won++;
-				score += exitvalue%100;
+				score += exitvalue % 100;
 			}
 
 			String towrite = toString();
-			if(FileTools.write(datafile, line, towrite))
+			if (FileTools.write(datafile, line, towrite))
 				System.out.println(String.format("%s auf Zeile %s geschrieben ", towrite, line));
-			if(games > 30) {
-				if(winrate < 0.45)
+			if (games > 30) {
+				if (winrate < 0.45)
 					resetStrategy();
-				if(games > 100) {
-					if(winrate < 0.5) {
+				if (games > 100) {
+					if (winrate < 0.5) {
 						resetStrategy();
-					} else if(winrate > 0.52) {
-						if(bestline == 0) {
-							String[] file = FileTools.readall(bestfile);
-							bestline = file.length;
+					} else if (winrate > 0.52) {
+						if (bestline == 0) {
+							List<String> file = FileTools.readall(bestfile, 0, false);
+							bestline = file.size();
 						}
 						FileTools.write(bestfile, bestline, towrite);
 					}
@@ -170,21 +177,21 @@ public class Evolution {
 
 		void resetStrategy() {
 			String file = null;
-			while(file == null)
+			while (file == null)
 				file = FileTools.read(datafile, 0);
 			strategy = new Strategy(file);
 		}
 
 		void writeEnd(String msg) {
 			System.out.println("Fertig!");
-			while(!FileTools.write(datafile, line, toString() + ";" + msg))
+			while (!FileTools.write(datafile, line, toString() + ";" + msg))
 				Tools.sleep(10);
 		}
 
 		@Override
 		public String toString() {
-			winrate = Tools.round((double)won/games);
-			return StringTools.join(joinparams(), StringTools.join(",", variation), ""+winrate, ""+score, ""+games, ""+won, Tools.time());
+			winrate = Tools.round((double) won / games);
+			return StringTools.join(joinparams(), StringTools.join(",", variation), "" + winrate, "" + score, "" + games, "" + won, Tools.time());
 		}
 
 		String joinparams() {
@@ -192,9 +199,10 @@ public class Evolution {
 		}
 
 		int c;
+
 		private int parseInt(String[] s) {
 			c++;
-			if(s.length>c)
+			if (s.length > c)
 				return Integer.parseInt(s[c]);
 			return 0;
 		}

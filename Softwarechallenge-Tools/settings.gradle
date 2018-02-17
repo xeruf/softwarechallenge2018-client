@@ -1,5 +1,5 @@
 
 rootProject.name = 'Softwarechallenge-Tools'
 
-include ':Utilities'
+//includeBuild '../../Util'
 

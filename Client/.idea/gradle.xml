@@ -9,7 +9,6 @@
               <build path="$PROJECT_DIR$/../Softwarechallenge-Tools">
                 <projects>
                   <project path="$PROJECT_DIR$/../Softwarechallenge-Tools" />
-                  <project path="$PROJECT_DIR$/../Softwarechallenge-Tools/Utilities" />
                 </projects>
               </build>
               <build path="$PROJECT_DIR$/../../Util">
@@ -31,7 +30,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/../Softwarechallenge-Tools" />
-            <option value="$PROJECT_DIR$/../Softwarechallenge-Tools/Utilities" />
             <option value="$PROJECT_DIR$/../../Util" />
             <option value="$PROJECT_DIR$/../../Util/javafx" />
             <option value="$PROJECT_DIR$/../../Util/kotlin" />

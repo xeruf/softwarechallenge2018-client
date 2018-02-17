@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = "1.1.0"
+version = "1.1.1"
 
 plugins {
     java
@@ -57,8 +57,7 @@ tasks {
         into("..")
         doFirst {
             val old = file("..").listFiles { _, name -> name.startsWith("Jumper") }
-            if(old.isNotEmpty()) {
-                val file = old[0]
+            old.forEach { file ->
                 file.copyTo(file("../Archiv/${file.name}"), true)
                 file.delete()
             }

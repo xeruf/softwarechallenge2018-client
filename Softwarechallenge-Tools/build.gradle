@@ -27,6 +27,6 @@ repositories {
 }
 
 dependencies {
-	compile project(':Utilities')
+	compile 'xerus.util:utilities'
 	compile 'jargs:jargs:1.0'
 }
