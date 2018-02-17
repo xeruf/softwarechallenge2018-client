@@ -3,13 +3,40 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/../Softwarechallenge-Tools">
+                <projects>
+                  <project path="$PROJECT_DIR$/../Softwarechallenge-Tools" />
+                  <project path="$PROJECT_DIR$/../Softwarechallenge-Tools/Utilities" />
+                </projects>
+              </build>
+              <build path="$PROJECT_DIR$/../../Util">
+                <projects>
+                  <project path="$PROJECT_DIR$/../../Util" />
+                  <project path="$PROJECT_DIR$/../../Util/javafx" />
+                  <project path="$PROJECT_DIR$/../../Util/kotlin" />
+                  <project path="$PROJECT_DIR$/../../Util/test" />
+                  <project path="$PROJECT_DIR$/../../Util/utilities" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="distributionType" value="LOCAL" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/../Softwarechallenge-Tools" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="$USER_HOME$/.sdkman/candidates/gradle/current" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/../Softwarechallenge-Tools" />
             <option value="$PROJECT_DIR$/../Softwarechallenge-Tools/Utilities" />
+            <option value="$PROJECT_DIR$/../../Util" />
+            <option value="$PROJECT_DIR$/../../Util/javafx" />
+            <option value="$PROJECT_DIR$/../../Util/kotlin" />
+            <option value="$PROJECT_DIR$/../../Util/test" />
+            <option value="$PROJECT_DIR$/../../Util/utilities" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

@@ -3,22 +3,25 @@ package xerus.softwarechallenge.util;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import java.security.SecureRandom;
-import java.util.*;
-
-import javax.swing.JFrame;
-
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
 import org.slf4j.LoggerFactory;
-
-import sc.plugin2018.*;
+import sc.plugin2018.Action;
+import sc.plugin2018.GameState;
+import sc.plugin2018.IGameHandler;
+import sc.plugin2018.Move;
+import sc.plugin2018.Player;
 import sc.shared.GameResult;
 import sc.shared.InvalidMoveException;
 import sc.shared.PlayerColor;
 import sc.shared.PlayerScore;
 import xerus.softwarechallenge.Starter;
-import xerus.util.Timer;
-import xerus.util.swing.table.MyTable;
-import xerus.util.swing.table.ScrollableJTable;
 import xerus.util.tools.StringTools;
+import xerus.util.helpers.Timer;
 
 /** schafft Grundlagen fuer eine Logik */
 public abstract class LogicHandler extends Timer implements IGameHandler {
@@ -61,9 +64,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			e.printStackTrace();
 		}
 
-		log.warn("Punkte: " + currentGameState.getPointsForPlayer(myColor));
 		sendAction(move);
-		log.info(String.format("Zeit: %sms moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth));
+		log.info(String.format("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth));
 	}
 
 	// region Zugsuche
@@ -74,7 +76,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return breitensuche();
 	}
 
-	/** ermittelt die Wertigkeit der gegebenen Situation<br>
+	/** ermittelt die Wertigkeit der gegebenen Situation
 	 * @return Bewertung der gegebenen Situation */
 	protected abstract double evaluate(GameState state);
 
@@ -113,12 +115,16 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			queue.add(newnode);
 			bestMove.update(move, evaluate(newstate));
 		}
+
 		// Breitensuche
 		Node node;
 		breitensuche: while (depth < 7 && runtime() < 1700) {
 			if ((node = queue.poll()) == null)
 				break;
-			depth = node.depth;
+			if(depth != node.depth) {
+				depth = node.depth;
+				log.debug("Tiefe: " + depth);
+			}
 			GameState nodestate = node.gamestate;
 			initplayer(nodestate);
 			findMoves(nodestate);
@@ -142,12 +148,12 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				if (bestMove.update(node.move, points)) {
 					lastdepth = depth;
 					if (log.isDebugEnabled())
-						log.debug(String.format("Neuer bester Zug bei Tiefe %s: %s Punkte %s - %s", depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())));
+						log.debug("Neuer bester Zug bei Tiefe %s: %s Punkte %s - %s", new Object[]{depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())});
 				}
 			}
 		}
-		if (evaluate(currentGameState) > bestMove.points)
-			log.warn("Bin wahrscheinlich in Sackgasse!");
+		//if (evaluate(currentGameState) > bestMove.points)
+		//	log.warn("Bin wahrscheinlich in Sackgasse!");
 		return bestMove.obj;
 	}
 
@@ -207,7 +213,9 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		client.sendMove(move);
 	}
 
-	protected void initplayer() {}
+	protected void initplayer() {
+		Player p = currentGameState.getCurrentPlayer();
+	}
 
 	protected void initplayer(GameState nodestate) {}
 
@@ -225,7 +233,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		log.info("Zug: {} Dran: {} - " + toString(dran), state.getTurn(), isme(dran.getPlayerColor()));
 	}
 
-	public static void display(GameState state) {
+	/*public static void display(GameState state) {
 		JFrame frame = new JFrame();
 		String fieldString = state.getBoard().toString();
 		MyTable table = new ScrollableJTable("Index", "Field").addToComponent(frame, null);
@@ -236,7 +244,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		table.fitColumns(0);
 		frame.pack();
 		frame.setVisible(true);
-	}
+	}*/
 
 	@Override
 	public void onUpdate(Player arg0, Player arg1) {
@@ -246,21 +254,21 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return color == myColor ? "ich" : "nicht ich";
 	}
 
-	protected static String toString(Collection<Move> moves) {
+	public static String toString(Collection<Move> moves) {
 		StringBuilder out = new StringBuilder();
 		for (Move m : moves)
 			out.append("| ").append(toString(m)).append("\n");
 		return out.toString();
 	}
 
-	protected static String toString(Move m) {
-		StringBuilder out = new StringBuilder("Zug: ");
+	public static String toString(Move m) {
+		StringBuilder out = new StringBuilder("Move: ");
 		for (Action action : m.actions)
 			out.append(action.toString()).append(", ");
 		return out.substring(0, out.length() - 2);
 	}
 
-	protected abstract String toString(Player player);
+	public abstract String toString(Player player);
 
 	protected abstract boolean gewonnen(GameState state);
 
@@ -292,6 +300,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		try {
 			m.setOrderInActions();
 			m.perform(newstate);
+			newstate.setTurn(newstate.getTurn() + 1);
+			newstate.switchCurrentPlayer();
 			gueltigeZuege++;
 			return newstate;
 		} catch (InvalidMoveException e) {
