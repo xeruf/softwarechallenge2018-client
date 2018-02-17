@@ -26,7 +26,7 @@ public class Rater<X> {
 		inv = invert;
 	}
 
-	/**ersetzt die Werte durch die gegebenen, falls die Punkte höher als die vorherigen sind
+	/**ersetzt die Werte durch die gegebenen, falls die Punkte hÃ¶her als die vorherigen sind
 	 * @param newobj das neue Objekt
 	 * @param newpoints die Punkte */
 	public boolean update(X newobj, double newpoints) {

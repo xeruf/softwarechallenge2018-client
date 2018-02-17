@@ -17,7 +17,6 @@ class Jumper1(client: Starter, params: String, debug: Int): LogicBase(client, pa
     override fun findMoves(state: GameState): Collection<Move> {
         val possibleMoves = state.possibleMoves // Enthält mindestens ein Element
         val winningMoves = ArrayList<Move>()
-        val preferredMoves = ArrayList<Move>()
         val selectedMoves = ArrayList<Move>()
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex

@@ -13,8 +13,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import xerus.util.swing.SwingTools;
-/**Grundklasse für ein simples, aber relativ dynamisches Interface <br/>
- * Enthält einen Timer */
+/**Grundklasse fÃ¼r ein simples, aber relativ dynamisches Interface <br/>
+ * EnthÃ¤lt einen Timer */
 public abstract class Base extends BasePanel {
 	
 	/*

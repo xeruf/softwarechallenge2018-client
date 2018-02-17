@@ -43,9 +43,9 @@ public abstract class Benchmark {
 	private static void output(long... values) {
 		StringBuilder sb = new StringBuilder("Zeit: " + values[0]);
 		if(values.length>1) {
-			sb.append("Parameter: " + values[1]);
+			sb.append("Parameter: ").append(values[1]);
 			if(values.length>2)
-				sb.append("Pr‰zision: " + values[2]);
+				sb.append("Pr√§zision: ").append(values[2]);
 		}
 		System.out.println(sb.toString());
 	}

@@ -20,12 +20,12 @@ public class TurnExtractor extends Base {
 	static final Path DATAFILE = Paths.get("turnextractor-data");
 
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> new TurnExtractor());
+		SwingUtilities.invokeLater(TurnExtractor::new);
 	}
 
 	static JTextField turn = new JTextField();
 	static JTextField serverinput = new JTextField();
-	static JCheckBox autoterminate = new JCheckBox("Testserver beim schlieﬂen automatisch terminieren", true);
+	static JCheckBox autoterminate = new JCheckBox("Testserver beim schlie√üen automatisch terminieren", true);
 	@Override
 	protected void registerComponents() {
 		String replaypath = "";
@@ -112,7 +112,7 @@ public class TurnExtractor extends Base {
 				}});
 			File f = new File(outfile);
 			f.delete();
-			return "Testerver l‰uft mit " + f.getName();
+			return "Testerver l√§uft mit " + f.getName();
 		}
 		return "Turn in " + outfile + " geschrieben";
 	}
