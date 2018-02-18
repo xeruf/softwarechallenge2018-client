@@ -50,13 +50,22 @@ tasks {
         mustRunAfter("clean")
     }
 
+    val jumper = "Jumper-$version"
+
+    "zip"(Zip::class) {
+        dependsOn("jar")
+        from("../$jumper.jar")
+        archiveName = "$jumper.zip"
+        destinationDir = file("..")
+    }
+
     tasks.replace("jar", Copy::class.java).apply {
         group = MAIN
         dependsOn("shadowJar")
         from("build/libs")
         into("..")
         doFirst {
-            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") }
+            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name != jumper }
             old.forEach { file ->
                 file.copyTo(file("../Archiv/${file.name}"), true)
                 file.delete()
