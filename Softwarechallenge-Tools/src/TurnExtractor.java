@@ -41,7 +41,7 @@ public final class TurnExtractor extends Base {
 		regButton("Schreibe Datei");
 		regOutLabel();
 
-		regLabel("Pfad zum Testserver-Ordner:", 0);
+		regLabel("Pfad zum Testserver:", 0);
 		reg(serverinput, 1);
 		regButton("Testserver mit Zug starten");
 		reg(autoterminate);
@@ -99,8 +99,8 @@ public final class TurnExtractor extends Base {
 
 		if (buttonid == 1) {
 			Path spath = getPath(serverinput);
-			ProcessBuilder pb = new ProcessBuilder("java", "-Dfile.encoding=UTF-8", "-Dlogback.configurationFile=./logback.xml", "-jar",
-					spath.resolve("softwarechallenge-server.jar").toString(),
+			ProcessBuilder pb = new ProcessBuilder("java", "-Dfile.encoding=UTF-8", "-Dlogback.configurationFile=./logback.xml",
+					"-jar", spath.toString(),
 					"--loadGameFile", outfile);
 			pb.directory(spath.toFile());
 			testserver = pb.start();

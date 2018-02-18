@@ -2,28 +2,22 @@ package xerus.softwarechallenge.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
 import org.slf4j.LoggerFactory;
-import sc.plugin2018.Action;
-import sc.plugin2018.GameState;
-import sc.plugin2018.IGameHandler;
-import sc.plugin2018.Move;
-import sc.plugin2018.Player;
+import sc.plugin2018.*;
 import sc.shared.GameResult;
 import sc.shared.InvalidMoveException;
 import sc.shared.PlayerColor;
 import sc.shared.PlayerScore;
 import xerus.softwarechallenge.Starter;
-import xerus.util.tools.StringTools;
 import xerus.util.helpers.Timer;
+import xerus.util.tools.StringTools;
 
-/** schafft Grundlagen fuer eine Logik */
+import java.security.SecureRandom;
+import java.util.*;
+
+/**
+ * schafft Grundlagen fuer eine Logik
+ */
 public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	protected final Logger log;
@@ -51,38 +45,40 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		gueltigeZuege = 0;
 		ungueltigeZuege = 0;
 		lastdepth = 0;
-		Move move = null;
+		Move move;
 
-		try {
-			move = findBestMove();
-			if (move == null || testmove(currentGameState, move) == null) {
-				log.info("Kein gueltiger Move gefunden! Suche Simplemove...");
-				move = simpleMove();
-			}
-		} catch (CloneNotSupportedException e) {
-			log.error("Fehler beim klonen!\n");
-			e.printStackTrace();
+		move = findBestMove();
+		if (move == null || testmove(currentGameState, move) == null) {
+			log.info("Kein gueltiger Move gefunden: {} - Suche simplemove!", move);
+			move = simpleMove();
 		}
 
 		sendAction(move);
-		log.info(String.format("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth));
+		log.info(String.format("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime() / 1000_000, gueltigeZuege, ungueltigeZuege, depth, lastdepth));
 	}
 
 	// region Zugsuche
 
-	/** Findet den Move der beim aktuellen GameState am besten ist<br>
-	 * verweist standardmäßig auf die breitensuche */
+	/**
+	 * Findet den Move der beim aktuellen GameState am besten ist<br>
+	 * verweist standardmäßig auf die breitensuche
+	 */
 	protected Move findBestMove() {
 		return breitensuche();
 	}
 
-	/** ermittelt die Wertigkeit der gegebenen Situation
-	 * @return Bewertung der gegebenen Situation */
+	/**
+	 * ermittelt die Wertigkeit der gegebenen Situation
+	 *
+	 * @return Bewertung der gegebenen Situation
+	 */
 	protected abstract double evaluate(GameState state);
 
 	protected double[] params;
 
-	/** Die Standard-Parameter - gibt in der Basisimplementierung ein leeres Array zur�ck */
+	/**
+	 * Die Standard-Parameter - gibt in der Basisimplementierung ein leeres Array zur�ck
+	 */
 	protected double[] defaultParams() {
 		return new double[]{};
 	}
@@ -90,7 +86,9 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	protected int depth;
 	private int lastdepth;
 
-	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
+	/**
+	 * sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState
+	 */
 	protected Move breitensuche() {
 		// Variablen vorbereiten
 		Queue<Node> queue = new LinkedList<>();
@@ -113,15 +111,19 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				return move;
 			Node newnode = new Node(newstate, move);
 			queue.add(newnode);
-			bestMove.update(move, evaluate(newstate));
+			double value = evaluate(newstate);
+			if (log.isDebugEnabled())
+				log.debug("{} Punkte: {}", toString(move), value);
+			bestMove.update(move, value);
 		}
 
 		// Breitensuche
 		Node node;
-		breitensuche: while (depth < 7 && runtime() < 1700) {
+		breitensuche:
+		while (depth < 7 && runtime() < 1700) {
 			if ((node = queue.poll()) == null)
 				break;
-			if(depth != node.depth) {
+			if (depth != node.depth) {
 				depth = node.depth;
 				log.debug("Tiefe: " + depth);
 			}
@@ -157,11 +159,14 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return bestMove.obj;
 	}
 
-	/** stellt mögliche Moves zusammen basierend auf dem gegebenen GameState<br>
+	/**
+	 * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState<br>
 	 * Diese Methode wird für die Tiefensuche genutzt<br>
 	 * muss überschrieben werden um die {@link #breitensuche} zu nutzen
+	 *
 	 * @param state gegebener GameState
-	 * @return ArrayList mit gefundenen Moves */
+	 * @return ArrayList mit gefundenen Moves
+	 */
 	protected Collection<Move> findMoves(GameState state) {
 		throw new UnsupportedOperationException("Es wurde keine Methode für das ermitteln der moves für die Tiefensuche definiert!");
 	}
@@ -173,12 +178,16 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		public int depth;
 		public double bonus;
 
-		/** erstellt eine neue Node mit dem gegebenen GameState und Move ohne bonus */
+		/**
+		 * erstellt eine neue Node mit dem gegebenen GameState und Move ohne bonus
+		 */
 		public Node(GameState state, Move m) {
 			this(state, m, 0);
 		}
 
-		/** erstellt eine neue Node mit dem gegebenen GameState und Move mit bonus */
+		/**
+		 * erstellt eine neue Node mit dem gegebenen GameState und Move mit bonus
+		 */
 		public Node(GameState state, Move m, double bonus) {
 			this(state, m, bonus, 1);
 		}
@@ -190,9 +199,12 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			bonus = b;
 		}
 
-		/** gibt eine neue Node zurück
+		/**
+		 * gibt eine neue Node zurück
+		 *
 		 * @param newState der neue GameState
-		 * @return neue Node mit dem GameState und depth + 1 */
+		 * @return neue Node mit dem GameState und depth + 1
+		 */
 		public Node update(GameState newState) {
 			return new Node(newState, move, bonus, depth + 1);
 		}
@@ -204,7 +216,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	@Override
 	public void sendAction(Move move) {
 		if (move == null) {
-			log.warn("Kein Zug mehr m�glich!");
+			log.warn("Kein Zug mehr möglich!");
 			client.sendMove(move());
 			return;
 		}
@@ -217,7 +229,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		Player p = currentGameState.getCurrentPlayer();
 	}
 
-	protected void initplayer(GameState nodestate) {}
+	protected void initplayer(GameState nodestate) {
+	}
 
 	protected PlayerColor myColor;
 
@@ -274,7 +287,9 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	// Zugmethoden
 
-	/** constructs a new Move containing the given actions */
+	/**
+	 * constructs a new Move containing the given actions
+	 */
 	protected Move move(Action... actions) {
 		return new Move(Arrays.asList(actions));
 	}
@@ -291,10 +306,13 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	int gueltigeZuege;
 	int ungueltigeZuege;
 
-	/** testet einen Move mit dem gegebenen GameState
+	/**
+	 * testet einen Move mit dem gegebenen GameState
+	 *
 	 * @param state gegebener State
-	 * @param m der zu testende Move
-	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move */
+	 * @param m     der zu testende Move
+	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
+	 */
 	protected GameState testmove(GameState state, Move m) {
 		GameState newstate = clone(state);
 		try {
@@ -315,7 +333,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return null;
 	}
 
-	protected abstract Move simpleMove() throws CloneNotSupportedException;
+	protected abstract Move simpleMove();
 
 	protected GameState clone(GameState s) {
 		try {

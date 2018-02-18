@@ -1,5 +1,8 @@
 
 rootProject.name = 'Softwarechallenge-Tools'
 
-//includeBuild '../../Util'
+if (startParameter.searchUpwards) {
+	includeBuild '../../Util'
+}
+
 

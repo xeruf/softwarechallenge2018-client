@@ -2,6 +2,7 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.Constants
+import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.LogicHandler
@@ -17,9 +18,15 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         // Salat und Karten
         points -= player.salads * params[1]
         points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.7
+        points += player.cards.size
         // Karotten
         val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
         points += distanceToGoal / 8 - (player.carrots / distanceToGoal - 2 - distanceToGoal / 5).pow(2)
+
+        points += player.inGoal().toInt() * 1000
+        val turnsLeft = 60 - state.turn
+        if (turnsLeft < 4 || player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
+            points -= distanceToGoal * 100
         return points
     }
 
@@ -33,7 +40,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     override fun defaultParams() = doubleArrayOf(2.0, 10.0)
 
     override fun toString(player: Player): String =
-            "Player %s Field: %s Greenstuff: %s/%s".format(player.playerColor, player.fieldIndex, player.salads, player.carrots)
+            "Player %s Feld: %s Gemuese: %s/%s Karten: %s".format(player.playerColor, player.fieldIndex, player.salads, player.carrots, player.cards.joinToString { it.name })
 
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
