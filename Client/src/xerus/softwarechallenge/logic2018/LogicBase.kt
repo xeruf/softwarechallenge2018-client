@@ -40,14 +40,13 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     // params: Weite Salat
     override fun defaultParams() = doubleArrayOf(2.0, 10.0)
 
-    override fun toString(player: Player): String =
-            "Player %s Feld: %s Gemuese: %s/%s Karten: %s".format(player.playerColor, player.fieldIndex, player.salads, player.carrots, player.cards.joinToString { it.name })
+    override fun Player.str(): String =
+            "Player %s Feld: %s Gemuese: %s/%s Karten: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name })
 
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
 
     override fun simpleMove(state: GameState): Move {
-        log.debug("simplemove requested: " + toString(state))
         val possibleMove = state.possibleMoves // Enthält mindestens ein Element
         val saladMoves = ArrayList<Move>()
         val winningMoves = ArrayList<Move>()

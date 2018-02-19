@@ -13,7 +13,7 @@ class MP: Rater<Move> {
     constructor(m: Move, p: Double): super(m, p)
 
     override fun toString(): String {
-        return "%s Punkte: %d".format(LogicHandler.toString(obj!!), points)
+        return "%s Punkte: %d".format(obj!!.str(), points)
     }
 
 }
