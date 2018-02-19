@@ -46,9 +46,9 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
 
-    override fun simpleMove(): Move {
-        val state = currentGameState
-        val possibleMove = state.possibleMoves // EnthÃ¤lt mindestens ein Element
+    override fun simpleMove(state: GameState): Move {
+        log.debug("simplemove requested: " + toString(state))
+        val possibleMove = state.possibleMoves // Enthält mindestens ein Element
         val saladMoves = ArrayList<Move>()
         val winningMoves = ArrayList<Move>()
         val selectedMoves = ArrayList<Move>()
@@ -93,10 +93,8 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
             }
         }
         val move = if (!winningMoves.isEmpty()) {
-            log.info("Sende Gewinnzug")
             winningMoves[rand.nextInt(winningMoves.size)]
         } else if (!saladMoves.isEmpty()) {
-            log.info("Sende Zug zum Salatessen")
             saladMoves[rand.nextInt(saladMoves.size)]
         } else if (!selectedMoves.isEmpty()) {
             selectedMoves[rand.nextInt(selectedMoves.size)]

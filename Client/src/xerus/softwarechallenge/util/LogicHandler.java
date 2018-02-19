@@ -8,12 +8,21 @@ import sc.shared.GameResult;
 import sc.shared.InvalidMoveException;
 import sc.shared.PlayerColor;
 import sc.shared.PlayerScore;
+import xerus.ktutil.FileUtilsKt;
 import xerus.softwarechallenge.Starter;
 import xerus.util.helpers.Timer;
+import xerus.util.tools.FileTools;
 import xerus.util.tools.StringTools;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static java.lang.String.format;
+import static java.lang.String.valueOf;
 
 /**
  * schafft Grundlagen fuer eine Logik
@@ -42,7 +51,6 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	@Override
 	public void onRequestAction() {
 		start();
-		System.out.println(runtime());
 		gueltigeZuege = 0;
 		ungueltigeZuege = 0;
 		lastdepth = 0;
@@ -50,16 +58,17 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 		try {
 			move = findBestMove();
-		} catch(Exception e) {
+		} catch (Throwable e) {
+			log.error("No move found!", e);
 			move = null;
 		}
 		if (move == null || testmove(currentGameState, move) == null) {
 			log.info("Kein gueltiger Move gefunden: {} - Suche simplemove!", move);
-			move = simpleMove();
+			move = simpleMove(currentGameState);
 		}
 
 		sendAction(move);
-		log.info(String.format("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime() / 1000_000, gueltigeZuege, ungueltigeZuege, depth, lastdepth));
+		log.info(format("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s", runtime() / 1000_000, gueltigeZuege, ungueltigeZuege, depth, lastdepth));
 	}
 
 	// region Zugsuche
@@ -101,12 +110,19 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		MP bestMove = new MP();
 
 		// Queue füllen
-		initplayer();
 		Collection<Move> moves = findMoves(currentGameState);
-		if (log.isDebugEnabled())
+		if (moves.size() == 1) {
+			Move move = moves.iterator().next();
+			log.debug("Nur einen Zug gefunden: " + toString(move));
+			return move;
+		}
+		String debugFile = "";
+		if (log.isDebugEnabled()) {
 			log.debug("Gefundene Zuege:\n{}", toString(moves));
-		if (moves.size() == 1)
-			return moves.iterator().next();
+			debugFile = gameLog.resolve("turn" + currentGameState.getTurn() + ".txt").toString();
+			log.debug(debugFile);
+			log.debug(valueOf(FileTools.write(debugFile, true, (String[]) moves.stream().map(LogicHandler::toString).toArray())));
+		}
 
 		for (Move move : moves) {
 			GameState newstate = testmove(currentGameState, move);
@@ -116,24 +132,25 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				return move;
 			Node newnode = new Node(newstate, move);
 			queue.add(newnode);
-			double punkte = evaluate(newstate);
+			double points = evaluate(newstate);
 			//if (log.isDebugEnabled()) log.debug("{} Punkte: {}", toString(move), punkte);
-			bestMove.update(move, punkte);
+			bestMove.update(move, points);
+
+			if (log.isDebugEnabled())
+				FileTools.write(debugFile, true, newnode.toString() + " Punkte: " + points);
 		}
 		log.debug("Beginne Breitensuche mit " + queue);
 		// Breitensuche
 		Node node;
 		breitensuche:
-		while (depth < 7 && runtime() < 1700) {
+		while (depth < 6 && runtime() < 1700) {
 			if ((node = queue.poll()) == null)
 				break;
-			log.debug(node.toString());
-			if (depth != node.depth) {
+			if (log.isDebugEnabled())
+				FileTools.write(debugFile, true, node.toString());
+			if (depth != node.depth)
 				depth = node.depth;
-				log.debug("Tiefe: " + depth);
-			}
 			GameState nodestate = node.gamestate;
-			initplayer(nodestate);
 			moves = findMoves(nodestate);
 			// sinnlosen Zug ausschliessen
 			if (moves.size() == 0)
@@ -141,22 +158,22 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			for (Move move : moves) {
 				if (runtime() > 1750)
 					break breitensuche;
-				initplayer(nodestate);
 				GameState newstate = testmove(nodestate, move);
 				if (newstate == null)
 					continue;
 				Node newnode = node.update(newstate);
 				double points = evaluate(node.gamestate) + node.bonus - node.depth;
-				// Aussortieren
-				if (points + 5 < bestMove.points)
-					continue;
 				queue.add(newnode);
 				// Aktualisierung der Bestpunktzahl
-				if (bestMove.update(node.move, points)) {
+				if (node.move != bestMove.obj && bestMove.update(node.move, points)) {
 					lastdepth = depth;
-					if (log.isDebugEnabled())
-						log.debug("Neuer bester Zug bei Tiefe {}: {} Punkte {} - {}", new Object[]{depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())});
+					if (log.isDebugEnabled()) {
+						String format = format("Neuer bester Zug bei Tiefe %d: %s Punkte %f - %s", depth, toString(node.move), points, toString(nodestate.getCurrentPlayer()));
+						log.debug(format);
+					}
 				}
+				if (log.isDebugEnabled())
+					FileTools.write(debugFile, true, " - " + toString(move));
 			}
 		}
 		//if (evaluate(currentGameState) > bestMove.points)
@@ -215,7 +232,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 		@Override
 		public String toString() {
-			return String.format("Node tiefe %d fuer %s bonus %f", depth, LogicHandler.toString(move), bonus);
+			return format("Node tiefe %d fuer %s bonus %f", depth, LogicHandler.toString(move), bonus);
 		}
 	}
 
@@ -233,13 +250,6 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		client.sendMove(move);
 	}
 
-	protected void initplayer() {
-		Player p = currentGameState.getCurrentPlayer();
-	}
-
-	protected void initplayer(GameState nodestate) {
-	}
-
 	protected PlayerColor myColor;
 
 	@Override
@@ -251,7 +261,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			myColor = client.getColor();
 			log.info("Ich bin {}", myColor);
 		}
-		log.info("Zug: {} Dran: {} - " + toString(dran), state.getTurn(), isme(dran.getPlayerColor()));
+		log.info("Zug: {} Dran: {} - " + toString(dran), state.getTurn(), identify(dran.getPlayerColor()));
 	}
 
 	/*public static void display(GameState state) {
@@ -271,10 +281,6 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	public void onUpdate(Player arg0, Player arg1) {
 	}
 
-	private String isme(PlayerColor color) {
-		return color == myColor ? "ich" : "nicht ich";
-	}
-
 	public static String toString(Collection<Move> moves) {
 		StringBuilder out = new StringBuilder();
 		for (Move m : moves)
@@ -282,11 +288,20 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return out.toString();
 	}
 
-	public static String toString(Move m) {
+	public static String toString(Move move) {
 		StringBuilder out = new StringBuilder("Move: ");
-		for (Action action : m.actions)
-			out.append(action.toString()).append(", ");
+		for (Action action : move.actions)
+			out.append(toString(action)).append(", ");
 		return out.substring(0, out.length() - 2);
+	}
+
+	public static String toString(Action action) {
+		String str = action.toString();
+		return str.substring(0, str.indexOf("order") - 1);
+	}
+
+	protected String toString(GameState state) {
+		return String.format("GameState:\n - current: %s\n - other: %s", toString(state.getCurrentPlayer()), toString(state.getOtherPlayer()));
 	}
 
 	public abstract String toString(Player player);
@@ -315,7 +330,8 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	int ungueltigeZuege;
 
 	/**
-	 * testet einen Move mit dem gegebenen GameState
+	 * testet einen Move mit dem gegebenen GameState<br>
+	 * führt jetzt auch einen simplemove für den Gegenspieler aus!
 	 *
 	 * @param state gegebener State
 	 * @param m     der zu testende Move
@@ -326,8 +342,14 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		try {
 			m.setOrderInActions();
 			m.perform(newstate);
-			newstate.setTurn(newstate.getTurn() + 1);
-			newstate.switchCurrentPlayer();
+			int turnIndex = newstate.getTurn();
+			try {
+				simpleMove(newstate).perform(newstate);
+			} catch (Throwable t) {
+				newstate.setTurn(turnIndex + 1);
+				newstate.switchCurrentPlayer();
+				log.warn("Simplemove for {} failed: {}", toString(newstate.getOtherPlayer()), t.toString());
+			}
 			gueltigeZuege++;
 			return newstate;
 		} catch (InvalidMoveException e) {
@@ -341,7 +363,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return null;
 	}
 
-	protected abstract Move simpleMove();
+	protected abstract Move simpleMove(GameState state);
 
 	protected GameState clone(GameState s) {
 		try {
@@ -356,7 +378,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	@Override
 	public void gameEnded(GameResult data, PlayerColor color, String errorMessage) {
 		List<PlayerScore> scores = data.getScores();
-		String cause = String.format("Ich %s Gegner %s", scores.get(color.ordinal()).getCause(), scores.get(color.opponent().ordinal()).getCause());
+		String cause = format("Ich %s Gegner %s", scores.get(color.ordinal()).getCause(), scores.get(color.opponent().ordinal()).getCause());
 		if (data.getWinners().isEmpty()) {
 			log.warn("Kein Gewinner! Grund: {}", cause);
 			// System.exit(0);
@@ -364,9 +386,9 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		PlayerColor winner = ((Player) data.getWinners().get(0)).getPlayerColor();
 		int myscore = getScore(scores, color);
 		if (data.isRegular())
-			log.warn(String.format("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s", isme(winner), myscore, getScore(scores, color.opponent())));
+			log.warn(format("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s", identify(winner), myscore, getScore(scores, color.opponent())));
 		else
-			log.warn(String.format("Spiel unregulaer beendet! Punkte: %s Grund: %s", myscore, cause));
+			log.warn(format("Spiel unregulaer beendet! Punkte: %s Grund: %s", myscore, cause));
 		// System.exit((color == winner ? 100 : 0) + myscore);
 	}
 
@@ -374,6 +396,11 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 		return scores.get(color.ordinal()).getValues().get(1).intValue();
 	}
 
+	private String identify(PlayerColor color) {
+		return color == myColor ? "ich" : "nicht ich";
+	}
+
 	public final Random rand = new SecureRandom();
+	private static final Path gameLog = FileUtilsKt.create(Paths.get("games", new SimpleDateFormat("MM-dd-HH-mm-ss").format(new Date())));
 
 }
