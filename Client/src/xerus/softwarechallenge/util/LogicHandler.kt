@@ -25,7 +25,7 @@ import java.util.*
 abstract class LogicHandler(private val client: Starter, params: String, debug: Int, identifier: String) : IGameHandler {
 
     protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
-    private lateinit var currentGameState: GameState
+    protected lateinit var currentGameState: GameState
 
     protected var params = if (!params.isEmpty()) StringTools.split(params) else defaultParams()
 
@@ -67,7 +67,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 
     /**Findet den Move der beim aktuellen GameState am besten ist<br></br>
      * verweist standardmäßig auf die breitensuche */
-    protected fun findBestMove(): Move? = breitensuche()
+    protected open fun findBestMove(): Move? = breitensuche()
 
     /** bewertet die gegebene Situation
      * @return Einschätzung der gegebenen Situation in Punkten */
@@ -213,18 +213,29 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 		frame.setVisible(true);
 	}*/
 
-    protected fun GameState.str() =
-        "GameState:\n - current: %s\n - other: %s".format(currentPlayer.str(), otherPlayer.str())
+    protected abstract fun gewonnen(state: GameState): Boolean
 
     abstract fun Player.str(): String
 
-    protected abstract fun gewonnen(state: GameState): Boolean
+    fun GameState.str() =
+            "GameState:\n - current: %s\n - other: %s".format(currentPlayer.str(), otherPlayer.str())
+
+    fun findField(type: FieldType, startIndex: Int = 0): Int {
+        var index = startIndex
+        while (currentGameState.board.getTypeAt(index) != type)
+            index++
+        return index
+    }
 
     // Zugmethoden
 
     /** constructs a new Move containing the given actions */
     protected fun move(vararg actions: Action): Move {
         return Move(Arrays.asList(*actions))
+    }
+
+    protected fun advanceTo(field: Int): Move {
+        return move(Advance(field - currentGameState.currentPlayer.fieldIndex))
     }
 
     protected fun perform(a: Action, s: GameState): Boolean =
@@ -275,7 +286,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 
     protected abstract fun simpleMove(state: GameState): Move
 
-    override fun gameEnded(data: GameResult, color: PlayerColor, errorMessage: String) {
+    override fun gameEnded(data: GameResult, color: PlayerColor, errorMessage: String?) {
         val scores = data.scores
         val cause = "Ich %s Gegner %s".format(scores[color.ordinal].cause, scores[color.opponent().ordinal].cause)
         if (data.winners.isEmpty()) {

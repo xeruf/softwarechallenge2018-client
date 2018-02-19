@@ -6,7 +6,7 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.printWith
 import xerus.softwarechallenge.Starter
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 1, 0)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 1)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
         //if (GameRuleLogic.isValidToEat(state))
