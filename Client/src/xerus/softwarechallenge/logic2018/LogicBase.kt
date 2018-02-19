@@ -13,8 +13,9 @@ import kotlin.math.pow
 abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion) : LogicHandler(client, params, debug, "Jumper v" + version) {
 
     override fun evaluate(state: GameState): Double {
-        var points = params[0] * state.getPointsForPlayer(myColor).toDouble()
         val player = state.currentPlayer
+        var points = 100.0
+        points += params[0] * state.getPointsForPlayer(myColor)
         // Salat und Karten
         points -= player.salads * params[1]
         points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.7

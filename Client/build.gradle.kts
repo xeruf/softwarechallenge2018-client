@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = "1.1.2"
+version = "1.2.0"
 
 plugins {
     java
@@ -65,7 +65,7 @@ tasks {
         from("build/libs")
         into("..")
         doFirst {
-            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name != jumper }
+            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") }
             old.forEach { file ->
                 file.copyTo(file("../Archiv/${file.name}"), true)
                 file.delete()

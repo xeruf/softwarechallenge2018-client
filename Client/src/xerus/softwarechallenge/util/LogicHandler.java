@@ -42,12 +42,17 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 	@Override
 	public void onRequestAction() {
 		start();
+		System.out.println(runtime());
 		gueltigeZuege = 0;
 		ungueltigeZuege = 0;
 		lastdepth = 0;
 		Move move;
 
-		move = findBestMove();
+		try {
+			move = findBestMove();
+		} catch(Exception e) {
+			move = null;
+		}
 		if (move == null || testmove(currentGameState, move) == null) {
 			log.info("Kein gueltiger Move gefunden: {} - Suche simplemove!", move);
 			move = simpleMove();
@@ -111,25 +116,25 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				return move;
 			Node newnode = new Node(newstate, move);
 			queue.add(newnode);
-			double value = evaluate(newstate);
-			if (log.isDebugEnabled())
-				log.debug("{} Punkte: {}", toString(move), value);
-			bestMove.update(move, value);
+			double punkte = evaluate(newstate);
+			//if (log.isDebugEnabled()) log.debug("{} Punkte: {}", toString(move), punkte);
+			bestMove.update(move, punkte);
 		}
-
+		log.debug("Beginne Breitensuche mit " + queue);
 		// Breitensuche
 		Node node;
 		breitensuche:
 		while (depth < 7 && runtime() < 1700) {
 			if ((node = queue.poll()) == null)
 				break;
+			log.debug(node.toString());
 			if (depth != node.depth) {
 				depth = node.depth;
 				log.debug("Tiefe: " + depth);
 			}
 			GameState nodestate = node.gamestate;
 			initplayer(nodestate);
-			findMoves(nodestate);
+			moves = findMoves(nodestate);
 			// sinnlosen Zug ausschliessen
 			if (moves.size() == 0)
 				continue;
@@ -150,7 +155,7 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 				if (bestMove.update(node.move, points)) {
 					lastdepth = depth;
 					if (log.isDebugEnabled())
-						log.debug("Neuer bester Zug bei Tiefe %s: %s Punkte %s - %s", new Object[]{depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())});
+						log.debug("Neuer bester Zug bei Tiefe {}: {} Punkte {} - {}", new Object[]{depth, toString(node.move), points, toString(nodestate.getCurrentPlayer())});
 				}
 			}
 		}
@@ -161,14 +166,13 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 
 	/**
 	 * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState<br>
-	 * Diese Methode wird für die Tiefensuche genutzt<br>
 	 * muss überschrieben werden um die {@link #breitensuche} zu nutzen
 	 *
 	 * @param state gegebener GameState
 	 * @return ArrayList mit gefundenen Moves
 	 */
 	protected Collection<Move> findMoves(GameState state) {
-		throw new UnsupportedOperationException("Es wurde keine Methode für das ermitteln der moves für die Tiefensuche definiert!");
+		throw new UnsupportedOperationException("Es wurde keine Methode für das fnden der moves definiert!");
 	}
 
 	private class Node {
@@ -209,6 +213,10 @@ public abstract class LogicHandler extends Timer implements IGameHandler {
 			return new Node(newState, move, bonus, depth + 1);
 		}
 
+		@Override
+		public String toString() {
+			return String.format("Node tiefe %d fuer %s bonus %f", depth, LogicHandler.toString(move), bonus);
+		}
 	}
 
 	// GRUNDLAGEN

@@ -9,14 +9,13 @@ import xerus.softwarechallenge.Starter
 class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 1, 0)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
-        if (GameRuleLogic.isValidToEat(state))
-            return listOf(move(EatSalad()))
+        //if (GameRuleLogic.isValidToEat(state))
+        //    return listOf(move(EatSalad()))
         val possibleMoves = state.possibleMoves
         val winningMoves = HashSet<Move>()
         val selectedMoves = HashSet<Move>()
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex
-        toString(player).printWith { toString(possibleMoves) }
         for (move in possibleMoves) {
             for (action in move.actions) {
                 when (action) {
