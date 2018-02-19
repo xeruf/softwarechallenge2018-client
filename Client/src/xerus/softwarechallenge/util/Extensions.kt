@@ -7,7 +7,7 @@ import sc.plugin2018.Move
 
 fun Field.isType(type: FieldType) = this.type == type
 
-fun Collection<Move>.str(): String = joinToString { "| " + it.str() + "\n" }
+fun Collection<Move>.str(): String = joinToString(separator = "\n", transform = { "| " + it.str() })
 
 fun Move.str(): String {
     val out = StringBuilder("Move: ")

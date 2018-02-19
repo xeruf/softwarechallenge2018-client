@@ -8,13 +8,11 @@ import sc.shared.GameResult
 import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
 import sc.shared.PlayerScore
-import xerus.ktutil.appendln
 import xerus.ktutil.create
 import xerus.softwarechallenge.Starter
 import xerus.util.helpers.Timer
 import xerus.util.tools.StringTools
 import java.io.BufferedWriter
-import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.security.SecureRandom
@@ -60,7 +58,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         }
 
         sendAction(move)
-        log.info("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s".format(Timer.runtime() / 1000000, gueltigeZuege, ungueltigeZuege, depth, lastdepth))
+        log.info("Zeit: %sms Gefundene Moves: %s/%s Kalkulationstiefe: %s Genutzt: %s".format(Timer.runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth))
     }
 
     // region Zugsuche
@@ -79,7 +77,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     private var depth: Int = 0
     private var lastdepth: Int = 0
 
-    private val gameLog = if(log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd-HH-mm-ss").format(Date())).create() else Paths.get("")
+    private val gameLog = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd-HH-mm-ss").format(Date())).create() else Paths.get("")
 
     /** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
     private fun breitensuche(): Move? {
@@ -112,10 +110,10 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             bestMove.update(move, points)
             debugFile?.appendln("%s Punkte: %.1f\n".format(newnode, points))
         }
-        
+
         // Breitensuche
         log.debug("Beginne Breitensuche mit " + queue)
-        loop@ while (depth < 6 && Timer.runtime() < 1700) {
+        loop@ while (depth < 6 && Timer.runtime() < 1600) {
             val node = queue.poll() ?: break
             if (depth != node.depth)
                 depth = node.depth
@@ -123,7 +121,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             debugFile?.appendln(node.toString() + " - " + nodeState.str())
             moves = findMoves(nodeState)
             for (move in moves) {
-                if (Timer.runtime() > 1750)
+                if (Timer.runtime() > 1700)
                     break@loop
                 val newState = test(nodeState, move) ?: continue
                 val newNode = node.update(newState)
@@ -131,7 +129,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
                 // Aktualisierung der Bestpunktzahl
                 if (node.move !== bestMove.obj) {
                     val points = evaluate(node.gamestate) + node.bonus - node.depth
-                    if(bestMove.update(node.move, points)) {
+                    if (bestMove.update(node.move, points)) {
                         lastdepth = depth
                         if (log.isDebugEnabled) {
                             val format = "Neuer bester Zug bei Tiefe %d: %s - Punkte: %.1f - %s".format(depth, node.move.str(), points, newState.currentPlayer.str())
@@ -165,14 +163,15 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     }
 
     /**
-     * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState<br></br>
+     * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState
+     *
      * muss überschrieben werden um die [breitensuche] zu nutzen
      *
      * @param state gegebener GameState
      * @return ArrayList mit gefundenen Moves
      */
     protected open fun findMoves(state: GameState): Collection<Move> =
-        throw UnsupportedOperationException("Es wurde keine Methode für das ermitteln von moves definiert!")
+            throw UnsupportedOperationException("Es wurde keine Methode für das ermitteln von moves definiert!")
 
     // GRUNDLAGEN
 
@@ -182,7 +181,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             client.sendMove(move())
             return
         }
-        log.debug("Sende {}\n", move.str())
+        log.debug("Sende {}", move.str())
         move.setOrderInActions()
         client.sendMove(move)
     }
@@ -234,17 +233,13 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         return Move(Arrays.asList(*actions))
     }
 
-    protected fun advanceTo(field: Int): Move {
-        return move(Advance(field - currentGameState.currentPlayer.fieldIndex))
-    }
-
     protected fun perform(a: Action, s: GameState): Boolean =
-        try {
-            a.perform(s)
-            true
-        } catch (e: InvalidMoveException) {
-            false
-        }
+            try {
+                a.perform(s)
+                true
+            } catch (e: InvalidMoveException) {
+                false
+            }
 
     /**
      * testet einen Move mit dem gegebenen GameState<br></br>
@@ -265,7 +260,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             } catch (t: Throwable) {
                 newState.turn = turnIndex + 1
                 newState.switchCurrentPlayer()
-                log.warn("Simplemove for {} failed: {}", newState.otherPlayer.str(), t.toString())
+                log.warn("Simplemove for {} failed: {}" + state.str(), newState.otherPlayer.str(), t.toString())
             }
 
             gueltigeZuege++
@@ -303,11 +298,11 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     }
 
     private fun getScore(scores: List<PlayerScore>, color: PlayerColor): Int =
-        scores[color.ordinal].values[1].toInt()
+            scores[color.ordinal].values[1].toInt()
 
     override fun onUpdate(arg0: Player, arg1: Player) {}
 
     private fun identify(color: PlayerColor): String =
-        if (color == myColor) "ich" else "nicht ich"
+            if (color == myColor) "ich" else "nicht ich"
 
 }

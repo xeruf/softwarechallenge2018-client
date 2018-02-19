@@ -48,44 +48,58 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
 
     override fun findBestMove(): Move? {
         when (currentGameState.turn) {
-            // region die ersten drei Züge, wenn ich Blau bin
+            0 -> return advanceTo(10)
+        // region die ersten drei Züge, wenn ich Blau bin
             1 -> {
                 return if (currentGameState.otherPlayer.fieldIndex == 10) {
-                            val field2 = findField(FieldType.POSITION_2)
-                            if ((field2 < 5 && findField(FieldType.HARE, field2) < 10) || field2 < findField(FieldType.HARE))
-                                advanceTo(field2)
-                            else {
-                                // Mitte zwischen zweier-Feld und Start nehmen, langsam nach außen suchen
-                                var field = field2 / 2
-                                var dif = 1
-                                while(currentGameState.board.getTypeAt(field) != FieldType.HARE) {
-                                    field += dif
-                                    dif = -(dif + dif.sign)
-                                }
-                                playCard(field, CardType.EAT_SALAD)
-                            }
-                        } else {
-                            advanceTo(10)
+                    val field2 = findField(FieldType.POSITION_2)
+                    if ((field2 < 5 && findField(FieldType.HARE, field2) < 10) || field2 < findField(FieldType.HARE))
+                        advanceTo(field2)
+                    else {
+                        // Mitte zwischen zweier-Feld und Start nehmen, langsam nach außen suchen
+                        var field = field2 / 2
+                        var dif = 1
+                        while (currentGameState.board.getTypeAt(field) != FieldType.HARE) {
+                            field += dif
+                            dif = -(dif + dif.sign)
                         }
+                        playCard(field, CardType.EAT_SALAD)
+                    }
+                } else {
+                    advanceTo(10)
+                }
             }
             3 -> {
                 if (currentGameState.otherPlayer.fieldIndex == 10) {
+                    val pos = currentGameState.currentPlayer.fieldIndex
                     return if (currentGameState.fieldOfCurrentPlayer() != FieldType.POSITION_2)
-                        advanceTo(findField(FieldType.POSITION_2))
-                    else
-                        playCard(findField(FieldType.HARE), CardType.EAT_SALAD)
+                        advanceTo(findField(FieldType.POSITION_2, currentGameState.currentPlayer.fieldIndex))
+                    else {
+                        // Mitte zwischen Salat-Feld und Position nehmen, langsam nach außen suchen
+                        var field = (10 + pos) / 2 + pos
+                        var dif = 1
+                        while (currentGameState.board.getTypeAt(field) != FieldType.HARE) {
+                            field += dif
+                            dif = -(dif + dif.sign)
+                        }
+                        playCard(field, CardType.EAT_SALAD)
+                    }
                 }
             }
             5 -> {
-                if(currentGameState.currentPlayer.fieldIndex != 10)
+                if (currentGameState.currentPlayer.fieldIndex != 10)
                     return advanceTo(10)
             }
-            // endregion
+        // endregion
         }
         return super.findBestMove()
     }
 
-    fun playCard(fieldIndex: Int, card: CardType): Move = advanceTo(fieldIndex).apply { actions.add(Card(card)) }
+    protected fun advanceTo(field: Int) =
+            move(Advance(field - currentGameState.currentPlayer.fieldIndex))
+
+    fun playCard(fieldIndex: Int, card: CardType): Move =
+            advanceTo(fieldIndex).apply { actions.add(Card(card)) }
 
     override fun simpleMove(state: GameState): Move {
         val possibleMove = state.possibleMoves // Enthält mindestens ein Element
