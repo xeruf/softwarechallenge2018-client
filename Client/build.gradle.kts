@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = "1.2.1"
+version = "1.2.2"
 
 plugins {
     java
@@ -15,7 +15,7 @@ repositories { jcenter() }
 
 dependencies {
     compile("xerus.util", "kotlin")
-    compile("xerus.util", "utilities")
+    //compile("xerus.util", "utilities")
     compile(files(file("lib").listFiles()))
 }
 

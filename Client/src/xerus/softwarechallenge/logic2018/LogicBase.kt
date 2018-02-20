@@ -6,6 +6,8 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.LogicHandler
+import xerus.softwarechallenge.util.isType
+import xerus.softwarechallenge.util.str
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.sign
@@ -39,6 +41,8 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
 
     // params: Weite Salat
     override fun defaultParams() = doubleArrayOf(2.0, 10.0)
+
+    fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
 
     override fun Player.str(): String =
             "Player %s Feld: %s Gemuese: %s/%s Karten: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name })
@@ -102,27 +106,28 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
             advanceTo(fieldIndex).apply { actions.add(Card(card)) }
 
     override fun simpleMove(state: GameState): Move {
-        val possibleMove = state.possibleMoves // Enthält mindestens ein Element
-        val saladMoves = ArrayList<Move>()
+        val possibleMoves = state.possibleMoves // Enthält mindestens ein Element
         val winningMoves = ArrayList<Move>()
         val selectedMoves = ArrayList<Move>()
         val currentPlayer = state.currentPlayer
         val index = currentPlayer.fieldIndex
-        for (move in possibleMove) {
+        if (possibleMoves.firstOrNull()?.actions?.first() is Skip)
+            log.warn(GameRuleLogic.isValidToSkip(state).toString() + " - " + state.currentPlayer.str())
+        for (move in possibleMoves) {
             for (action in move.actions) {
                 if (action is Advance) {
                     when {
                         action.distance + index == Constants.NUM_FIELDS - 1 -> // Zug ins Ziel
                             winningMoves.add(move)
                         state.board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
-                            saladMoves.add(move)
+                            winningMoves.add(move)
                         else -> // Ziehe Vorwärts, wenn möglich
                             selectedMoves.add(move)
                     }
                 } else if (action is Card) {
                     if (action.type == CardType.EAT_SALAD) {
                         // Zug auf Hasenfeld und danach Salatkarte
-                        saladMoves.add(move)
+                        winningMoves.add(move)
                     } // Muss nicht zusätzlich ausgewählt werden, wurde schon durch Advance ausgewählt
                 } else if (action is ExchangeCarrots) {
                     if (action.value == 10 && currentPlayer.carrots < 30 && index < 40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
@@ -148,12 +153,10 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         }
         val move = if (!winningMoves.isEmpty()) {
             winningMoves[rand.nextInt(winningMoves.size)]
-        } else if (!saladMoves.isEmpty()) {
-            saladMoves[rand.nextInt(saladMoves.size)]
         } else if (!selectedMoves.isEmpty()) {
             selectedMoves[rand.nextInt(selectedMoves.size)]
         } else {
-            possibleMove[rand.nextInt(possibleMove.size)]
+            possibleMoves[rand.nextInt(possibleMoves.size)]
         }
         move.orderActions()
         return move

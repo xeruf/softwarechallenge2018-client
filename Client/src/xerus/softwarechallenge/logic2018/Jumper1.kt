@@ -3,8 +3,8 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.*
 import sc.plugin2018.util.Constants
 import sc.plugin2018.util.GameRuleLogic
-import xerus.ktutil.printWith
 import xerus.softwarechallenge.Starter
+import xerus.softwarechallenge.util.str
 
 class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 1)) {
 
@@ -12,6 +12,8 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
         //if (GameRuleLogic.isValidToEat(state))
         //    return listOf(move(EatSalad()))
         val possibleMoves = state.possibleMoves
+        if (possibleMoves.firstOrNull()?.actions?.first() is Skip)
+            log.warn(arrayOf(GameRuleLogic.canPlayCard(state), GameRuleLogic.isValidToFallBack(state), GameRuleLogic.isValidToExchangeCarrots(state, 10), GameRuleLogic.isValidToExchangeCarrots(state, -10), GameRuleLogic.isValidToEat(state), GameRuleLogic.canMove(state)).joinToString { it.toString() })
         val winningMoves = HashSet<Move>()
         val selectedMoves = HashSet<Move>()
         val player = state.currentPlayer
@@ -31,7 +33,10 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                     is Card ->
                         if (action.type == CardType.EAT_SALAD) {
                             // Zug auf Hasenfeld und danach Salatkarte
-                            selectedMoves.add(move)
+                            if (fieldIndex > 42 || state.otherPlayer.fieldIndex > fieldIndex || player.salads == 1)
+                                selectedMoves.add(move)
+                            else
+                                selectedMoves.remove(move)
                         } // Muss nicht zusaetzlich ausgewaehlt werden, wurde schon durch Advance ausgewaehlt
 
                     is ExchangeCarrots ->

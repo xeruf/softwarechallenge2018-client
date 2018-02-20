@@ -1,5 +1,6 @@
 ## Probleme
 - geht nicht ins Ziel
+- Züge sollten selber erstellt werden, um unnötige auszuschließen
 
 #### Anfang
 - die ersten Züge vordefinieren

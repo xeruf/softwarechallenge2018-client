@@ -9,9 +9,8 @@ import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
 import sc.shared.PlayerScore
 import xerus.ktutil.create
+import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.Starter
-import xerus.util.helpers.Timer
-import xerus.util.tools.StringTools
 import java.io.BufferedWriter
 import java.io.FileOutputStream
 import java.nio.file.Paths
@@ -25,7 +24,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
     protected lateinit var currentGameState: GameState
 
-    protected var params = if (!params.isEmpty()) StringTools.split(params) else defaultParams()
+    protected var params = if (!params.isEmpty()) params.split(',').map { it.toDouble() }.toDoubleArray() else defaultParams()
 
     val rand: Random = SecureRandom()
 
@@ -258,9 +257,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             try {
                 simpleMove(newState).perform(newState)
             } catch (t: Throwable) {
+                log.warn("Fehler bei simplemove {}: {} " + newState.str(), state.otherPlayer.str(), t.toString())
                 newState.turn = turnIndex + 1
                 newState.switchCurrentPlayer()
-                log.warn("Simplemove for {} failed: {}" + state.str(), newState.otherPlayer.str(), t.toString())
             }
 
             gueltigeZuege++
