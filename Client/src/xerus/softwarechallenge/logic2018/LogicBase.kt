@@ -6,8 +6,8 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.LogicHandler
+import xerus.softwarechallenge.util.add
 import xerus.softwarechallenge.util.isType
-import xerus.softwarechallenge.util.str
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.sign
@@ -50,48 +50,59 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
 
+    // Igel: 11, 15, 19, 24, 30, 37, 43, 50, 56
+    // Salate: 10, 22, 42, 57
     override fun findBestMove(): Move? {
-        when (currentGameState.turn) {
+        val pos = currentState.currentPlayer.fieldIndex
+        val otherPos = currentState.otherPlayer.fieldIndex
+        when (currentState.turn) {
+            // Rot
             0 -> return advanceTo(10)
-        // region die ersten drei Züge, wenn ich Blau bin
+            2 -> return move(EatSalad())
+            4 -> {
+                if(typeAt(16) == FieldType.POSITION_2 && otherPos != 16 && otherPos > 10)
+                    return advanceTo(16)
+                if(typeAt(16) == FieldType.POSITION_1 && otherPos < 11)
+                    return advanceTo(16)
+                val hare = findField(FieldType.HARE, 12)
+                if(otherPos != hare)
+                    return advanceTo(hare).add(Card(CardType.TAKE_OR_DROP_CARROTS, 20, 1))
+            }
+            6 -> {
+                if(canAdvanceTo(22))
+                    return advanceTo(22)
+                if(otherPos < 11) {
+                    val pos1 = findField(FieldType.POSITION_1)
+                    if (canAdvanceTo(pos1))
+                        return advanceTo(pos1)
+                }
+            }
+            // Blau
             1 -> {
-                return if (currentGameState.otherPlayer.fieldIndex == 10) {
+                return if (otherPos == 10) {
                     val field2 = findField(FieldType.POSITION_2)
                     if ((field2 < 5 && findField(FieldType.HARE, field2) < 10) || field2 < findField(FieldType.HARE))
                         advanceTo(field2)
                     else {
-                        // Mitte zwischen zweier-Feld und Start nehmen, langsam nach außen suchen
-                        var field = field2 / 2
-                        var dif = 1
-                        while (currentGameState.board.getTypeAt(field) != FieldType.HARE) {
-                            field += dif
-                            dif = -(dif + dif.sign)
-                        }
-                        playCard(field, CardType.EAT_SALAD)
+                        val hare = findCircular(FieldType.HARE, field2 / 2)
+                        playCard(hare, CardType.EAT_SALAD)
                     }
                 } else {
                     advanceTo(10)
                 }
             }
             3 -> {
-                if (currentGameState.otherPlayer.fieldIndex == 10) {
-                    val pos = currentGameState.currentPlayer.fieldIndex
-                    return if (currentGameState.fieldOfCurrentPlayer() != FieldType.POSITION_2)
-                        advanceTo(findField(FieldType.POSITION_2, currentGameState.currentPlayer.fieldIndex))
+                if (otherPos == 10) {
+                    return if (currentState.fieldOfCurrentPlayer() != FieldType.POSITION_2)
+                        advanceTo(findField(FieldType.POSITION_2, pos))
                     else {
-                        // Mitte zwischen Salat-Feld und Position nehmen, langsam nach außen suchen
-                        var field = (10 + pos) / 2 + pos
-                        var dif = 1
-                        while (currentGameState.board.getTypeAt(field) != FieldType.HARE) {
-                            field += dif
-                            dif = -(dif + dif.sign)
-                        }
-                        playCard(field, CardType.EAT_SALAD)
+                        val hare = findCircular(FieldType.HARE, (10 + pos) / 2 + pos)
+                        playCard(hare, CardType.EAT_SALAD)
                     }
                 }
             }
             5 -> {
-                if (currentGameState.currentPlayer.fieldIndex != 10)
+                if (pos != 10)
                     return advanceTo(10)
             }
         // endregion
@@ -99,8 +110,12 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         return super.findBestMove()
     }
 
-    protected fun advanceTo(field: Int) =
-            move(Advance(field - currentGameState.currentPlayer.fieldIndex))
+    fun canAdvanceTo(field: Int) =
+            GameRuleLogic.calculateCarrots(field - currentPlayer.fieldIndex) <= currentPlayer.carrots
+            && field != currentState.otherPlayer.fieldIndex
+
+    fun advanceTo(field: Int) =
+            move(Advance(field - currentPlayer.fieldIndex))
 
     fun playCard(fieldIndex: Int, card: CardType): Move =
             advanceTo(fieldIndex).apply { actions.add(Card(card)) }

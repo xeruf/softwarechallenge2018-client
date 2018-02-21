@@ -1,13 +1,8 @@
 package xerus.softwarechallenge.util
 
-import sc.plugin2018.Action
-import sc.plugin2018.Field
-import sc.plugin2018.FieldType
-import sc.plugin2018.Move
+import sc.plugin2018.*
 
 fun Field.isType(type: FieldType) = this.type == type
-
-fun Collection<Move>.str(): String = joinToString(separator = "\n", transform = { "| " + it.str() })
 
 fun Move.str(): String {
     val out = StringBuilder("Move: ")
@@ -15,6 +10,10 @@ fun Move.str(): String {
         out.append(action.str()).append(", ")
     return out.substring(0, out.length - 2)
 }
+
+fun Move.add(action: Action) = also { it.actions.add(action) }
+
+fun Collection<Move>.str(): String = joinToString(separator = "\n", transform = { "| " + it.str() })
 
 fun Action.str(): String {
     val str = toString()

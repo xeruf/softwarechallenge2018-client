@@ -6,14 +6,12 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.str
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 1)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 2)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
         //if (GameRuleLogic.isValidToEat(state))
         //    return listOf(move(EatSalad()))
         val possibleMoves = state.possibleMoves
-        if (possibleMoves.firstOrNull()?.actions?.first() is Skip)
-            log.warn(arrayOf(GameRuleLogic.canPlayCard(state), GameRuleLogic.isValidToFallBack(state), GameRuleLogic.isValidToExchangeCarrots(state, 10), GameRuleLogic.isValidToExchangeCarrots(state, -10), GameRuleLogic.isValidToEat(state), GameRuleLogic.canMove(state)).joinToString { it.toString() })
         val winningMoves = HashSet<Move>()
         val selectedMoves = HashSet<Move>()
         val player = state.currentPlayer

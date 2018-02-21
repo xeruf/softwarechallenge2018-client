@@ -17,14 +17,17 @@ import java.nio.file.Paths
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.sign
 
 /** schafft Grundlagen fuer eine Logik */
 abstract class LogicHandler(private val client: Starter, params: String, debug: Int, identifier: String) : IGameHandler {
 
     protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
-    protected lateinit var currentGameState: GameState
+    protected lateinit var currentState: GameState
+    protected val currentPlayer: Player
+        get() = currentState.currentPlayer
 
-    protected var params = if (!params.isEmpty()) params.split(',').map { it.toDouble() }.toDoubleArray() else defaultParams()
+    protected var params = if (params.isNotEmpty()) params.split(',').map { it.toDouble() }.toDoubleArray() else defaultParams()
 
     val rand: Random = SecureRandom()
 
@@ -51,9 +54,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             null
         }
 
-        if (move == null || test(currentGameState, move) == null) {
+        if (move == null || test(currentState, move) == null) {
             log.info("Kein gueltiger Move gefunden: {} - Suche simplemove!", move)
-            move = simpleMove(currentGameState)
+            move = simpleMove(currentState)
         }
 
         sendAction(move)
@@ -86,7 +89,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         val bestMove = MP()
 
         // Queue füllen
-        var moves = findMoves(currentGameState)
+        var moves = findMoves(currentState)
         if (moves.size == 1) {
             val move = moves.iterator().next()
             log.debug("Nur einen Zug gefunden: " + move.str())
@@ -95,12 +98,12 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         var debugFile: BufferedWriter? = null
         if (log.isDebugEnabled) {
             log.debug("Gefundene Zuege:\n{}", moves.str())
-            debugFile = FileOutputStream(gameLog.resolve("turn" + currentGameState.turn + ".txt").toFile(), true).bufferedWriter()
+            debugFile = FileOutputStream(gameLog.resolve("turn" + currentState.turn + ".txt").toFile(), true).bufferedWriter()
             debugFile.appendln(moves.joinToString { it.str() + "\n" })
         }
 
         for (move in moves) {
-            val newstate = test(currentGameState, move) ?: continue
+            val newstate = test(currentState, move) ?: continue
             if (gewonnen(newstate))
                 return move
             val newnode = Node(newstate, move)
@@ -140,7 +143,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
                 debugFile?.appendln(" - " + move.str())
             }
         }
-        //if (evaluate(currentGameState) > bestMove.points)
+        //if (evaluate(currentState) > bestMove.points)
         //	log.warn("Bin wahrscheinlich in Sackgasse!");
         return bestMove.obj
     }
@@ -188,7 +191,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     protected lateinit var myColor: PlayerColor
 
     override fun onUpdate(state: GameState) {
-        currentGameState = state
+        currentState = state
         val dran = state.currentPlayer
         if (!::myColor.isInitialized && client.color != null) {
             //display(state);
@@ -218,19 +221,30 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     fun GameState.str() =
             "GameState:\n - current: %s\n - other: %s".format(currentPlayer.str(), otherPlayer.str())
 
-    fun findField(type: FieldType, startIndex: Int = 0): Int {
+    fun typeAt(index: Int) = currentState.board.getTypeAt(index)!!
+
+    fun findField(type: FieldType, startIndex: Int = currentState.currentPlayer.fieldIndex + 1): Int {
         var index = startIndex
-        while (currentGameState.board.getTypeAt(index) != type)
+        while (typeAt(index) != type)
             index++
+        return index
+    }
+
+    fun findCircular(type: FieldType, startIndex: Int): Int {
+        var index = startIndex
+        var dif = 1
+        while (typeAt(index) != type) {
+            index += dif
+            dif = -(dif + dif.sign)
+        }
         return index
     }
 
     // Zugmethoden
 
     /** constructs a new Move containing the given actions */
-    protected fun move(vararg actions: Action): Move {
-        return Move(Arrays.asList(*actions))
-    }
+    protected fun move(vararg actions: Action): Move =
+        Move(Arrays.asList(*actions))
 
     protected fun perform(a: Action, s: GameState): Boolean =
             try {
