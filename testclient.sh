@@ -8,4 +8,3 @@ java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
     --name2 $player2 \
     --player2 "../Archiv/$player2.jar" \
     --timeout2 true
-pause

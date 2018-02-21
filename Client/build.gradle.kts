@@ -1,4 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.internal.TaskOutputCachingState
+import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
@@ -41,7 +43,7 @@ tasks {
     "shadowJar"(ShadowJar::class) {
         baseName = "Jumper"
         classifier = null
-        isZip64 = true
+        destinationDir = file("..")
         from(java.sourceSets.getByName("main").output)
         dependsOn("clean", "classes")
     }
@@ -59,13 +61,11 @@ tasks {
         destinationDir = file("..")
     }
 
-    tasks.replace("jar", Copy::class.java).apply {
+    tasks.replace("jar").apply {
         group = MAIN
         dependsOn("shadowJar")
-        from("build/libs")
-        into("..")
         doFirst {
-            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") }
+            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name != "$jumper.jar" }
             old.forEach { file ->
                 file.copyTo(file("../Archiv/${file.name}"), true)
                 file.delete()
