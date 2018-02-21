@@ -1,6 +1,6 @@
-## Probleme
-- geht nicht ins Ziel
+## TODO
 - Züge sollten selber erstellt werden, um unnötige auszuschließen
+- Nodes summieren
 
 #### Anfang
 - die ersten Züge vordefinieren

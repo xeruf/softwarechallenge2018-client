@@ -2,9 +2,7 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.Constants
-import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
-import xerus.softwarechallenge.util.str
 
 class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 2)) {
 
@@ -28,14 +26,24 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                             else -> selectedMoves.add(move)
                         }
 
-                    is Card ->
-                        if (action.type == CardType.EAT_SALAD) {
-                            // Zug auf Hasenfeld und danach Salatkarte
-                            if (fieldIndex > 42 || state.otherPlayer.fieldIndex > fieldIndex || player.salads == 1)
-                                selectedMoves.add(move)
-                            else
-                                selectedMoves.remove(move)
-                        } // Muss nicht zusaetzlich ausgewaehlt werden, wurde schon durch Advance ausgewaehlt
+                    is Card -> {
+                        @Suppress("WHEN_NOT_EXHAUSTIVE")
+                        when (action.type) {
+                            CardType.EAT_SALAD -> {
+                                // Zug auf Hasenfeld und danach Salatkarte
+                                if (fieldIndex > 42 || state.otherPlayer.fieldIndex > fieldIndex || player.salads == 1)
+                                    selectedMoves.add(move)
+                                else
+                                    selectedMoves.remove(move)
+                            }
+                            CardType.TAKE_OR_DROP_CARROTS -> {
+                                if (action.value == 0)
+                                    selectedMoves.remove(move)
+                            }
+                        // Muss nicht zusaetzlich ausgewaehlt werden, wurde schon durch Advance ausgewaehlt
+                        }
+                    }
+
 
                     is ExchangeCarrots ->
                         if (action.value == 10 && player.carrots < (40 - fieldIndex / 2) && player.lastNonSkipAction !is ExchangeCarrots) {

@@ -26,7 +26,11 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         // Karotten
         val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
         points += distanceToGoal / 8 - (player.carrots / distanceToGoal - 2 - distanceToGoal / 5).pow(2)
+        // Gegner Karotten
+        val enemyDistance = 65.minus(state.otherPlayer.fieldIndex).toDouble()
+        points -= (enemyDistance / 8 - (state.otherPlayer.carrots / enemyDistance - 2 - enemyDistance / 5).pow(2)) / 3
 
+        // Zieleinlauf
         points += player.inGoal().toInt() * 1000
         val turnsLeft = 60 - state.turn
         if (turnsLeft < 4 || player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
@@ -96,7 +100,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
                     return if (currentState.fieldOfCurrentPlayer() != FieldType.POSITION_2)
                         advanceTo(findField(FieldType.POSITION_2, pos))
                     else {
-                        val hare = findCircular(FieldType.HARE, (10 + pos) / 2 + pos)
+                        val hare = findCircular(FieldType.HARE, (10 + pos) / 2)
                         playCard(hare, CardType.EAT_SALAD)
                     }
                 }
@@ -126,8 +130,6 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         val selectedMoves = ArrayList<Move>()
         val currentPlayer = state.currentPlayer
         val index = currentPlayer.fieldIndex
-        if (possibleMoves.firstOrNull()?.actions?.first() is Skip)
-            log.warn(GameRuleLogic.isValidToSkip(state).toString() + " - " + state.currentPlayer.str())
         for (move in possibleMoves) {
             for (action in move.actions) {
                 if (action is Advance) {
