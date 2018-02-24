@@ -4,13 +4,12 @@ import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = "1.2.2"
+version = "1.3.1"
 
 plugins {
-    java
-    application
     kotlin("jvm") version "1.2.21"
     id("com.github.johnrengelman.shadow") version "2.0.1"
+    application
 }
 
 repositories { jcenter() }
@@ -56,7 +55,7 @@ tasks {
 
     "zip"(Zip::class) {
         dependsOn("jar")
-        from("../$jumper.jar")
+        from("../$jumper.jar", "../start.sh")
         archiveName = "$jumper.zip"
         destinationDir = file("..")
     }
@@ -65,7 +64,7 @@ tasks {
         group = MAIN
         dependsOn("shadowJar")
         doFirst {
-            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name != "$jumper.jar" }
+            val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name.endsWith("jar") && name != "$jumper.jar" }
             old.forEach { file ->
                 file.copyTo(file("../Archiv/${file.name}"), true)
                 file.delete()
@@ -74,3 +73,15 @@ tasks {
     }
 
 }
+
+/*
+-XX:+UseG1GC
+
+ -Dfile.encoding=UTF-8 \
+     -server \
+     -XX:MaxGCPauseMillis=100 \
+     -XX:GCPauseIntervalMillis=2050 \
+     -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled \
+     -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 \
+     -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark \
+*/

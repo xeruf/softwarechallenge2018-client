@@ -8,12 +8,12 @@ import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.LogicHandler
 import xerus.softwarechallenge.util.add
 import xerus.softwarechallenge.util.isType
+import xerus.softwarechallenge.util.str
 import java.util.*
-import javax.management.Query.minus
 import kotlin.math.pow
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel  */
-abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion) : LogicHandler(client, params, debug, "Jumper v" + version) {
+abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion) : LogicHandler(client, params, debug, "Jumper " + version) {
 
     override fun evaluate(state: GameState): Double {
         val player = state.currentPlayer
@@ -21,7 +21,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         points += params[0] * state.getPointsForPlayer(myColor)
         // Salat und Karten
         points -= player.salads * params[1]
-        points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.7
+        points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.6
         points += player.cards.size
         // Karotten
         val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
@@ -50,7 +50,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
 
     override fun Player.str(): String =
-            "Player %s Feld: %s Gemuese: %s/%s Karten: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name })
+            "Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())
 
     override fun gewonnen(state: GameState) =
             state.currentPlayer.inGoal()
@@ -61,28 +61,29 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         val pos = currentState.currentPlayer.fieldIndex
         val otherPos = currentState.otherPlayer.fieldIndex
         when (currentState.turn) {
-            // Rot
+        // region Rot
             0 -> return advanceTo(10)
             2 -> return Move(EatSalad())
             4 -> {
-                if(typeAt(16) == FieldType.POSITION_2 && otherPos != 16 && otherPos > 10)
+                if (typeAt(16) == FieldType.POSITION_2 && otherPos != 16 && otherPos > 10)
                     return advanceTo(16)
-                if(typeAt(16) == FieldType.POSITION_1 && otherPos < 11)
+                if (typeAt(16) == FieldType.POSITION_1 && otherPos < 11)
                     return advanceTo(16)
                 val hare = findField(FieldType.HARE, 12)
-                if(otherPos != hare)
+                if (otherPos != hare)
                     return advanceTo(hare).add(Card(CardType.TAKE_OR_DROP_CARROTS, 20, 1))
             }
             6 -> {
-                if(canAdvanceTo(22))
+                if (canAdvanceTo(22))
                     return advanceTo(22)
-                if(otherPos < 11) {
+                if (otherPos < 11) {
                     val pos1 = findField(FieldType.POSITION_1)
                     if (canAdvanceTo(pos1))
                         return advanceTo(pos1)
                 }
             }
-            // Blau
+        // endregion
+        // region Blau
             1 -> {
                 return if (otherPos == 10) {
                     val field2 = findField(FieldType.POSITION_2)
@@ -115,9 +116,24 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         return super.findBestMove()
     }
 
-    fun canAdvanceTo(field: Int) =
+    inline fun Player.hasSalad() = salads > 0
+
+    /** clones the move and adds a Card Action to it */
+    fun Move.addCard(card: CardType, value: Int = 0) = Move(this.actions).add(Card(card, value))
+
+    fun GameState.accessible(field: Int): Boolean {
+        val type = typeAt(field)
+        return field in 1..64 && !isOccupied(field) && type != FieldType.HEDGEHOG && (type != FieldType.SALAD || currentPlayer.hasSalad()) && (type != FieldType.GOAL || (currentPlayer.carrots <= 10 && currentPlayer.salads == 0))
+    }
+
+    fun GameState.otherPos() = otherPlayer.fieldIndex
+
+    fun FieldType.isNot(vararg types: FieldType) =
+            !types.any { this == it }
+
+    private fun canAdvanceTo(field: Int) =
             GameRuleLogic.calculateCarrots(field - currentPlayer.fieldIndex) <= currentPlayer.carrots
-            && field != currentState.otherPlayer.fieldIndex
+                    && field != currentState.otherPlayer.fieldIndex
 
     fun advanceTo(field: Int, fieldIndex: Int = currentPlayer.fieldIndex) =
             Move(Advance(field - fieldIndex))

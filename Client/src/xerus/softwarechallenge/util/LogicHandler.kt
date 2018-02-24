@@ -118,13 +118,17 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             debugFile?.appendln("%s Punkte: %.1f".format(newnode, points))
         }
         bestMove = mp.obj!!
+        if (queue.size == 1) {
+            log.debug("Nur einen validen Zug gefunden: {}", bestMove.str())
+            return bestMove
+        }
 
         // Breitensuche
         mp.clear()
         depth = 1
         var maxDepth = 5.coerceAtMost((62 - currentState.turn) / 2)
         var node = queue.poll()
-        loop@ while (depth < maxDepth && Timer.runtime() < 1500) {
+        loop@ while (depth < maxDepth && Timer.runtime() < 1400) {
             depth = node.depth
             do {
                 val nodeState = node.gamestate
@@ -135,7 +139,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
                         break@loop
                     val newState = test(nodeState, move) ?: continue
                     // Punkte
-                    val points = evaluate(newState) + node.bonus
+                    val points = evaluate(newState) / depth + node.bonus
+                    if (points < mp.points - 60)
+                        continue
                     if (mp.update(node.move, points)) {
                         if (log.isDebugEnabled) {
                             val format = "Neuer bester Zug bei Tiefe %d: %s - Punkte: %.1f - %s".format(depth, node.move.str(), points, newState.currentPlayer.str())
@@ -161,6 +167,10 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             lastdepth = depth
             bestMove = mp.obj!!
             log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
+            // Request GC to prevent long pause
+            val t = System.currentTimeMillis()
+            System.gc()
+            log.info("$depth GC time: ${System.currentTimeMillis() - t}")
         }
         debugFile?.appendln("Chose ${bestMove.str()}")
         debugFile?.close()
@@ -241,7 +251,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     fun GameState.str() =
             "GameState: Zug: %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
 
-    fun typeAt(index: Int) = currentState.board.getTypeAt(index)!!
+    protected inline fun typeAt(index: Int): FieldType = currentState.getTypeAt(index)
 
     fun findField(type: FieldType, startIndex: Int = currentState.currentPlayer.fieldIndex + 1): Int {
         var index = startIndex
@@ -262,9 +272,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 
     // Zugmethoden
 
-    protected fun perform(a: Action, s: GameState): Boolean =
+    protected fun test(state: GameState, action: Action): Boolean =
             try {
-                a.perform(s)
+                action.perform(state)
                 true
             } catch (e: InvalidMoveException) {
                 false
@@ -275,14 +285,14 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
      * führt jetzt auch einen simplemove für den Gegenspieler aus!
      *
      * @param state gegebener State
-     * @param m     der zu testende Move
+     * @param move  der zu testende Move
      * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
      */
-    protected fun test(state: GameState, m: Move): GameState? {
+    protected fun test(state: GameState, move: Move): GameState? {
         val newState = state.clone()
         try {
-            m.setOrderInActions()
-            m.perform(newState)
+            move.setOrderInActions()
+            move.perform(newState)
             val turnIndex = newState.turn
             if (turnIndex < 60)
                 try {
@@ -297,11 +307,8 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             return newState
         } catch (e: InvalidMoveException) {
             ungueltigeZuege++
-            if (log.isDebugEnabled) {
-                val message = e.message
-                // if(!message.equals("Die maximale Geschwindigkeit von 6 darf nicht überschritten werden."))
-                log.info("FEHLERHAFTER ZUG: {} FEHLER: {} " + state.str(), m.str(), message)
-            }
+            if (log.isDebugEnabled)
+                log.warn("FEHLERHAFTER ZUG: {} FEHLER: {} " + state.str(), move.str(), e.message)
         }
         return null
     }

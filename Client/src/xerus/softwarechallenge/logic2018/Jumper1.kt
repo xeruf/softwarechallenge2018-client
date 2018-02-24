@@ -4,13 +4,11 @@ import sc.plugin2018.*
 import sc.plugin2018.util.Constants
 import xerus.softwarechallenge.Starter
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 2, 2)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 3, 1)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
-        //if (GameRuleLogic.isValidToEat(state))
-        //    return listOf(move(EatSalad()))
         val possibleMoves = state.possibleMoves
-        val winningMoves = HashSet<Move>()
+        val preferredMoves = HashSet<Move>()
         val selectedMoves = HashSet<Move>()
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex
@@ -20,14 +18,13 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                     is Advance ->
                         when {
                             action.distance + fieldIndex == Constants.NUM_FIELDS - 1
-                            -> winningMoves.add(move) // Zug ins Ziel
+                            -> return listOf(move)
                             state.board.getTypeAt(action.distance + fieldIndex) == FieldType.SALAD
-                            -> winningMoves.add(move) // Zug auf Salatfeld
+                            -> preferredMoves.add(move) // Zug auf Salatfeld
                             else -> selectedMoves.add(move)
                         }
 
                     is Card -> {
-                        @Suppress("WHEN_NOT_EXHAUSTIVE")
                         when (action.type) {
                             CardType.EAT_SALAD -> {
                                 // Zug auf Hasenfeld und danach Salatkarte
@@ -40,6 +37,11 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                                 if (action.value == 0)
                                     selectedMoves.remove(move)
                             }
+                            CardType.HURRY_AHEAD -> {
+                                if(state.board.getTypeAt(state.otherPlayer.fieldIndex + 1) == FieldType.SALAD)
+                                    preferredMoves.add(move)
+                            }
+                            else -> {}
                         // Muss nicht zusaetzlich ausgewaehlt werden, wurde schon durch Advance ausgewaehlt
                         }
                     }
@@ -67,7 +69,7 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
             }
         }
         return when {
-            winningMoves.isNotEmpty() -> winningMoves
+            preferredMoves.isNotEmpty() -> preferredMoves
             selectedMoves.isNotEmpty() -> selectedMoves
             else -> possibleMoves
         }
