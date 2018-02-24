@@ -86,19 +86,20 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     private fun breitensuche(): Move? {
         // Variablen vorbereiten
         val queue = LinkedList<Node>()
-        val bestMove = MP()
+        val mp = MP()
+        var bestMove: Move
 
         // Queue füllen
         var moves = findMoves(currentState)
         if (moves.size == 1) {
             val move = moves.iterator().next()
-            log.debug("Nur einen Zug gefunden: " + move.str())
+            log.debug("Nur einen Zug gefunden: {}", move.str())
             return move
         }
         var debugFile: BufferedWriter? = null
         if (log.isDebugEnabled) {
             log.debug("Gefundene Zuege:\n{}", moves.str())
-            debugFile = FileOutputStream(gameLog.resolve("turn" + currentState.turn + ".txt").toFile(), true).bufferedWriter()
+            debugFile = FileOutputStream(gameLog.resolve("turn${currentState.turn}.txt").toFile(), true).bufferedWriter()
             debugFile.appendln(currentPlayer.str())
             debugFile.appendln(moves.joinToString("\n") { it.str() })
         }
@@ -107,17 +108,23 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             val newState = test(currentState, move) ?: continue
             if (gewonnen(newState))
                 return move
-            val newnode = Node(newState, move)
-            queue.add(newnode)
+            // Punkte
             val points = evaluate(newState)
-            bestMove.update(move, points)
+            mp.update(move, points)
+            // Queue
+            val newnode = Node(newState, move, points)
+            queue.add(newnode)
+            // Debug
             debugFile?.appendln("%s Punkte: %.1f".format(newnode, points))
         }
+        bestMove = mp.obj!!
 
         // Breitensuche
-        var maxDepth = 6; depth = 1
+        mp.clear()
+        depth = 1
+        var maxDepth = 5.coerceAtMost((62 - currentState.turn) / 2)
         var node = queue.poll()
-        loop@ do {
+        loop@ while (depth < maxDepth && Timer.runtime() < 1500) {
             depth = node.depth
             do {
                 val nodeState = node.gamestate
@@ -127,28 +134,37 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
                     if (Timer.runtime() > 1740)
                         break@loop
                     val newState = test(nodeState, move) ?: continue
-                    val newNode = node.update(newState)
-                    queue.add(newNode)
-                    // Aktualisierung der Bestpunktzahl
-                    val points = evaluate(newState) + newNode.bonus - depth
-                    if (bestMove.update(node.move, points)) {
-                        lastdepth = depth
+                    // Punkte
+                    val points = evaluate(newState) + node.bonus
+                    if (mp.update(node.move, points)) {
                         if (log.isDebugEnabled) {
                             val format = "Neuer bester Zug bei Tiefe %d: %s - Punkte: %.1f - %s".format(depth, node.move.str(), points, newState.currentPlayer.str())
-                            log.debug(format)
+                            //log.debug(format)
                             debugFile?.appendln(format)
                         }
                     }
                     debugFile?.appendln(" - %s - %s".format(move.str(), points))
+                    // Queue
                     if (newState.turn > 59 || gewonnen(newState))
                         maxDepth = depth
+                    if (depth < maxDepth) {
+                        val newNode = node.update(newState)
+                        newNode.bonus += points
+                        queue.add(newNode)
+                    }
+                    // Debug
+                    if (Timer.runtime() > 1800)
+                        log.error("TIME: ${Timer.runtime()}")
                 }
                 node = queue.poll() ?: break
-            } while(depth == node.depth && Timer.runtime() < 1700)
-        } while (depth < maxDepth && Timer.runtime() < 1500)
-        debugFile?.appendln("Chose ${bestMove.obj?.str()}")
+            } while (depth == node.depth)
+            lastdepth = depth
+            bestMove = mp.obj!!
+            log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
+        }
+        debugFile?.appendln("Chose ${bestMove.str()}")
         debugFile?.close()
-        return bestMove.obj
+        return bestMove
     }
 
     private inner class Node private constructor(var gamestate: GameState, var move: Move, var bonus: Double, var depth: Int) {
@@ -162,7 +178,8 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
          * @param newState der neue GameState
          * @return neue Node mit dem GameState und depth + 1
          */
-        fun update(newState: GameState) = Node(newState, move, bonus, depth + 1)
+        fun update(newState: GameState, additionalBonus: Double = 0.0) =
+                Node(newState, move, bonus + additionalBonus, depth + 1)
 
         override fun toString() = "Node tiefe %d fuer %s bonus %.1f".format(depth, move.str(), bonus)
     }
@@ -183,7 +200,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     override fun sendAction(move: Move?) {
         if (move == null) {
             log.warn("Kein Zug möglich!")
-            client.sendMove(move())
+            client.sendMove(Move())
             return
         }
         log.debug("Sende {}", move.str())
@@ -245,10 +262,6 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 
     // Zugmethoden
 
-    /** constructs a new Move containing the given actions */
-    protected fun move(vararg actions: Action): Move =
-            Move(Arrays.asList(*actions))
-
     protected fun perform(a: Action, s: GameState): Boolean =
             try {
                 a.perform(s)
@@ -271,13 +284,14 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             m.setOrderInActions()
             m.perform(newState)
             val turnIndex = newState.turn
-            try {
-                simpleMove(newState).perform(newState)
-            } catch (t: Throwable) {
-                log.warn("Fehler bei simplemove {}: {} " + newState.str(), state.otherPlayer.str(), t.toString())
-                newState.turn = turnIndex + 1
-                newState.switchCurrentPlayer()
-            }
+            if (turnIndex < 60)
+                try {
+                    simpleMove(newState).perform(newState)
+                } catch (t: Throwable) {
+                    log.warn("Fehler bei simplemove {}: {} " + newState.str(), state.otherPlayer.str(), t.toString())
+                    newState.turn = turnIndex + 1
+                    newState.switchCurrentPlayer()
+                }
 
             gueltigeZuege++
             return newState

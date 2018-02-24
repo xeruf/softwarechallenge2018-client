@@ -9,8 +9,8 @@ import xerus.softwarechallenge.util.LogicHandler
 import xerus.softwarechallenge.util.add
 import xerus.softwarechallenge.util.isType
 import java.util.*
+import javax.management.Query.minus
 import kotlin.math.pow
-import kotlin.math.sign
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel  */
 abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion) : LogicHandler(client, params, debug, "Jumper v" + version) {
@@ -24,16 +24,17 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.7
         points += player.cards.size
         // Karotten
-        val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
+        val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
         points += distanceToGoal / 8 - (player.carrots / distanceToGoal - 2 - distanceToGoal / 5).pow(2)
         // Gegner Karotten
-        val enemyDistance = 65.minus(state.otherPlayer.fieldIndex).toDouble()
+        val enemyDistance = Constants.NUM_FIELDS.minus(state.otherPlayer.fieldIndex).toDouble()
         points -= (enemyDistance / 8 - (state.otherPlayer.carrots / enemyDistance - 2 - enemyDistance / 5).pow(2)) / 3
 
+        points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt() * 2
         // Zieleinlauf
         points += player.inGoal().toInt() * 1000
         val turnsLeft = 60 - state.turn
-        if (turnsLeft < 4 || player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
+        if (turnsLeft < 2 || turnsLeft < 6 && player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
             points -= distanceToGoal * 100
         return points
     }
@@ -62,7 +63,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         when (currentState.turn) {
             // Rot
             0 -> return advanceTo(10)
-            2 -> return move(EatSalad())
+            2 -> return Move(EatSalad())
             4 -> {
                 if(typeAt(16) == FieldType.POSITION_2 && otherPos != 16 && otherPos > 10)
                     return advanceTo(16)
@@ -118,8 +119,8 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
             GameRuleLogic.calculateCarrots(field - currentPlayer.fieldIndex) <= currentPlayer.carrots
             && field != currentState.otherPlayer.fieldIndex
 
-    fun advanceTo(field: Int) =
-            move(Advance(field - currentPlayer.fieldIndex))
+    fun advanceTo(field: Int, fieldIndex: Int = currentPlayer.fieldIndex) =
+            Move(Advance(field - fieldIndex))
 
     fun playCard(fieldIndex: Int, card: CardType): Move =
             advanceTo(fieldIndex).apply { actions.add(Card(card)) }
@@ -130,41 +131,41 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         val selectedMoves = ArrayList<Move>()
         val currentPlayer = state.currentPlayer
         val index = currentPlayer.fieldIndex
-        for (move in possibleMoves) {
-            for (action in move.actions) {
+        for (Move in possibleMoves) {
+            for (action in Move.actions) {
                 if (action is Advance) {
                     when {
                         action.distance + index == Constants.NUM_FIELDS - 1 -> // Zug ins Ziel
-                            winningMoves.add(move)
+                            winningMoves.add(Move)
                         state.board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
-                            winningMoves.add(move)
+                            winningMoves.add(Move)
                         else -> // Ziehe Vorwärts, wenn möglich
-                            selectedMoves.add(move)
+                            selectedMoves.add(Move)
                     }
                 } else if (action is Card) {
                     if (action.type == CardType.EAT_SALAD) {
                         // Zug auf Hasenfeld und danach Salatkarte
-                        winningMoves.add(move)
+                        winningMoves.add(Move)
                     } // Muss nicht zusätzlich ausgewählt werden, wurde schon durch Advance ausgewählt
                 } else if (action is ExchangeCarrots) {
                     if (action.value == 10 && currentPlayer.carrots < 30 && index < 40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
                         // Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal hintereinander
-                        selectedMoves.add(move)
+                        selectedMoves.add(Move)
                     } else if (action.value == -10 && currentPlayer.carrots > 30 && index >= 40) {
                         // abgeben von Karotten ist nur am Ende sinnvoll
-                        selectedMoves.add(move)
+                        selectedMoves.add(Move)
                     }
                 } else if (action is FallBack) {
                     if (index > 56 /* letztes Salatfeld */ && currentPlayer.salads > 0) {
                         // Falle nur am Ende (index > 56) zurück, außer du musst noch einen Salat loswerden
-                        selectedMoves.add(move)
+                        selectedMoves.add(Move)
                     } else if (index <= 56 && index - state.getPreviousFieldByType(FieldType.HEDGEHOG, index) < 5) {
                         // Falle zurück, falls sich Rückzug lohnt (nicht zu viele Karotten aufnehmen)
-                        selectedMoves.add(move)
+                        selectedMoves.add(Move)
                     }
                 } else {
                     // Füge Salatessen oder Skip hinzu
-                    selectedMoves.add(move)
+                    selectedMoves.add(Move)
                 }
             }
         }

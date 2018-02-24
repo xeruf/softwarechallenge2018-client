@@ -13,7 +13,7 @@ fun Move.str(): String {
 
 fun Move.add(action: Action) = also { it.actions.add(action) }
 
-fun Collection<Move>.str(): String = joinToString(separator = "\n", transform = { "| " + it.str() })
+fun Collection<Move>.str(): String = joinToString(prefix = "| ", separator = "\n| ", transform = { it.str() })
 
 fun Action.str(): String {
     val str = toString()
