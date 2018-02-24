@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = "1.3.1"
+version = KotlinVersion(1, 4, 0).toString()
 
 plugins {
     kotlin("jvm") version "1.2.21"
@@ -16,7 +16,6 @@ repositories { jcenter() }
 
 dependencies {
     compile("xerus.util", "kotlin")
-    //compile("xerus.util", "utilities")
     compile(files(file("lib").listFiles()))
 }
 
