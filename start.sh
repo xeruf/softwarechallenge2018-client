@@ -1,3 +1,9 @@
-﻿#!/bin/sh
+#!/bin/sh
 java -Dfile.encoding=UTF-8 \
-  -jar Jumper-1.3.0.jar "$@"
+  -XX:MaxGCPauseMillis=100 \
+  -XX:GCPauseIntervalMillis=2050 \
+  -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled \
+  -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 \
+  -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark \
+  -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps \
+  -jar Jumper-1.4.0.jar "$@"

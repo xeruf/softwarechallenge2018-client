@@ -167,10 +167,6 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             lastdepth = depth
             bestMove = mp.obj!!
             log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
-            // Request GC to prevent long pause
-            val t = System.currentTimeMillis()
-            System.gc()
-            log.info("$depth GC time: ${System.currentTimeMillis() - t}")
         }
         debugFile?.appendln("Chose ${bestMove.str()}")
         debugFile?.close()

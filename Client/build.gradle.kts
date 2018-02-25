@@ -57,6 +57,9 @@ tasks {
         from("../$jumper.jar", "../start.sh")
         archiveName = "$jumper.zip"
         destinationDir = file("..")
+        doFirst {
+            file("..").listFiles { _, name -> name.matches(Regex("Jumper.*.zip")) }.forEach { it.delete() }
+        }
     }
 
     tasks.replace("jar").apply {
