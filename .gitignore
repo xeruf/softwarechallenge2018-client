@@ -1,3 +1,6 @@
 **/log/
 **/*.log*
 /Client/games
+
+/Client/.idea/modules.xml
+/Client/.idea/workspace.xml

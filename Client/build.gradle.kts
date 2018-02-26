@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = KotlinVersion(1, 4, 0).toString()
+version = KotlinVersion(1, 4, 1).toString()
 
 plugins {
     kotlin("jvm") version "1.2.21"
@@ -54,7 +54,8 @@ tasks {
 
     "zip"(Zip::class) {
         dependsOn("jar")
-        from("../$jumper.jar", "../start.sh")
+        from("..")
+        include("$jumper.jar", "start*.sh")
         archiveName = "$jumper.zip"
         destinationDir = file("..")
         doFirst {

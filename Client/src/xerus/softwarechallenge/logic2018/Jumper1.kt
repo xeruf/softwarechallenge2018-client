@@ -3,10 +3,12 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
+import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 4, 0)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 4, 1)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
+        // todo: bei Zieleinlauf mit Salaten Rückfallen!
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex
         val currentField = typeAt(fieldIndex)
@@ -17,14 +19,14 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
         val possibleMoves = ArrayList<Move>()
         if (currentField == FieldType.CARROT) {
             if (player.carrots > 20 && fieldIndex > 40)
-                possibleMoves.add(Move(ExchangeCarrots(-10)))
+                possibleMoves.addMove(ExchangeCarrots(-10))
             if (player.carrots < 60)
-                possibleMoves.add(Move(ExchangeCarrots(10)))
+                possibleMoves.addMove(ExchangeCarrots(10))
         }
 
         val hedgehog = state.getPreviousFieldByType(FieldType.HEDGEHOG, fieldIndex)
         if (hedgehog != -1 && !state.isOccupied(hedgehog))
-            possibleMoves.add(Move(FallBack()))
+            possibleMoves.addMove(FallBack())
 
         val otherPos = state.otherPos()
         moves@ for (i in 1..GameRuleLogic.calculateMoveableFields(player.carrots)) {

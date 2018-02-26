@@ -24,13 +24,13 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.6
         points += player.cards.size
         // Karotten
+        // todo: Funktion eher wie Normalverteilung, abflachen -> sonst -100 etc. und daher Karotten überbewertet
         val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
-        points += distanceToGoal / 8 - (player.carrots / distanceToGoal - 2 - distanceToGoal / 5).pow(2)
-        // Gegner Karotten
-        val enemyDistance = Constants.NUM_FIELDS.minus(state.otherPlayer.fieldIndex).toDouble()
-        points -= (enemyDistance / 8 - (state.otherPlayer.carrots / enemyDistance - 2 - enemyDistance / 5).pow(2)) / 3
+        points += carrotPoints(player, distanceToGoal) * 2
+        points -= carrotPoints(state.otherPlayer, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble()) / 2
 
-        points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt() * 2
+        points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
+
         // Zieleinlauf
         points += player.inGoal().toInt() * 1000
         val turnsLeft = 60 - state.turn
@@ -39,6 +39,9 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         return points
     }
 
+    private inline fun carrotPoints(player: Player, distance: Double) =
+            (distance.div(8) - (player.carrots.div(distance) - 2 - distance.div(5)).pow(2))
+
     // feld 0  -> mehr Karotten sind besser
     // feld 64(Ziel) -> maximal 10 Karotten
     // -(x/65-fieldIndex-4)²+10+fieldIndex
@@ -46,8 +49,6 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
 
     // params: Weite Salat
     override fun defaultParams() = doubleArrayOf(2.0, 10.0)
-
-    fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
 
     override fun Player.str(): String =
             "Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())
@@ -126,7 +127,10 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         return field in 1..64 && !isOccupied(field) && type != FieldType.HEDGEHOG && (type != FieldType.SALAD || currentPlayer.hasSalad()) && (type != FieldType.GOAL || (currentPlayer.carrots <= 10 && currentPlayer.salads == 0))
     }
 
-    fun GameState.otherPos() = otherPlayer.fieldIndex
+    fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
+
+
+    inline fun GameState.otherPos() = otherPlayer.fieldIndex
 
     fun FieldType.isNot(vararg types: FieldType) =
             !types.any { this == it }

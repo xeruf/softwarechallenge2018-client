@@ -3,12 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Client.iml" filepath="$PROJECT_DIR$/.idea/modules/Client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/998163672/Softwarechallenge-Tools.iml" filepath="$PROJECT_DIR$/.idea/modules/998163672/Softwarechallenge-Tools.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1482136442/Util.iml" filepath="$PROJECT_DIR$/.idea/modules/-1482136442/Util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1317982179/javafx.iml" filepath="$PROJECT_DIR$/.idea/modules/-1317982179/javafx.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1276472662/kotlin.iml" filepath="$PROJECT_DIR$/.idea/modules/-1276472662/kotlin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1835799675/test.iml" filepath="$PROJECT_DIR$/.idea/modules/1835799675/test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1699516223/utilities.iml" filepath="$PROJECT_DIR$/.idea/modules/-1699516223/utilities.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" filepath="$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-19998492/Util.iml" filepath="$PROJECT_DIR$/.idea/modules/-19998492/Util.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1351529983/javafx.iml" filepath="$PROJECT_DIR$/.idea/modules/1351529983/javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1393039500/kotlin.iml" filepath="$PROJECT_DIR$/.idea/modules/1393039500/kotlin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/815114973/test.iml" filepath="$PROJECT_DIR$/.idea/modules/815114973/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/122849183/utilities.iml" filepath="$PROJECT_DIR$/.idea/modules/122849183/utilities.iml" />
     </modules>
   </component>
 </project>

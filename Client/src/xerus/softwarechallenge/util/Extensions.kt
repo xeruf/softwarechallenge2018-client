@@ -15,6 +15,8 @@ fun Move.add(action: Action) = also { it.actions.add(action) }
 
 fun Collection<Move>.str(): String = joinToString(prefix = "| ", separator = "\n| ", transform = { it.str() })
 
+inline fun MutableCollection<Move>.addMove(vararg actions: Action) = add(Move(*actions))
+
 fun Action.str(): String {
     val str = toString()
     return str.substring(0, str.indexOf("order") - 1)
