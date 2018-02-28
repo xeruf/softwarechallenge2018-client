@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Arrays
 
-version = KotlinVersion(1, 4, 1).toString()
+version = KotlinVersion(1, 5).toString()
 
 plugins {
     kotlin("jvm") version "1.2.21"

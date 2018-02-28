@@ -5,13 +5,13 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 4, 1)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 5)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
         // todo: bei Zieleinlauf mit Salaten Rückfallen!
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex
-        val currentField = typeAt(fieldIndex)
+        val currentField = fieldTypeAt(fieldIndex)
         if (currentField == FieldType.SALAD && player.lastNonSkipAction !is EatSalad)
             return listOf(Move(EatSalad()))
 
@@ -31,7 +31,7 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
         val otherPos = state.otherPos()
         moves@ for (i in 1..GameRuleLogic.calculateMoveableFields(player.carrots)) {
             val newField = fieldIndex + i
-            val newType = typeAt(newField)
+            val newType = fieldTypeAt(newField)
             val advance = Move(Advance(i))
             if (otherPos == newField || newType == FieldType.HEDGEHOG)
                 continue
@@ -61,12 +61,12 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                     }
                     if (cards.contains(CardType.HURRY_AHEAD) && otherPos > newField && state.accessible(otherPos + 1)) {
                         val hurry = advance.addCard(CardType.HURRY_AHEAD)
-                        when (typeAt(otherPos + 1)) {
+                        when (fieldTypeAt(otherPos + 1)) {
                             FieldType.SALAD -> preferredMoves.add(hurry)
                             FieldType.HARE -> {
                                 if (cards.size == 1)
                                     continue@moves
-                                if (cards.contains(CardType.FALL_BACK) && typeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
+                                if (cards.contains(CardType.FALL_BACK) && fieldTypeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
                                     possibleMoves.add(hurry.addCard(CardType.FALL_BACK))
                                 if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
                                     if (player.carrots > 30 && otherPos + 1 > 40)
@@ -79,7 +79,7 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                     }
                     if (cards.contains(CardType.FALL_BACK) && otherPos < newField && state.accessible(otherPos - 1)) {
                         val fall = advance.addCard(CardType.FALL_BACK)
-                        when (typeAt(otherPos - 1)) {
+                        when (fieldTypeAt(otherPos - 1)) {
                             FieldType.SALAD -> {
                                 if (newField - otherPos < 10)
                                     preferredMoves.add(fall)
@@ -89,7 +89,7 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                             FieldType.HARE -> {
                                 if (cards.size == 1)
                                     continue@moves
-                                if (cards.contains(CardType.HURRY_AHEAD) && typeAt(otherPos + 1) == FieldType.SALAD)
+                                if (cards.contains(CardType.HURRY_AHEAD) && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
                                     possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD))
                                 if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
                                     if (player.carrots > 30 && otherPos - 1 > 40)

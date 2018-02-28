@@ -50,14 +50,25 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         depth = 0
         lastdepth = 0
         var move = try {
-            findBestMove()
+            predefinedMove()
         } catch (e: Throwable) {
-            log.error("No move found!", e)
+            log.error("Error in predefinedMove!", e)
             null
         }
 
-        if (move == null || test(currentState, move) == null) {
-            log.info("Kein gueltiger Move gefunden: {} - Suche simplemove!", move)
+        if (move.invalid()) {
+            if(move != null)
+                log.error("Invalid predefined Move!")
+            move = try {
+                findBestMove()
+            } catch (e: Throwable) {
+                log.error("Error in findBestMove!", e)
+                null
+            }
+        }
+
+        if (move.invalid()) {
+            log.info("No valid Move: {} - Using simpleMove!", move)
             move = simpleMove(currentState)
         }
 
@@ -65,7 +76,12 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
         log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth))
     }
 
+    fun Move?.invalid() = this == null || test(currentState, this) == null
+
     // region Zugsuche
+
+    /** kann einen vordefinierten Zug zurückgeben oder null wenn nicht sinnvoll */
+    protected open fun predefinedMove(): Move? = null
 
     /**Findet den Move der beim aktuellen GameState am besten ist<br></br>
      * verweist standardmäßig auf die breitensuche */
@@ -135,7 +151,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             val multiplicator = depth.toDouble().pow(0.4)
             do {
                 val nodeState = node.gamestate
-                debug?.appendln("##### ".format(node, nodeState.str()))
+                debug?.appendln("##### $node ${nodeState.str()}")
                 moves = findMoves(nodeState)
                 for (move in moves) {
                     if (Timer.runtime() > 1700)
@@ -147,7 +163,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
                         continue
                     if(mp.update(node.move, points))
                         debug?.append(" - Best")
-                    debug?.appendln(" - %s - %s.1f".format(move.str(), points))
+                    debug?.appendln(" - %s - %.1f".format(move.str(), points))
                     // Queue
                     if (newState.turn > 59 || gewonnen(newState))
                         maxDepth = depth
@@ -242,11 +258,11 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     fun GameState.str() =
             "GameState: Zug: %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
 
-    protected inline fun typeAt(index: Int): FieldType = currentState.getTypeAt(index)
+    protected inline fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 
     fun findField(type: FieldType, startIndex: Int = currentState.currentPlayer.fieldIndex + 1): Int {
         var index = startIndex
-        while (typeAt(index) != type)
+        while (fieldTypeAt(index) != type)
             index++
         return index
     }
@@ -254,7 +270,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
     fun findCircular(type: FieldType, startIndex: Int): Int {
         var index = startIndex
         var dif = 1
-        while (typeAt(index) != type) {
+        while (fieldTypeAt(index) != type) {
             index += dif
             dif = -(dif + dif.sign)
         }
