@@ -1,9 +1,2 @@
 #!/bin/sh
-java -Dfile.encoding=UTF-8 \
-  -XX:MaxGCPauseMillis=100 -XX:GCPauseIntervalMillis=1600 \
-  -XX:TargetSurvivorRatio=90 \
-  -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled \
-  -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=50 \
-  -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark \
-  -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps \
-  -jar Jumper-1.5.0.jar "$@"
+java -Dfile.encoding=UTF-8 -XX:+ExplicitGCInvokesConcurrent -XX:NewRatio=1 -mx800m -ms800m -XX:MaxGCPauseMillis=80 -XX:GCPauseIntervalMillis=1000 -XX:TargetSurvivorRatio=90 -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintHeapAtGC -XX:+PrintPromotionFailure -XX:+PrintTenuringDistribution -XX:+UseConcMarkSweepGC -XX:-UseParNewGC -XX:CMSInitiatingOccupancyFraction=80 -XX:+UseCMSInitiatingOccupancyOnly -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -jar Jumper-1.5.1.jar "$@"

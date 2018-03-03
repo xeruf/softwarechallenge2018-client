@@ -5,7 +5,7 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 5)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 5, 1)) {
 
     override fun findMoves(state: GameState): Collection<Move> {
         // todo: bei Zieleinlauf mit Salaten Rückfallen!

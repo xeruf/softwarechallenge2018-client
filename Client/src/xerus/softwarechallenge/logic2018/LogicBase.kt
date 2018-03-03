@@ -88,7 +88,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
             val pos21 = findField(FieldType.POSITION_2)
             if (canAdvanceTo(pos21)) {
                 val pos2circular = findCircular(FieldType.POSITION_2, 11 + pos / 2)
-                if (currentState.otherPlayer.lastNonSkipAction is EatSalad) {
+                if (currentState.otherEatingSalad() == 2) {
                     if (pos2circular < 22 && canAdvanceTo(pos2circular))
                         return advanceTo(pos2circular)
                     if (pos21 < 22)
@@ -104,6 +104,13 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
                     return Move(FallBack())
             }
         }
+
+        // todo eat last salad
+        /*if(otherPos == 57) {
+            when(currentState.otherEatingSalad()) {
+                2 -> if(pos > 57) return Move(FallBack())
+            }
+        }*/
 
         when (currentState.turn) {
         // region Rot
@@ -175,6 +182,14 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
 
     inline fun GameState.otherPos() = otherPlayer.fieldIndex
+
+    fun GameState.otherEatingSalad(): Int {
+        if(getTypeAt(otherPos()) != FieldType.SALAD)
+            return 0
+        if(otherPlayer.lastNonSkipAction !is EatSalad)
+            return 1
+        return 2
+    }
 
     fun FieldType.isNot(vararg types: FieldType) =
             !types.any { this == it }

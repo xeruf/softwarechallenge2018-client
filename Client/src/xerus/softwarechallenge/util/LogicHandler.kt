@@ -13,6 +13,7 @@ import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.Starter
 import java.io.BufferedWriter
 import java.io.FileOutputStream
+import java.lang.management.ManagementFactory
 import java.nio.file.Paths
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
@@ -41,6 +42,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             log.level = Level.INFO
             log.info("Info enabled")
         }
+        log.info("JVM args: " + ManagementFactory.getRuntimeMXBean().inputArguments)
     }
 
     override fun onRequestAction() {
@@ -74,6 +76,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 
         sendAction(move)
         log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), gueltigeZuege, ungueltigeZuege, depth, lastdepth))
+        //val time = System.currentTimeMillis()
+        //System.gc()
+        //log.info("GC: {}", System.currentTimeMillis() - time)
     }
 
     fun Move?.invalid() = this == null || test(currentState, this) == null
@@ -288,15 +293,16 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
             }
 
     /**
-     * testet einen Move mit dem gegebenen GameState<br></br>
+     * testet einen Move mit dem gegebenen GameState
+     *
      * führt jetzt auch einen simplemove für den Gegenspieler aus!
      *
      * @param state gegebener State
      * @param move  der zu testende Move
      * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
      */
-    protected fun test(state: GameState, move: Move): GameState? {
-        val newState = state.clone()
+    protected fun test(state: GameState, move: Move, clone: Boolean = true): GameState? {
+        val newState = if(clone) state.clone() else state
         try {
             move.setOrderInActions()
             move.perform(newState)
