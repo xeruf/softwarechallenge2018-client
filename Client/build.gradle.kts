@@ -22,24 +22,29 @@ dependencies {
 
 java.sourceSets.getByName("main").java.srcDir("src")
 
-val args = listOf("-Dfile.encoding=UTF-8 -XX:+ExplicitGCInvokesConcurrent"
+val args = listOf("-Dfile.encoding=UTF-8", "-XX:+ExplicitGCInvokesConcurrent"
         , "-XX:NewRatio=1"
         , "-mx800m", "-ms800m"
         , "-XX:MaxGCPauseMillis=80", "-XX:GCPauseIntervalMillis=1000"
-        , "-XX:TargetSurvivorRatio=90"
-        //, "-XX:MaxTenuringThreshold=5", "-XX:InitialTenuringThreshold=5"
+        , "-XX:TargetSurvivorRatio=80"
 )
 
-val gcparams = arrayOf(
-        "-verbose:gc", "-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
-        , "-XX:+PrintHeapAtGC",  "-XX:+PrintPromotionFailure"
+val gcDebugParams = arrayOf(
+        "-XX:+PrintGCDetails", "-XX:+PrintGCDateStamps"
+        , "-XX:+PrintPromotionFailure"
+        , "-XX:+PrintHeapAtGC"
         , "-XX:+PrintTenuringDistribution"
 )
+
+val cms = arrayOf("-XX:+UseConcMarkSweepGC"
+        , "-XX:-UseParNewGC"
+        , "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
+        , "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
 application {
     applicationName = "Jumper 1"
     mainClassName = "xerus.softwarechallenge.Starter"
-    applicationDefaultJvmArgs = args
+    applicationDefaultJvmArgs = args + gcDebugParams + cms
 }
 
 tasks {
@@ -49,21 +54,13 @@ tasks {
 
     "scripts" {
         doFirst {
-            fun script(gc: String, vararg params: String) {
-                file("../start-$gc.sh").bufferedWriter().run {
-                    write("#!/bin/sh\n")
-                    write("java ")
-                    write((args + gcparams + params).joinToString(" "))
-                    write(" -jar $jumper.jar \"\$@\"")
-                    close()
-                }
+            file("../start.sh").bufferedWriter().run {
+                write("#!/bin/sh\n")
+                write("java ")
+                write((args + gcDebugParams + cms).joinToString(" "))
+                write(" -jar $jumper.jar \"\$@\"")
+                close()
             }
-            script("cms","-XX:+UseConcMarkSweepGC"
-                    , "-XX:-UseParNewGC"
-                    , "-XX:CMSInitiatingOccupancyFraction=80 -XX:+UseCMSInitiatingOccupancyOnly"
-                    , "-XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark"
-            )
-            script("g1", "-XX:+UseG1GC")
         }
     }
 

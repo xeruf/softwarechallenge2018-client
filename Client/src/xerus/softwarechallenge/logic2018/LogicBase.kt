@@ -24,7 +24,6 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
         points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.6
         points += player.cards.size
         // Karotten
-        // todo: Funktion eher wie Normalverteilung, abflachen -> sonst -100 etc. und daher Karotten überbewertet
         val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
         points += carrotPoints(player, distanceToGoal) * 3
         points -= carrotPoints(state.otherPlayer, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
@@ -51,7 +50,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
     // benötigte Karotten für x Felder: 0,5x2 + 0,5x
 
     // params: Weite, Salat, Karotten
-    override fun defaultParams() = doubleArrayOf(2.0, 10.0, 15.0)
+    override fun defaultParams() = doubleArrayOf(2.0, 30.0, 15.0)
 
     override fun Player.str(): String =
             "Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())
