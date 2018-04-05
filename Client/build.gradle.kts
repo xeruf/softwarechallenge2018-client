@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.Writer
 import java.util.Arrays
 
-version = KotlinVersion(1, 5, 1).toString()
+version = KotlinVersion(1, 6).toString()
 
 plugins {
     kotlin("jvm") version "1.2.30"
@@ -29,17 +29,17 @@ val args = listOf("-Dfile.encoding=UTF-8", "-XX:+ExplicitGCInvokesConcurrent"
         , "-XX:TargetSurvivorRatio=80"
 )
 
+val cms = arrayOf("-XX:+UseConcMarkSweepGC"
+        , "-XX:-UseParNewGC"
+        , "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
+        , "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
+
 val gcDebugParams = arrayOf(
         "-XX:+PrintGCDetails", "-XX:+PrintGCDateStamps"
         , "-XX:+PrintPromotionFailure"
         , "-XX:+PrintHeapAtGC"
         , "-XX:+PrintTenuringDistribution"
 )
-
-val cms = arrayOf("-XX:+UseConcMarkSweepGC"
-        , "-XX:-UseParNewGC"
-        , "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
-        , "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
 application {
     applicationName = "Jumper 1"
@@ -57,7 +57,7 @@ tasks {
             file("../start.sh").bufferedWriter().run {
                 write("#!/bin/sh\n")
                 write("java ")
-                write((args + gcDebugParams + cms).joinToString(" "))
+                write((args + cms /*+ gcDebugParams*/).joinToString(" "))
                 write(" -jar $jumper.jar \"\$@\"")
                 close()
             }
@@ -88,7 +88,7 @@ tasks {
     "zip"(Zip::class) {
         dependsOn("jar")
         from("..")
-        include("$jumper.jar", "start*.sh")
+        include("$jumper.jar", "start.sh")
         archiveName = "$jumper.zip"
         destinationDir = file("..")
         doFirst {
@@ -102,7 +102,7 @@ tasks {
         doFirst {
             val old = file("..").listFiles { _, name -> name.startsWith("Jumper") && name.endsWith("jar") && name != "$jumper.jar" }
             old.forEach { file ->
-                file.copyTo(file("../Archiv/${file.name}"), true)
+                file.copyTo(file("../Archiv/Jumper/${file.name}"), true)
                 file.delete()
             }
         }

@@ -5,10 +5,9 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 5, 1)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 6)) {
 
-    override fun findMoves(state: GameState): Collection<Move> {
-        // todo: bei Zieleinlauf mit Salaten Rückfallen!
+    override fun findMoves(state: GameState): List<Move> {
         val player = state.currentPlayer
         val fieldIndex = player.fieldIndex
         val currentField = fieldTypeAt(fieldIndex)
@@ -29,15 +28,16 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
             possibleMoves.addMove(FallBack())
 
         val otherPos = state.otherPos()
-        moves@ for (i in 1..GameRuleLogic.calculateMoveableFields(player.carrots)) {
+        moves@ for (i in 1..GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - player.fieldIndex)) {
             val newField = fieldIndex + i
             val newType = fieldTypeAt(newField)
             val advance = Move(Advance(i))
             if (otherPos == newField || newType == FieldType.HEDGEHOG)
                 continue
+            val newCarrots = player.carrots - GameRuleLogic.calculateCarrots(i)
             when (newType) {
                 FieldType.GOAL -> {
-                    if (player.carrots - GameRuleLogic.calculateCarrots(i) <= 10 && !player.hasSalad())
+                    if (newCarrots <= 10 && !player.hasSalad())
                         return listOf(advance)
                     else
                         break@moves
@@ -55,7 +55,7 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                             possibleMoves.add(advance.addCard(CardType.EAT_SALAD))
                     }
                     if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
-                        if (player.carrots > 30 && newField > 40)
+                        if (newCarrots > 30 && newField > 40)
                             possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
                         possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
                     }
@@ -66,10 +66,11 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                             FieldType.HARE -> {
                                 if (cards.size == 1)
                                     continue@moves
+                                /* todo bug
                                 if (cards.contains(CardType.FALL_BACK) && fieldTypeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
-                                    possibleMoves.add(hurry.addCard(CardType.FALL_BACK))
+                                    possibleMoves.add(hurry.addCard(CardType.FALL_BACK))*/
                                 if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
-                                    if (player.carrots > 30 && otherPos + 1 > 40)
+                                    if (newCarrots > 30 && otherPos + 1 > 40)
                                         possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
                                     possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
                                 }
@@ -89,10 +90,11 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
                             FieldType.HARE -> {
                                 if (cards.size == 1)
                                     continue@moves
+                                /*todo bug
                                 if (cards.contains(CardType.HURRY_AHEAD) && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
-                                    possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD))
+                                    possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD))*/
                                 if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
-                                    if (player.carrots > 30 && otherPos - 1 > 40)
+                                    if (newCarrots > 30 && otherPos - 1 > 40)
                                         possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
                                     possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
                                 }
