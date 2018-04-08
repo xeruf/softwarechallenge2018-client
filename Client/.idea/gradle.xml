@@ -11,13 +11,13 @@
                   <project path="$PROJECT_DIR$/../Softwarechallenge-Tools" />
                 </projects>
               </build>
-              <build path="$PROJECT_DIR$/../../Util">
+              <build path="$PROJECT_DIR$/../../util">
                 <projects>
-                  <project path="$PROJECT_DIR$/../../Util" />
-                  <project path="$PROJECT_DIR$/../../Util/javafx" />
-                  <project path="$PROJECT_DIR$/../../Util/kotlin" />
-                  <project path="$PROJECT_DIR$/../../Util/test" />
-                  <project path="$PROJECT_DIR$/../../Util/utilities" />
+                  <project path="$PROJECT_DIR$/../../util" />
+                  <project path="$PROJECT_DIR$/../../util/javafx" />
+                  <project path="$PROJECT_DIR$/../../util/kotlin" />
+                  <project path="$PROJECT_DIR$/../../util/test" />
+                  <project path="$PROJECT_DIR$/../../util/utilities" />
                 </projects>
               </build>
             </builds>
@@ -30,11 +30,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/../Softwarechallenge-Tools" />
-            <option value="$PROJECT_DIR$/../../Util" />
-            <option value="$PROJECT_DIR$/../../Util/javafx" />
-            <option value="$PROJECT_DIR$/../../Util/kotlin" />
-            <option value="$PROJECT_DIR$/../../Util/test" />
-            <option value="$PROJECT_DIR$/../../Util/utilities" />
+            <option value="$PROJECT_DIR$/../../util" />
+            <option value="$PROJECT_DIR$/../../util/javafx" />
+            <option value="$PROJECT_DIR$/../../util/kotlin" />
+            <option value="$PROJECT_DIR$/../../util/test" />
+            <option value="$PROJECT_DIR$/../../util/utilities" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
