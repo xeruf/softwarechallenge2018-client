@@ -4,7 +4,10 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import org.slf4j.LoggerFactory
 import sc.plugin2018.*
-import sc.shared.*
+import sc.shared.GameResult
+import sc.shared.InvalidMoveException
+import sc.shared.PlayerColor
+import sc.shared.PlayerScore
 import xerus.ktutil.create
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.Starter
@@ -19,7 +22,7 @@ import kotlin.math.pow
 import kotlin.math.sign
 
 /** schafft Grundlagen fuer eine Logik */
-abstract class LogicHandler(private val client: Starter, params: String, debug: Int, identifier: String) : IGameHandler {
+abstract class LogicHandler(private val client: Starter, params: String, debug: Int, identifier: String): IGameHandler {
 	
 	protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
 	protected lateinit var currentState: GameState
@@ -48,8 +51,8 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 		invalidMoves = 0
 		depth = 0
 		lastdepth = 0
-		var move = try {
-			predefinedMove()
+		var move: Move? = try {
+			null//predefinedMove()
 		} catch (e: Throwable) {
 			log.error("Error in predefinedMove!", e)
 			null
@@ -148,19 +151,20 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5.coerceAtMost((62 - currentState.turn) / 2)
+		var maxDepth = 5.coerceAtMost(62.minus(currentState.turn) / 2)
 		var node = queue.poll()
-		loop@ while (depth < maxDepth && Timer.runtime() < 1400 && queue.size > 0) {
+		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
 			val multiplicator = depth.toDouble().pow(0.4)
 			do {
 				val nodeState = node.gamestate
 				debug?.appendln("##### $node ${nodeState.str()}")
 				moves = findMoves(nodeState)
-				for (move in moves) {
-					if (Timer.runtime() > 1700)
+				for (i in 0..moves.lastIndex) {
+					if (Timer.runtime() > 1600)
 						break@loop
-					val newState = nodeState.test(move) ?: continue
+					val move = moves[i]
+					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
 					// Punkte
 					val points = evaluate(newState) / multiplicator + node.points
 					if (points < mp.points - 60)
@@ -182,6 +186,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 			lastdepth = depth
 			bestMove = mp.obj!!
 			log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
+			println("$depth: ${Timer.runtime()}")
 		}
 		debug?.appendln("### Chose ${bestMove.str()}")
 		debug?.close()
@@ -191,7 +196,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 	private class Node private constructor(var gamestate: GameState, var move: Move, var points: Double, var depth: Int) {
 		
 		/** erstellt eine neue Node mit dem gegebenen GameState und Move mit optionalen points */
-		constructor(state: GameState, m: Move, bonus: Double = 0.0) : this(state, m, bonus, 1)
+		constructor(state: GameState, m: Move, bonus: Double = 0.0): this(state, m, bonus, 1)
 		
 		/**
 		 * gibt eine neue Node zurück

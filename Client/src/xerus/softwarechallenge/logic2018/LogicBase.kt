@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
@@ -13,7 +15,7 @@ import java.util.*
 import kotlin.math.pow
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel  */
-abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion) : LogicHandler(client, params, debug, "Jumper " + version) {
+abstract class LogicBase(client: Starter, params: String, debug: Int, version: KotlinVersion): LogicHandler(client, params, debug, "Jumper $version") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -25,7 +27,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
 		points += (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt()) * params[1] * 0.6
 		points += player.cards.size
 		// Karotten
-		points += carrotPoints(player, distanceToGoal) * 3
+		points += carrotPoints(player, distanceToGoal) * 4
 		points -= carrotPoints(state.otherPlayer, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
 		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
 		
@@ -50,7 +52,7 @@ abstract class LogicBase(client: Starter, params: String, debug: Int, version: K
 	// benötigte Karotten für x Felder: 0,5x2 + 0,5x
 	
 	/** Weite, Salat, Karotten */
-	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 15.0)
+	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 5.0)
 	
 	override fun Player.str(): String =
 			"Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())

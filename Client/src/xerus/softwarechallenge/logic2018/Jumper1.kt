@@ -5,7 +5,7 @@ import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 6)) {
+class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 6, 1)) {
 
     override fun findMoves(state: GameState): List<Move> {
         val player = state.currentPlayer

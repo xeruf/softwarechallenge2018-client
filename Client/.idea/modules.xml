@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Client.iml" filepath="$PROJECT_DIR$/.idea/modules/Client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-19045180/Projects-Util.iml" filepath="$PROJECT_DIR$/.idea/modules/-19045180/Projects-Util.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" filepath="$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-19045180/util.iml" filepath="$PROJECT_DIR$/.idea/modules/-19045180/util.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-316338657/util-javafx.iml" filepath="$PROJECT_DIR$/.idea/modules/-316338657/util-javafx.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-274829140/util-kotlin.iml" filepath="$PROJECT_DIR$/.idea/modules/-274829140/util-kotlin.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1188852995/util-test.iml" filepath="$PROJECT_DIR$/.idea/modules/-1188852995/util-test.iml" />
