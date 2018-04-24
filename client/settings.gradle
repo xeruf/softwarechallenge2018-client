@@ -1,0 +1,4 @@
+rootProject.name = 'Softwarechallenge2018-Client'
+
+includeBuild '../softwarechallenge-tools'
+includeBuild '../../util'

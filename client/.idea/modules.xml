@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" filepath="$PROJECT_DIR$/.idea/modules/-228705798/Softwarechallenge-Tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Softwarechallenge2018-Client.iml" filepath="$PROJECT_DIR$/.idea/modules/Softwarechallenge2018-Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-316338657/javafx.iml" filepath="$PROJECT_DIR$/.idea/modules/-316338657/javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-274829140/kotlin.iml" filepath="$PROJECT_DIR$/.idea/modules/-274829140/kotlin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/softwarechallenge2018.iml" filepath="$PROJECT_DIR$/.idea/modules/softwarechallenge2018.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1188852995/test.iml" filepath="$PROJECT_DIR$/.idea/modules/-1188852995/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-19045180/util.iml" filepath="$PROJECT_DIR$/.idea/modules/-19045180/util.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1124842367/utilities.iml" filepath="$PROJECT_DIR$/.idea/modules/1124842367/utilities.iml" />
+    </modules>
+  </component>
+</project>

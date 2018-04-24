@@ -1,0 +1,6 @@
+
+rootProject.name = 'Softwarechallenge-Tools'
+
+if (startParameter.searchUpwards) {
+	includeBuild '../../util'
+}
