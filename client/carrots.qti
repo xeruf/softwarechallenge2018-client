@@ -1,0 +1,267 @@
+QtiPlot 0.9.8 project file
+<scripting-lang>	muParser
+<windows>	6
+<SurfacePlot>
+Funktion3	24.04.18 22:00
+geometry	2	2	528	431	
+SurfaceFunction	1.01^(((x-y*4))^2/(-100-y)) + 1.1^(-0.2*((x - y*4) / (30 + y))^2);40;40	0	200	0	64	0.447296	2
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	12	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	20	12	20	12
+options	1	1	0
+numbersFont	Noto Sans	10	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	30	0	39
+zoom	121.241
+scaling	0.005	0.015625	0.5
+shift	0	0	0
+LineWidth	1
+WindowLabel	1.01 zur Potenz	2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<ColorStops>0</ColorStops>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<SurfacePlot>
+Funktion1Neu	24.04.18 22:05
+geometry	1052	2	528	431	active
+SurfaceFunction	1.1^(-((x-y*5)/(30+y))^2)*10+(x/(100-y))- y/10;40;40	0	200	0	64	-3.08638	10.0235
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	12	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	20	12	20	12
+options	1	1	0
+numbersFont	Noto Sans	10	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	25	0	45
+zoom	121.474
+scaling	0.005	0.015625	0.0762785
+shift	0	0	0
+LineWidth	1
+WindowLabel		2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<ColorStops>0</ColorStops>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<SurfacePlot>
+Quadratisch	24.04.18 22:12
+geometry	526	433	527	429	
+SurfaceFunction	-(x / y - y / 6)^2 + x / (80-y);40;40	0	200	0	64	-120	3.04805
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	11	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	20	12	20	12
+options	1	1	0
+numbersFont	Noto Sans	9	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	24	0	68
+zoom	140.519
+scaling	0.005	0.015625	0.00812691
+shift	0	0	0
+LineWidth	1
+WindowLabel		2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<ColorStops>0</ColorStops>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<SurfacePlot>
+Funktion1	24.04.18 22:16
+geometry	527	3	528	431	
+SurfaceFunction	1.2^(-((x-y*4)/(30+y))^2);40;40	0	200	0	64	0.000302575	1
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	12	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	20	12	20	12
+options	1	1	0
+numbersFont	Noto Sans	10	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	-1	0	179
+zoom	121.239
+scaling	0.005	0.015625	0.5
+shift	0	0	0
+LineWidth	1
+WindowLabel	1.2 zur Potenz	2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<ColorStops>0</ColorStops>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<multiLayer>
+Grafik1	1	1	24.04.18 22:17
+geometry	1307	464	579	392	
+WindowLabel		2
+Margins	5	5	5	5
+Spacing	5	5
+LayerCanvasSize	400	300
+Alignement	0	0
+<AlignPolicy>0</AlignPolicy>
+<CommonAxes>0</CommonAxes>
+<graph>
+ggeometry	10	-16	449	329
+<PageGeometry>0.0175131	-0.0465116	0.78634	0.956395</PageGeometry>
+PlotTitle	Titel	#000000	4228
+<Antialiasing>0</Antialiasing>
+<Autoscaling>1</Autoscaling>
+<ScaleFonts>1</ScaleFonts>
+<GridOnTop>0</GridOnTop>
+<MissingDataGap>1</MissingDataGap>
+Background	#ffffff	0
+Margin	0
+Border	0	#000000
+grid	0	0	0	0	#0000ff	0	0.5	#a0a0a4	2	0.4	#0000ff	0	0.5	#a0a0a4	2	0.4	0	0	2	0	0
+EnabledAxes	1	0	1	0	
+AxesTitles	%(?X)	%(?Y)		%(?Y)	
+AxesTitleColors	#000000	#000000	#000000	#000000	
+AxesTitleAlignment	5124	4	5124	4
+AxesTitleDistance	2	-1	2	-1
+InvertedTitle	0	0	0	0
+TitleFont	Noto Sans	9	75	0	0	0
+ScaleFont0	Noto Sans	7	75	0	0	0
+ScaleFont1	Noto Sans	7	75	0	0	0
+ScaleFont2	Noto Sans	7	75	0	0	0
+ScaleFont3	Noto Sans	7	75	0	0	0
+AxisFont0	Noto Sans	7	50	0	0	0
+AxisFont1	Noto Sans	7	50	0	0	0
+AxisFont2	Noto Sans	7	50	0	0	0
+AxisFont3	Noto Sans	7	50	0	0	0
+AxesColors	#000000	#000000	#000000	#000000
+AxesNumberColors	#d3d3d3	#d3d3d3	#d3d3d3	#d3d3d3
+AxesBaseline	0	0	0	0	
+CanvasBackground	#ffffff	0
+<Function>
+<Type>0</Type>
+<Title>F1</Title>
+<Expression>1.2^(-((x-y*4)/(30+y))^2)+(x/(74-y))/20</Expression>
+<Variable>x</Variable>
+<Range>0	100</Range>
+<Points>200</Points>
+<Constant>y	60</Constant>
+<Style>0</Style>
+<LineStyle>1</LineStyle>
+<Pen>
+	<Color>#000000</Color>
+	<Style>0</Style>
+	<Width>1</Width>
+</Pen>
+<xAxis>2</xAxis>
+<yAxis>0</yAxis>
+<CurveType>0</CurveType>
+<Visible>1</Visible>
+</Function>
+scale	0	0.2	1.1	0	10	5	0	0
+scale	1	0.2	1.1	0	10	5	0	0
+scale	2	-20	120	0	8	5	0	0
+scale	3	-20	120	0	8	5	0	0
+LabelsFormat	0	6	0	6	0	6	0	6
+AxisType	0	0	0	0	
+MajorTicks	1	1	1	1
+MinorTicks	1	1	1	1
+TicksLength	5	9
+DrawAxesBackbone	1	1	1	1	1
+AxesLineWidth	1
+LabelsRotation	0	0	0	0
+LabelsPrefix				
+LabelsSuffix				
+TickLabelsSpace	4	4	4	4
+ShowTicksPolicy	0	0	0	0
+EnabledTickLabels	1	1	1	1
+</graph>
+<LinkXAxes>0</LinkXAxes>
+<ScaleLayers>1</ScaleLayers>
+</multiLayer>
+<SurfacePlot>
+Funktion2	24.04.18 22:46
+geometry	0	433	528	431	
+SurfaceFunction	1.1^(-0.2*((x - y*4) / (30 + y))^2);40;40	0	200	0	64	0.428613	1
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	12	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	20	12	20	12
+options	1	1	0
+numbersFont	Noto Sans	10	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	26	0	45
+zoom	121.239
+scaling	0.005	0.015625	1
+shift	0	0	0
+LineWidth	1
+WindowLabel	1.1 zur Potenz	2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<ColorStops>0</ColorStops>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<open>1</open>

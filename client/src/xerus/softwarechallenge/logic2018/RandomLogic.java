@@ -1,6 +1,6 @@
 package xerus.softwarechallenge.logic2018;
 
-import xerus.softwarechallenge.Starter;
+import xerus.softwarechallenge.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.plugin2018.*;
@@ -19,7 +19,7 @@ import java.util.Random;
  */
 public class RandomLogic implements IGameHandler {
 	
-	private Starter client;
+	private Client client;
 	private GameState gameState;
 	private Player currentPlayer;
 	
@@ -35,7 +35,7 @@ public class RandomLogic implements IGameHandler {
 	 * @param client Der Zugrundeliegende Client der mit dem Spielserver
 	 * kommunizieren kann.
 	 */
-	public RandomLogic(Starter client) {
+	public RandomLogic(Client client) {
 		this.client = client;
 	}
 	

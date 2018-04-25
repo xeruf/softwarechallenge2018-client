@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.Writer
 import java.util.Arrays
 
-version = KotlinVersion(1, 6, 1).toString()
+version = KotlinVersion(1, 7, 0).toString()
 
 plugins {
 	kotlin("jvm") version "1.2.40"
@@ -22,7 +22,7 @@ dependencies {
 
 java.sourceSets.getByName("main").java.srcDir("src")
 
-val args = listOf("-Dfile.encoding=UTF-8", "-XX:+ExplicitGCInvokesConcurrent"
+val args = listOf("-Dfile.encoding=UTF-8"
 		, "-XX:NewRatio=1"
 		, "-mx800m", "-ms800m"
 		, "-XX:MaxGCPauseMillis=80", "-XX:GCPauseIntervalMillis=1000"
@@ -41,7 +41,7 @@ val gcDebugParams = arrayOf(
 
 application {
 	applicationName = "Jumper 1"
-	mainClassName = "xerus.softwarechallenge.Starter"
+	mainClassName = "xerus.softwarechallenge.StarterKt"
 	applicationDefaultJvmArgs = args + cms + gcDebugParams
 }
 

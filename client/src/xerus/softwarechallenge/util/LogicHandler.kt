@@ -8,12 +8,13 @@ import sc.shared.GameResult
 import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
 import sc.shared.PlayerScore
-import xerus.ktutil.create
+import xerus.ktutil.createDir
+import xerus.ktutil.createDirs
 import xerus.ktutil.helpers.Timer
-import xerus.softwarechallenge.Starter
-import java.io.BufferedWriter
-import java.io.FileOutputStream
+import xerus.ktutil.renameTo
+import xerus.softwarechallenge.client
 import java.lang.management.ManagementFactory
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
@@ -21,24 +22,32 @@ import java.util.*
 import kotlin.math.pow
 import kotlin.math.sign
 
+var strategy: String? = null
+var debugLevel: Int = 1
+
 /** schafft Grundlagen fuer eine Logik */
-abstract class LogicHandler(private val client: Starter, params: String, debug: Int, identifier: String): IGameHandler {
+abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
+	
 	protected lateinit var currentState: GameState
-	protected val currentPlayer: Player
+	
+	protected inline val currentPlayer: Player
 		get() = currentState.currentPlayer
 	
-	protected var params = if (params.isNotEmpty()) params.split(',').map { it.toDouble() }.toDoubleArray() else defaultParams()
+	protected inline val currentTurn
+		get() = currentState.turn
+	
+	protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
 	
 	val rand: Random = SecureRandom()
 	
 	init {
-		log.warn("$identifier - Parameter: $params")
-		if (debug == 2) {
+		log.warn("$identifier - Parameter: ${params.joinToString()}")
+		if (debugLevel == 2) {
 			log.level = Level.DEBUG
 			log.info("Debug enabled")
-		} else if (debug == 1) {
+		} else if (debugLevel == 1) {
 			log.level = Level.INFO
 			log.info("Info enabled")
 		}
@@ -76,6 +85,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 		
 		sendAction(move)
 		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, lastdepth))
+		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
 	}
 	
 	fun Move?.invalid() = this == null || currentState.test(this) == null
@@ -99,7 +109,9 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 	private var depth: Int = 0
 	private var lastdepth: Int = 0
 	
-	private val gameLog = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd-HH-mm-ss").format(Date())).create() else Paths.get("")
+	private val gameLogDir = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
+	private val currentLogDir
+		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	private fun breitensuche(): Move? {
@@ -107,21 +119,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 		val queue = LinkedList<Node>()
 		val mp = MP()
 		var bestMove: Move
-		
-		// Queue füllen
 		var moves = findMoves(currentState)
-		if (moves.size == 1) {
-			val move = moves.iterator().next()
-			log.debug("Nur einen Zug gefunden: {}", move.str())
-			return move
-		}
-		val debugFile = gameLog.resolve("turn${currentState.turn}.md").toFile()
-		var debug: BufferedWriter? = null
-		if (log.isDebugEnabled) {
-			log.debug("Gefundene Zuege:\n{}", moves.str())
-			debug = FileOutputStream(debugFile, true).bufferedWriter()
-			debug.appendln(currentPlayer.str())
-		}
 		
 		for (move in moves) {
 			val newState = currentState.test(move) ?: continue
@@ -132,30 +130,28 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 			mp.update(move, points)
 			// Queue
 			if (!gewonnen(newState, newState.otherPlayer)) {
-				val newnode = Node(newState, move, points)
+				val newnode = Node(move, newState, points)
 				queue.add(newnode)
-				// Debug
-				debug?.appendln(newnode.toString())
 			}
 		}
+		
 		bestMove = mp.obj ?: moves.first()
-		if (queue.size == 1) {
+		if (queue.size < 2) {
+			System.gc()
 			log.debug("Nur einen validen Zug gefunden: {}", bestMove.str())
-			debugFile.delete()
 			return bestMove
 		}
 		
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5.coerceAtMost(62.minus(currentState.turn) / 2)
+		var maxDepth = 5.coerceAtMost(62.minus(currentTurn) / 2)
 		var node = queue.poll()
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
-			val multiplicator = depth.toDouble().pow(0.4)
+			val divider = depth.toDouble().pow(0.3)
 			do {
 				val nodeState = node.gamestate
-				debug?.appendln("##### $node ${nodeState.str()}")
 				moves = findMoves(nodeState)
 				for (i in 0..moves.lastIndex) {
 					if (Timer.runtime() > 1600)
@@ -163,18 +159,15 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
 					// Punkte
-					val points = evaluate(newState) / multiplicator + node.points
-					if (points < mp.points - 60)
+					val points = evaluate(newState) / divider + node.points
+					if (points < mp.points - 50 / divider)
 						continue
-					if (mp.update(node.move, points))
-						debug?.append(" - Best")
-					debug?.appendln(" - %s - %.1f".format(move.str(), points))
+					mp.update(node.move, points)
 					// Queue
 					if (newState.turn > 59 || gewonnen(newState))
 						maxDepth = depth
 					if (!gewonnen(newState, newState.otherPlayer) && depth < maxDepth) {
-						val newNode = node.update(newState)
-						newNode.points = points
+						val newNode = node.update(newState, points, move)
 						queue.add(newNode)
 					}
 				}
@@ -183,28 +176,24 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 			lastdepth = depth
 			bestMove = mp.obj!!
 			log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
-			println("$depth: ${Timer.runtime()}")
 		}
-		debug?.appendln("### Chose ${bestMove.str()}")
-		debug?.close()
 		return bestMove
 	}
 	
-	private class Node private constructor(var gamestate: GameState, var move: Move, var points: Double, var depth: Int) {
+	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
 		
-		/** erstellt eine neue Node mit dem gegebenen GameState und Move mit optionalen points */
-		constructor(state: GameState, m: Move, bonus: Double = 0.0): this(state, m, bonus, 1)
+		constructor(move: Move, state: GameState, points: Double = 0.0) : this(move, state, points, 1,
+				gameLogDir?.resolve("turn$currentTurn")?.resolve("%.1f - %s".format(points, move.str())))
 		
-		/**
-		 * gibt eine neue Node zurück
-		 *
-		 * @param newState der neue GameState
-		 * @return neue Node mit dem GameState und depth + 1
-		 */
-		fun update(newState: GameState) =
-				Node(newState, move, points, depth + 1)
+		init {
+			dir?.createDirs()
+		}
 		
-		override fun toString() = "Node Tiefe %d fuer %s points %.1f".format(depth, move.str(), points)
+		fun update(newState: GameState, newPoints: Double, addedMove: Move) =
+				Node(move, newState, newPoints, depth + 1, dir?.resolve("%.1f - %s".format(newPoints, addedMove.str())))
+		
+		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
+		
 	}
 	
 	/**
@@ -265,7 +254,7 @@ abstract class LogicHandler(private val client: Starter, params: String, debug: 
 	
 	protected inline fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
-	fun findField(type: FieldType, startIndex: Int = currentState.currentPlayer.fieldIndex + 1): Int {
+	fun findField(type: FieldType, startIndex: Int = currentPlayer.fieldIndex + 1): Int {
 		var index = startIndex
 		while (fieldTypeAt(index) != type)
 			index++

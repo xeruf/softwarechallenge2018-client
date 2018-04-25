@@ -2,10 +2,9 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
-import xerus.softwarechallenge.Starter
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, params, debug, KotlinVersion(1, 6, 1)) {
+class Jumper1 : LogicBase(KotlinVersion(1, 7, 0)) {
 	
 	override fun findMoves(state: GameState): List<Move> {
 		val player = state.currentPlayer
@@ -83,15 +82,16 @@ class Jumper1(client: Starter, params: String, debug: Int) : LogicBase(client, p
 							FieldType.HARE -> {
 								if (cards.size == 1)
 									continue@moves
+								/* todo bug
 								if (cards.contains(CardType.HURRY_AHEAD) && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
-									possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD))
+									possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD)) */
 								if (cards.contains(CardType.TAKE_OR_DROP_CARROTS)) {
 									if (newCarrots > 30 && otherPos - 1 > 40)
 										possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 									possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 								}
 							}
-							else -> 
+							else ->
 								possibleMoves.add(fall)
 						}
 					}
