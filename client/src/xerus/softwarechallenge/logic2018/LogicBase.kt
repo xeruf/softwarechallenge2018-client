@@ -18,17 +18,18 @@ abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = state.getPointsForPlayer(myColor) + 70.0
 		val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
+		var points = 100.0 - distanceToGoal
 		
 		// Salat und Karten
 		points -= params[0] * player.salads * (5 - Math.log(distanceToGoal))
-		points += params[0] * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0) + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(0.3, 0.0))
+		points += params[0] * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0) 
+				+ player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(params[1], 0.0))
 		points += player.cards.size
 		
 		// Karotten
-		points += carrotPoints(player, distanceToGoal) * 4
-		points -= carrotPoints(state.otherPlayer, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
+		points += carrotPoints(player.carrots, distanceToGoal) * 4
+		points -= carrotPoints(state.otherPlayer.carrots, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
 		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).to(3, 0)
 		
 		// Zieleinlauf
@@ -39,20 +40,24 @@ abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version
 		return points
 	}
 	
-	private inline fun carrotPoints(player: Player, distance: Double) =
-			(1.01).pow((player.carrots.minus(distance * 4)).pow(2) / (- 30 - distance))
+	/** Uses a function to calculate the worth of the carrots at the given position
+	 * @param x carrots
+	 * @param y distance to goal
+	 * */
+	private inline fun carrotPoints(x: Int, y: Double) =
+			(1.1.pow(-((x - y * 5) / (30 + y)).pow(2)) * 10 + (x / (100 - y)))
 					.times(params[1])
-	// 1.2^(-((x-d*4)/(30+d))^2)
-	// 1.01^(((x-d*4))^2/(-100-d))
-	
+	// 1.6: (1.01).pow((player.carrots.minus(distance * 4)).pow(2) / (- 30 - distance))
+	// 1.5: 1.2^(-((x-d*4)/(30+d))^2)
+	// 1.5: 1.01^(((x-d*4))^2/(-100-d))
 	
 	// feld 0  -> mehr Karotten sind besser
 	// feld 64(Ziel) -> maximal 10 Karotten
 	// -(x/65-fieldIndex-4)²+10+fieldIndex
 	// benötigte Karotten für x Felder: 0.5x * (x + 1)
 	
-	/** Salat, Karotten */
-	override fun defaultParams() = doubleArrayOf(20.0, 4.0)
+	/** Salat/Karten, Karotten, Weite */
+	override fun defaultParams() = doubleArrayOf(15.0, 0.5)
 	
 	override fun Player.str(): String =
 			"Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())

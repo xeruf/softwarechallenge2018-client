@@ -8,7 +8,7 @@ import java.util.Arrays
 version = KotlinVersion(1, 7, 0).toString()
 
 plugins {
-	kotlin("jvm") version "1.2.40"
+	kotlin("jvm") version "1.2.41"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
 	application
 }

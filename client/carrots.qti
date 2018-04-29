@@ -40,7 +40,7 @@ axisType	0	0	0
 <SurfacePlot>
 Funktion1Neu	24.04.18 22:05
 geometry	1052	2	528	431	active
-SurfaceFunction	1.1^(-((x-y*5)/(30+y))^2)*10+(x/(100-y))- y/10;40;40	0	200	0	64	-3.08638	10.0235
+SurfaceFunction	1.1^(-((x-y*5)/(30+y))^2)*10+(x/(100-y));40;40	0	200	0	64	4.23368	14.1169
 Style	box	nofloor	filledmesh
 grids	0
 title		#000000	Noto Sans	12	50	0
@@ -53,9 +53,9 @@ numbersFont	Noto Sans	10	50	0
 xAxisLabelFont	Noto Sans	9	50	0
 yAxisLabelFont	Noto Sans	9	50	0
 zAxisLabelFont	Noto Sans	9	50	0
-rotation	25	0	45
-zoom	121.474
-scaling	0.005	0.015625	0.0762785
+rotation	45	0	53
+zoom	121.372
+scaling	0.005	0.015625	0.0416664
 shift	0	0	0
 LineWidth	1
 WindowLabel		2
@@ -125,7 +125,7 @@ numbersFont	Noto Sans	10	50	0
 xAxisLabelFont	Noto Sans	9	50	0
 yAxisLabelFont	Noto Sans	9	50	0
 zAxisLabelFont	Noto Sans	9	50	0
-rotation	-1	0	179
+rotation	58	0	62
 zoom	121.239
 scaling	0.005	0.015625	0.5
 shift	0	0	0
@@ -190,7 +190,7 @@ CanvasBackground	#ffffff	0
 <Function>
 <Type>0</Type>
 <Title>F1</Title>
-<Expression>1.2^(-((x-y*4)/(30+y))^2)+(x/(74-y))/20</Expression>
+<Expression>1.1^(-((x-y*5)/(30+y))^2)*20+(x/(100-y))*2- y/5</Expression>
 <Variable>x</Variable>
 <Range>0	100</Range>
 <Points>200</Points>
@@ -207,8 +207,8 @@ CanvasBackground	#ffffff	0
 <CurveType>0</CurveType>
 <Visible>1</Visible>
 </Function>
-scale	0	0.2	1.1	0	10	5	0	0
-scale	1	0.2	1.1	0	10	5	0	0
+scale	0	-6	6	0	7	5	0	0
+scale	1	-6	6	0	7	5	0	0
 scale	2	-20	120	0	8	5	0	0
 scale	3	-20	120	0	8	5	0	0
 LabelsFormat	0	6	0	6	0	6	0	6

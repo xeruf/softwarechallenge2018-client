@@ -160,7 +160,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
 					// Punkte
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 50 / divider)
+					if (points < mp.points - 100 / divider)
 						continue
 					mp.update(node.move, points)
 					// Queue
