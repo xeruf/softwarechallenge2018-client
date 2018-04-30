@@ -61,7 +61,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		depth = 0
 		lastdepth = 0
 		var move: Move? = try {
-			null//predefinedMove()
+			predefinedMove()
 		} catch (e: Throwable) {
 			log.error("Error in predefinedMove!", e)
 			null
@@ -92,109 +92,21 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	// region Zugsuche
 	
+	protected val gameLogDir = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
+	protected val currentLogDir
+		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
+	
 	/** kann einen vordefinierten Zug zurückgeben oder null wenn nicht sinnvoll */
 	protected open fun predefinedMove(): Move? = null
 	
-	/**Findet den Move der beim aktuellen GameState am besten ist<br></br>
-	 * verweist standardmäßig auf die breitensuche */
-	protected open fun findBestMove(): Move? = breitensuche()
-	
-	/** bewertet die gegebene Situation
-	 * @return Einschätzung der gegebenen Situation in Punkten */
-	protected abstract fun evaluate(state: GameState): Double
+	/** findet den Move der beim aktuellen GameState am besten ist */
+	protected abstract fun findBestMove(): Move?
 	
 	/** Die Standard-Parameter - gibt in der Basisimplementierung ein leeres Array zurück */
 	protected open fun defaultParams() = doubleArrayOf()
 	
-	private var depth: Int = 0
-	private var lastdepth: Int = 0
-	
-	private val gameLogDir = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
-	private val currentLogDir
-		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
-	
-	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	private fun breitensuche(): Move? {
-		// Variablen vorbereiten
-		val queue = LinkedList<Node>()
-		val mp = MP()
-		var bestMove: Move
-		var moves = findMoves(currentState)
-		
-		for (move in moves) {
-			val newState = currentState.test(move) ?: continue
-			if (gewonnen(newState))
-				return move
-			// Punkte
-			val points = evaluate(newState)
-			mp.update(move, points)
-			// Queue
-			if (!gewonnen(newState, newState.otherPlayer)) {
-				val newnode = Node(move, newState, points)
-				queue.add(newnode)
-			}
-		}
-		
-		bestMove = mp.obj ?: moves.first()
-		if (queue.size < 2) {
-			System.gc()
-			log.debug("Nur einen validen Zug gefunden: {}", bestMove.str())
-			return bestMove
-		}
-		
-		// Breitensuche
-		mp.clear()
-		depth = 1
-		var maxDepth = 4
-		var node = queue.poll()
-		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
-			depth = node.depth
-			val divider = depth.toDouble().pow(0.3)
-			do {
-				val nodeState = node.gamestate
-				moves = findMoves(nodeState)
-				for (i in 0..moves.lastIndex) {
-					if (Timer.runtime() > 1600)
-						break@loop
-					val move = moves[i]
-					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
-					// Punkte
-					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 100 / divider)
-						continue
-					mp.update(node.move, points)
-					// Queue
-					if (newState.turn > 59 || gewonnen(newState))
-						maxDepth = depth
-					if (!gewonnen(newState, newState.otherPlayer) && depth < maxDepth) {
-						val newNode = node.update(newState, points, move)
-						queue.add(newNode)
-					}
-				}
-				node = queue.poll() ?: break
-			} while (depth == node.depth)
-			lastdepth = depth
-			bestMove = mp.obj!!
-			log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
-		}
-		return bestMove
-	}
-	
-	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
-		
-		constructor(move: Move, state: GameState, points: Double = 0.0) : this(move, state, points, 1,
-				gameLogDir?.resolve("turn$currentTurn")?.resolve("%.1f - %s".format(points, move.str())))
-		
-		init {
-			dir?.createDirs()
-		}
-		
-		fun update(newState: GameState, newPoints: Double, addedMove: Move) =
-				Node(move, newState, newPoints, depth + 1, dir?.resolve("%.1f - %s".format(newPoints, addedMove.str())))
-		
-		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
-		
-	}
+	protected var depth: Int = 0
+	protected var lastdepth: Int = 0
 	
 	/**
 	 * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState

@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.Writer
 import java.util.Arrays
 
-version = KotlinVersion(1, 7, 1).toString()
+version = file("src/xerus/softwaerchallenge/logic2018/Jumper1.kt")
 
 plugins {
 	kotlin("jvm") version "1.2.41"
@@ -17,6 +17,7 @@ repositories { jcenter() }
 
 dependencies {
 	compile("xerus.util", "kotlin")
+	compile(kotlin("stdlib"))
 	compile(fileTree("lib"))
 }
 

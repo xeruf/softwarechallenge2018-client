@@ -14,161 +14,15 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-/** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel  */
-abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version") {
-	
-	override fun evaluate(state: GameState): Double {
-		val player = state.currentPlayer
-		
-		// Position
-		val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
-		val points = 100.0 - distanceToGoal 
-		- (state.fieldOfCurrentPlayer() == FieldType.CARROT).to(3, 0)
-		+ player.inGoal().to(100000, 0)
-		
-		// Salat und Karten
-		val cardsalads = player.cards.size.toDouble()
-		- params[0] * player.salads * (5 - Math.log(distanceToGoal))
-		+ params[0] * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0) 
-				+ player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(params[1], 0.0))
-		
-		// Karotten
-		val carrots = carrotPoints(player.carrots, distanceToGoal) * 5
-		- carrotPoints(state.otherPlayer.carrots, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
-		
-		return points + cardsalads + carrots
-	}
-	
-	/** Uses a function to calculate the worth of the carrots at the given position
-	 * @param x carrots
-	 * @param y distance to goal
-	 */
-	private inline fun carrotPoints(x: Int, y: Double) =
-			(1.1.pow(-((x - y * 5) / (30 + y)).pow(2)) * 10 + (x / (100 - y)))
-					.times(params[1])
-	// 1.6: (1.01).pow((player.carrots.minus(distance * 4)).pow(2) / (- 30 - distance))
-	// 1.5: 1.2^(-((x-d*4)/(30+d))^2)
-	// 1.5: 1.01^(((x-d*4))^2/(-100-d))
-	
-	// feld 0  -> mehr Karotten sind besser
-	// feld 64(Ziel) -> maximal 10 Karotten
-	// -(x/65-fieldIndex-4)²+10+fieldIndex
-	// benötigte Karotten für x Felder: 0.5x * (x + 1)
-	
-	/** Salat/Karten, Karotten, Weite */
-	override fun defaultParams() = doubleArrayOf(15.0, 0.8)
+/** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel
+  * - Igel: 11, 15, 19, 24, 30, 37, 43, 50, 56
+  * - Salate: 10, 22, 42, 57  */
+abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	
 	override fun Player.str(): String =
 			"Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())
 	
 	override fun gewonnen(state: GameState, player: Player) = player.inGoal()
-	
-	// Igel: 11, 15, 19, 24, 30, 37, 43, 50, 56
-	// Salate: 10, 22, 42, 57
-	override fun predefinedMove(): Move? {
-		val pos = currentPlayer.fieldIndex
-		val otherPos = currentState.otherPos()
-		
-		if (canAdvanceTo(10))
-			return advanceTo(10)
-		
-		if (pos == 10) {
-			if (currentPlayer.lastNonSkipAction !is EatSalad)
-				return Move(EatSalad())
-			else {
-				val pos2 = findField(FieldType.POSITION_2)
-				if (otherPos > 10 && canAdvanceTo(pos2))
-					return advanceTo(pos2)
-				val pos1 = findField(FieldType.POSITION_1)
-				if (otherPos < 11 && canAdvanceTo(pos1))
-					return advanceTo(pos1)
-				val hare = findField(FieldType.HARE, 12)
-				if (otherPos != hare && currentState.turn < 6)
-					return advanceTo(hare).add(Card(CardType.TAKE_OR_DROP_CARROTS, 20, 1))
-			}
-		}
-		
-		if (otherPos == 22 && pos < 22) {
-			val pos21 = findField(FieldType.POSITION_2)
-			if (canAdvanceTo(pos21)) {
-				val pos2circular = findCircular(FieldType.POSITION_2, 11 + pos / 2)
-				if (currentState.otherEatingSalad() == 2) {
-					if (pos2circular < 22 && canAdvanceTo(pos2circular))
-						return advanceTo(pos2circular)
-					if (pos21 < 22)
-						return advanceTo(pos21)
-				} else {
-					val pos22 = findField(FieldType.POSITION_2, 20)
-					if (pos22 < 22 && pos < pos21 && pos21 != pos22)
-						return advanceTo(pos21)
-					if (pos22 == 21 && canAdvanceTo(21) && pos in arrayOf(12, 16, 20))
-						return advanceTo(pos22)
-				}
-				if (pos > 11)
-					return Move(FallBack())
-			}
-		}
-		
-		// todo eat last salad
-		if (otherPos == 57 && pos > 57 && currentState.otherEatingSalad() == 2 && currentPlayer.hasSalad())
-			return Move(FallBack())
-		
-		when (currentState.turn) {
-		// region Rot
-			6 -> {
-				if (canAdvanceTo(22))
-					return advanceTo(22)
-				if (otherPos < 11) {
-					val pos1 = findField(FieldType.POSITION_1)
-					if (canAdvanceTo(pos1))
-						return advanceTo(pos1)
-				}
-				val pos2 = findField(FieldType.POSITION_2, 16)
-				if (otherPos > 19) {
-					if (pos < pos2)
-						return advanceTo(pos2)
-					else if (otherPos == 22)
-						return Move(FallBack())
-				}
-			}
-			8 -> {
-				if (canAdvanceTo(22))
-					return advanceTo(22)
-				if (otherPos == 22) {
-					val pos2 = findField(FieldType.POSITION_2)
-					if (pos2 < 21)
-						return advanceTo(pos2)
-					else if (fieldTypeAt(pos) != FieldType.HEDGEHOG)
-						return Move(FallBack())
-				}
-			}
-		// endregion
-		// region Blau
-			1 -> {
-				if (otherPos == 10) {
-					val field2 = findField(FieldType.POSITION_2)
-					return if ((field2 < 5 && findField(FieldType.HARE, field2) < 10) || field2 < findField(FieldType.HARE))
-						advanceTo(field2)
-					else {
-						val hare = findCircular(FieldType.HARE, field2 / 2)
-						playCard(hare, CardType.EAT_SALAD)
-					}
-				}
-			}
-			3 -> {
-				if (otherPos == 10) {
-					return if (currentState.fieldOfCurrentPlayer() != FieldType.POSITION_2)
-						advanceTo(findField(FieldType.POSITION_2, pos))
-					else {
-						val hare = findCircular(FieldType.HARE, (10 + pos) / 2)
-						playCard(hare, CardType.EAT_SALAD)
-					}
-				}
-			}
-		// endregion
-		}
-		return null
-	}
 	
 	/** @return whether the player has one or more salads */
 	inline fun Player.hasSalad() = salads > 0
@@ -181,8 +35,6 @@ abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version
 		val type = fieldTypeAt(field)
 		return field in 1..64 && !isOccupied(field) && type != FieldType.HEDGEHOG && (type != FieldType.SALAD || currentPlayer.hasSalad()) && (type != FieldType.GOAL || (currentPlayer.carrots <= 10 && currentPlayer.salads == 0))
 	}
-	
-	//fun Field.isBlocked(state: GameState) = isType(FieldType.HEDGEHOG) || state.otherPlayer.fieldIndex == index || isType(FieldType.GOAL) && state.currentPlayer.salads > 0 && state.currentPlayer.carrots > 10
 	
 	/** @return position of the otherPlayer for this GameState */
 	inline fun GameState.otherPos() = otherPlayer.fieldIndex
