@@ -10,6 +10,7 @@ import xerus.ktutil.to
 import xerus.softwarechallenge.util.LogicHandler
 import xerus.softwarechallenge.util.add
 import xerus.softwarechallenge.util.str
+import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
@@ -18,32 +19,30 @@ abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
+		
+		// Position
 		val distanceToGoal = Constants.NUM_FIELDS.minus(player.fieldIndex).toDouble()
-		var points = 100.0 - distanceToGoal
+		val points = 100.0 - distanceToGoal 
+		- (state.fieldOfCurrentPlayer() == FieldType.CARROT).to(3, 0)
+		+ player.inGoal().to(100000, 0)
 		
 		// Salat und Karten
-		points -= params[0] * player.salads * (5 - Math.log(distanceToGoal))
-		points += params[0] * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0) 
+		val cardsalads = player.cards.size.toDouble()
+		- params[0] * player.salads * (5 - Math.log(distanceToGoal))
+		+ params[0] * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0) 
 				+ player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(params[1], 0.0))
-		points += player.cards.size
 		
 		// Karotten
-		points += carrotPoints(player.carrots, distanceToGoal) * 4
-		points -= carrotPoints(state.otherPlayer.carrots, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).to(3, 0)
+		val carrots = carrotPoints(player.carrots, distanceToGoal) * 5
+		- carrotPoints(state.otherPlayer.carrots, Constants.NUM_FIELDS.minus(state.otherPos()).toDouble())
 		
-		// Zieleinlauf
-		points += player.inGoal().to(100000, 0)
-		val turnsLeft = 60 - state.turn
-		if (turnsLeft < 2 || turnsLeft < 6 && player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
-			points -= distanceToGoal * 100
-		return points
+		return points + cardsalads + carrots
 	}
 	
 	/** Uses a function to calculate the worth of the carrots at the given position
 	 * @param x carrots
 	 * @param y distance to goal
-	 * */
+	 */
 	private inline fun carrotPoints(x: Int, y: Double) =
 			(1.1.pow(-((x - y * 5) / (30 + y)).pow(2)) * 10 + (x / (100 - y)))
 					.times(params[1])
@@ -57,7 +56,7 @@ abstract class LogicBase(version: KotlinVersion) : LogicHandler("Jumper $version
 	// benötigte Karotten für x Felder: 0.5x * (x + 1)
 	
 	/** Salat/Karten, Karotten, Weite */
-	override fun defaultParams() = doubleArrayOf(15.0, 0.5)
+	override fun defaultParams() = doubleArrayOf(15.0, 0.8)
 	
 	override fun Player.str(): String =
 			"Player %s Feld: %s Gemuese: %s/%s Karten: %s LastAction: %s".format(playerColor, fieldIndex, salads, carrots, cards.joinToString { it.name }, lastNonSkipAction?.str())

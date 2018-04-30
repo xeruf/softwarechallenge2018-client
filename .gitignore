@@ -4,5 +4,6 @@
 /client/games
 /*.jar
 /*.zip
+start-client.sh
 
 .idea/workspace.xml

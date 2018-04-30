@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.Writer
 import java.util.Arrays
 
-version = KotlinVersion(1, 7, 0).toString()
+version = KotlinVersion(1, 7, 1).toString()
 
 plugins {
 	kotlin("jvm") version "1.2.41"
@@ -24,17 +24,17 @@ java.sourceSets.getByName("main").java.srcDir("src")
 
 val args = listOf("-Dfile.encoding=UTF-8"
 		, "-XX:NewRatio=1"
-		, "-mx800m", "-ms800m"
+		, "-ms600m", "-mx600m"
 		, "-XX:MaxGCPauseMillis=80", "-XX:GCPauseIntervalMillis=1000"
-		, "-XX:TargetSurvivorRatio=80"
+		, "-XX:TargetSurvivorRatio=90"
 )
 
-val cms = arrayOf("-XX:+UseConcMarkSweepGC"
+val cms = listOf("-XX:+UseConcMarkSweepGC"
 		, "-XX:-UseParNewGC"
 		, "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
 		, "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
-val gcDebugParams = arrayOf(
+val gcDebugParams = listOf(
 		"-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
 		, "-XX:+PrintPromotionFailure"
 )
@@ -42,7 +42,7 @@ val gcDebugParams = arrayOf(
 application {
 	applicationName = "Jumper 1"
 	mainClassName = "xerus.softwarechallenge.StarterKt"
-	applicationDefaultJvmArgs = args + cms + gcDebugParams
+	applicationDefaultJvmArgs = args + cms + gcDebugParams + "-Xverify:none"
 }
 
 tasks {
@@ -106,3 +106,5 @@ tasks {
 	}
 	
 }
+
+println("JavaVersion: ${JavaVersion.current()}")

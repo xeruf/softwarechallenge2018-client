@@ -4,7 +4,7 @@ import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
 import xerus.softwarechallenge.util.addMove
 
-class Jumper1 : LogicBase(KotlinVersion(1, 7, 0)) {
+class Jumper1 : LogicBase(KotlinVersion(1, 7, 1)) {
 	
 	override fun findMoves(state: GameState): List<Move> {
 		val player = state.currentPlayer
@@ -17,7 +17,7 @@ class Jumper1 : LogicBase(KotlinVersion(1, 7, 0)) {
 		if (currentField == FieldType.CARROT) {
 			if (player.carrots > 20 && fieldIndex > 40)
 				possibleMoves.addMove(ExchangeCarrots(-10))
-			if (player.carrots < 60)
+			if (player.carrots < 40)
 				possibleMoves.addMove(ExchangeCarrots(10))
 		}
 		

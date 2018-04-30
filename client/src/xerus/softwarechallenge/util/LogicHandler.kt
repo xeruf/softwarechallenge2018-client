@@ -145,7 +145,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5.coerceAtMost(62.minus(currentTurn) / 2)
+		var maxDepth = 4
 		var node = queue.poll()
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
@@ -252,7 +252,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	fun GameState.str() =
 			"GameState: Zug: %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
 	
-	protected inline fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
+	protected fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
 	fun findField(type: FieldType, startIndex: Int = currentPlayer.fieldIndex + 1): Int {
 		var index = startIndex
@@ -288,7 +288,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	/**
 	 * tests a Move on the given [state]
 	 *
-	 * führt jetzt auch einen simplemove für den Gegenspieler aus!
+	 * führt jetzt auch einen Move für den Gegenspieler aus!
 	 *
 	 * @param state gegebener State
 	 * @param move  der zu testende Move
