@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
-  <!-- This config should be released with the app as "logback.xml". -->
+	
   <appender name="FILE"
             class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${LOG_DIRECTORY:-log}/game_server.log</file>
+    <file>${LOG_DIRECTORY:-log}/testclient-%d{LL-dd_HH:mm}.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <FileNamePattern>${LOG_DIRECTORY:-log}/game_server.%i.log.gz</FileNamePattern>
+      <FileNamePattern>${LOG_DIRECTORY:-log}/testclient.%i.log.gz</FileNamePattern>
       <MinIndex>1</MinIndex>
       <MaxIndex>5</MaxIndex>
     </rollingPolicy>
@@ -26,11 +25,9 @@
       <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
     </layout>
   </appender>
-
-  <!-- Uncomment the following to enable info logs to see the game logs: -->
-  <!--
-  <logger name="sc" level="INFO" />
-  -->
+  
+  <logger name="sc" level="info" />
+  <logger name="sc.networking.clients.XStreamClient" level="warn" />
   <logger name="sc.TestClient" level="info" />
 
   <root level="WARN">

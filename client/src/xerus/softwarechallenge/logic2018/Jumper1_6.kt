@@ -6,6 +6,7 @@ import sc.shared.PlayerColor
 import xerus.ktutil.createDir
 import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
+import xerus.ktutil.square
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.addMove
@@ -14,7 +15,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_6: LogicBase("1.6.0") {
+class Jumper1_6: LogicBase("1.6.1") {
 	
 	fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer

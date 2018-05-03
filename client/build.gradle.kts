@@ -63,8 +63,7 @@ tasks {
 	"scripts"(Exec::class) {
 		doFirst {
 			file("../start-client.sh").bufferedWriter().run {
-				write("""
-					#!/bin/sh
+				write("""#!/usr/bin/env bash
 					client=${file("../$jumper.jar").absoluteFile}
 					if [ ${'$'}# -eq 0 ]; 
 					then args=0;
@@ -76,7 +75,8 @@ tasks {
 				close()
 			}
 			file("../start-new.sh").bufferedWriter().run {
-				write("../start-client.sh ../$jumper.jar ${clientParams.joinToString(" ")} \"\$@\"")
+				appendln("#!/usr/bin/env bash")
+				write("\$(dirname \"\${BASH_SOURCE[0]}\")/start-client.sh \$(dirname \"\${BASH_SOURCE[0]}\")/$jumper.jar ${clientParams.joinToString(" ")} \"\$@\"")
 				close()
 			}
 		}
@@ -133,5 +133,5 @@ tasks {
 	
 }
 
-println("JavaVersion: ${JavaVersion.current()}")
+println("Java version: ${JavaVersion.current()}")
 println("Version: $version")

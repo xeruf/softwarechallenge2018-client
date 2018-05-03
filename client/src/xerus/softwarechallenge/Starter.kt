@@ -6,8 +6,7 @@ import org.slf4j.LoggerFactory
 import sc.plugin2018.AbstractClient
 import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
-import xerus.softwarechallenge.logic2018.Jumper2
-import xerus.softwarechallenge.logic2018.LogicBase
+import xerus.softwarechallenge.logic2018.Jumper1_6
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.strategy
 
@@ -39,9 +38,12 @@ fun main(args: Array<String>) {
 	val host = parser.getOptionValue(hostOption, "localhost") as String
 	val port = parser.getOptionValue(portOption, SharedConfiguration.DEFAULT_PORT) as Int
 	val reservation = parser.getOptionValue(reservationOption) as String?
-	val handler = (parser.getOptionValue(clientOption) as String?)?.let { Class.forName("xerus.softwarechallenge.logic2018.$it").newInstance() as IGameHandler } ?: Jumper2()
 	strategy = parser.getOptionValue(strategyOption) as String?
 	debugLevel = parser.getOptionValue(debugOption, 1) as Int
+	
+	val handler = (parser.getOptionValue(clientOption) as String?)
+			?.let { Class.forName("xerus.softwarechallenge.logic2018.$it").newInstance() as IGameHandler }
+			?: Jumper1_6()
 	
 	// einen neuen Client erzeugen
 	try {

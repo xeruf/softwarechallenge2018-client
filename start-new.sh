@@ -1,1 +1,2 @@
-../start-client.sh ../Jumper-1.6.1.jar -c Jumper1_6 "$@"
+#!/usr/bin/env bash
+$(dirname "${BASH_SOURCE[0]}")/start-client.sh $(dirname "${BASH_SOURCE[0]}")/Jumper-1.7.2.jar -c Jumper1_7 "$@"
