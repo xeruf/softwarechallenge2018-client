@@ -8,18 +8,16 @@ import sc.shared.GameResult
 import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
 import sc.shared.PlayerScore
-import xerus.ktutil.createDir
 import xerus.ktutil.createDirs
 import xerus.ktutil.helpers.Timer
+import xerus.ktutil.ifTrue
 import xerus.ktutil.renameTo
 import xerus.softwarechallenge.client
 import java.lang.management.ManagementFactory
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.pow
 import kotlin.math.sign
 
 var strategy: String? = null
@@ -30,17 +28,20 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
 	
-	protected lateinit var currentState: GameState
+	@JvmField
+	protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
+	
+	@JvmField
+	protected val rand: Random = SecureRandom()
+	
+	@JvmField
+	protected var currentState = GameState()
 	
 	protected inline val currentPlayer: Player
 		get() = currentState.currentPlayer
 	
 	protected inline val currentTurn
 		get() = currentState.turn
-	
-	protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
-	
-	val rand: Random = SecureRandom()
 	
 	init {
 		log.warn("$identifier - Parameter: ${params.joinToString()}")
@@ -79,10 +80,14 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		}
 		
 		if (move.invalid()) {
-			log.info("No valid Move: {} - Using simpleMove!", move)
+			log.info("No valid Move: {} - using simpleMove!", move)
 			move = simpleMove(currentState)
 		}
 		
+		if(Timer.runtime() < 100) {
+			log.info("Invoking GC at ${Timer.runtime()}ms")
+			System.gc()
+		}
 		sendAction(move)
 		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, lastdepth))
 		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
@@ -92,32 +97,24 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	// region Zugsuche
 	
-	protected val gameLogDir = if (log.isDebugEnabled) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
+	@JvmField
+	protected val gameLogDir = log.isDebugEnabled.ifTrue(
+			Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs())
 	protected val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
 	/** kann einen vordefinierten Zug zurückgeben oder null wenn nicht sinnvoll */
-	protected open fun predefinedMove(): Move? = null
+	protected open fun predefinedMove(state: GameState = currentState): Move? = null
 	
 	/** findet den Move der beim aktuellen GameState am besten ist */
 	protected abstract fun findBestMove(): Move?
 	
-	/** Die Standard-Parameter - gibt in der Basisimplementierung ein leeres Array zurück */
-	protected open fun defaultParams() = doubleArrayOf()
+	protected abstract fun defaultParams(): DoubleArray
 	
+	@JvmField
 	protected var depth: Int = 0
+	@JvmField
 	protected var lastdepth: Int = 0
-	
-	/**
-	 * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState
-	 *
-	 * muss überschrieben werden um die [breitensuche] zu nutzen
-	 *
-	 * @param state gegebener GameState
-	 * @return ArrayList mit gefundenen Moves
-	 */
-	protected open fun findMoves(state: GameState): List<Move> =
-			throw UnsupportedOperationException("Es wurde keine Methode für das ermitteln von moves definiert!")
 	
 	// GRUNDLAGEN
 	
@@ -127,7 +124,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			client.sendMove(Move())
 			return
 		}
-		log.debug("Sende {}", move.str())
+		log.info("Sende {}", move.str())
 		move.setOrderInActions()
 		client.sendMove(move)
 	}
@@ -156,8 +153,6 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		frame.pack();
 		frame.setVisible(true);
 	}*/
-	
-	protected abstract fun gewonnen(state: GameState, player: Player = state.currentPlayer): Boolean
 	
 	abstract fun Player.str(): String
 	
