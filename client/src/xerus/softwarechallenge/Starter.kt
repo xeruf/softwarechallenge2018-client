@@ -1,11 +1,13 @@
 package xerus.softwarechallenge
 
-import xerus.softwarechallenge.logic2018.Jumper1
 import jargs.gnu.CmdLineParser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import sc.plugin2018.AbstractClient
+import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
+import xerus.softwarechallenge.logic2018.Jumper2
+import xerus.softwarechallenge.logic2018.LogicBase
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.strategy
 
@@ -20,39 +22,57 @@ fun main(args: Array<String>) {
 	val parser = CmdLineParser()
 	val hostOption = parser.addStringOption('h', "host")
 	val portOption = parser.addIntegerOption('p', "port")
-	val strategyOption = parser.addStringOption('s', "strategy")
 	val reservationOption = parser.addStringOption('r', "reservation")
+	
+	val clientOption = parser.addStringOption('c', "client")
+	val strategyOption = parser.addStringOption('s', "strategy")
 	val debugOption = parser.addIntegerOption('d', "debug")
 	
 	try {
 		parser.parse(args)
 	} catch (e: CmdLineParser.OptionException) {
-		showHelp(e.message)
+		showHelp(e.toString())
 		System.exit(2)
 	}
 	
 	// Parameter laden
 	val host = parser.getOptionValue(hostOption, "localhost") as String
 	val port = parser.getOptionValue(portOption, SharedConfiguration.DEFAULT_PORT) as Int
-	val reservation = parser.getOptionValue(reservationOption, null) as String?
-	strategy = parser.getOptionValue(strategyOption, null) as String?
+	val reservation = parser.getOptionValue(reservationOption) as String?
+	val handler = (parser.getOptionValue(clientOption) as String?)?.let { Class.forName("xerus.softwarechallenge.logic2018.$it").newInstance() as IGameHandler } ?: Jumper2()
+	strategy = parser.getOptionValue(strategyOption) as String?
 	debugLevel = parser.getOptionValue(debugOption, 1) as Int
 	
 	// einen neuen Client erzeugen
 	try {
-		client = Client(host, port, reservation)
+		client = Client(host, port, reservation, handler)
 	} catch (e: Exception) {
 		System.err.println("Beim Starten den Clients ist ein Fehler aufgetreten: " + e.message)
-		System.exit(1)
+		System.exit(2)
 	}
 	
 }
 
-class Client(host: String, port: Int, reservation: String?) : AbstractClient(host, port) {
+private fun showHelp(errorMsg: String?) {
+	println("""$errorMsg
+Usage: 
+java -jar mississippi_queen_player.jar
+				[{-h,--host} hostname]
+				[{-p,--port} port]
+				[{-r,--reservation} reservierung]
+				[{-s,--strategy} strategie]
+				[{-c,--client} client]
+				
+Example:
+java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy 10.0,5.0 --client Jumper1_6
+""")
+}
+
+
+class Client(host: String, port: Int, reservation: String?, handler: IGameHandler) : AbstractClient(host, port) {
 	
 	init {
-		setHandler(Jumper1())
-		
+		setHandler(handler)
 		if (reservation == null) {
 			joinAnyGame()
 		} else {
@@ -62,16 +82,4 @@ class Client(host: String, port: Int, reservation: String?) : AbstractClient(hos
 	
 	override fun onGameObserved(arg0: String) {}
 	
-}
-
-private fun showHelp(errorMsg: String?) {
-	println(errorMsg)
-	println("Bitte das Programm mit folgenden Parametern (optional) aufrufen: \n"
-			+ "java -jar mississippi_queen_player.jar [{-h,--host} hostname]\n"
-			+ "							   [{-p,--port} port]\n"
-			+ "							   [{-r,--reservation} reservierung]\n"
-			+ "							   [{-s,--strategy} strategie]")
-	println()
-	println("Beispiel: \n" + "java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy RANDOM")
-	println()
 }

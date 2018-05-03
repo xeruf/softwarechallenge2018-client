@@ -25,7 +25,7 @@
         </compositeConfiguration>
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="$USER_HOME$/.sdkman/candidates/gradle/current" />
+        <option name="gradleHome" value="/usr/lib/gradle/default" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />

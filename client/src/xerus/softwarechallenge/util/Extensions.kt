@@ -2,10 +2,7 @@
 
 package xerus.softwarechallenge.util
 
-import sc.plugin2018.Action
-import sc.plugin2018.Field
-import sc.plugin2018.FieldType
-import sc.plugin2018.Move
+import sc.plugin2018.*
 
 inline fun Field.isType(type: FieldType) = this.type == type
 
@@ -18,5 +15,8 @@ fun Collection<Move>.str(): String = joinToString(prefix = "| ", separator = "\n
 
 fun Move.str() = "Move[${actions.joinToString { it.str() }}]"
 
-fun Action.str() = toString().substringBefore(" order")
+fun Action.str() = when (this) {
+	is Advance -> "Advance $distance"
+	else -> toString().substringBefore(" order")
+}
 

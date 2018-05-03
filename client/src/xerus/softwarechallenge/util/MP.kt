@@ -13,7 +13,15 @@ class MP : Rater<Move> {
 	constructor(m: Move, p: Double) : super(m, p)
 	
 	override fun toString(): String {
-		return "%s Punkte: %d".format(obj!!.str(), points)
+		return "%s - %.1f".format(obj!!.str(), points)
 	}
 	
+	override fun update(other: Move?, otherPoints: Double): Boolean {
+		if (otherPoints > points) {
+			obj = other
+			points = otherPoints
+			return true
+		}
+		return false
+	}	
 }

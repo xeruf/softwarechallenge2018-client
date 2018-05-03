@@ -1,0 +1,1 @@
+../start-client.sh ../Jumper-1.6.1.jar -c Jumper1_6 "$@"
