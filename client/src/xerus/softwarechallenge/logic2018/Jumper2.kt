@@ -180,7 +180,7 @@ class Jumper2 : LogicBase("2.0.0") {
 					if (CardType.EAT_SALAD in cards && player.hasSalad && (fieldIndex > 42 || otherPos > newPos || player.salads == 1))
 						possibleMoves.add(advance.addCard(CardType.EAT_SALAD))
 					if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-						if (newCarrots > 30 && newPos > 40)
+						if (newCarrots > 30 && newPos > 42)
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 						if (CardType.EAT_SALAD !in cards || newPos > otherPos)
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
@@ -196,9 +196,10 @@ class Jumper2 : LogicBase("2.0.0") {
 								if (CardType.FALL_BACK in cards && fieldTypeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
 									possibleMoves.add(hurry.addCard(CardType.FALL_BACK))*/
 								if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-									if (newCarrots > 30 && otherPos + 1 > 40)
+									if (newCarrots > 30 && otherPos + 1 > 42)
 										possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-									possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
+									if (CardType.EAT_SALAD !in cards || newPos > otherPos)
+										possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 								}
 							}
 							else -> possibleMoves.add(hurry)
@@ -214,9 +215,10 @@ class Jumper2 : LogicBase("2.0.0") {
 								if (CardType.HURRY_AHEAD in cards && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
 									possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD)) */
 								if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-									if (newCarrots > 30 && otherPos - 1 > 40)
+									if (newCarrots > 30 && otherPos - 1 > 42)
 										possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-									possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
+									if (CardType.EAT_SALAD !in cards || newPos > otherPos)
+										possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 								}
 							}
 							else -> possibleMoves.add(fall)
