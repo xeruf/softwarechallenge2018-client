@@ -3,7 +3,7 @@
 	
   <appender name="FILE"
             class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${LOG_DIRECTORY:-log}/testclient-%d{LL-dd_HH:mm}.log</file>
+    <file>${LOG_DIRECTORY:-log}/testclient.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <FileNamePattern>${LOG_DIRECTORY:-log}/testclient.%i.log.gz</FileNamePattern>
@@ -26,7 +26,7 @@
     </layout>
   </appender>
   
-  <logger name="sc" level="info" />
+  <logger name="sc" level="warn" />
   <logger name="sc.networking.clients.XStreamClient" level="warn" />
   <logger name="sc.TestClient" level="info" />
 

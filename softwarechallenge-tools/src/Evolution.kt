@@ -11,11 +11,12 @@ import java.util.concurrent.TimeUnit
 
 private lateinit var basepath: File
 private lateinit var ailoc: File
-private lateinit var datafile: File
-private lateinit var bestfile: File
+private lateinit var strategies: File
+private lateinit var bestFile: File
 
 private var debug: Boolean = false
 
+@Suppress("UNCHECKED_CAST")
 fun <T> CmdLineParser.getValue(option: CmdLineParser.Option, default: T, converter: (Any) -> T? = { it as? T }) =
 		converter(getOptionValue(option)) ?: default
 
@@ -23,20 +24,20 @@ fun main(args: Array<String>) {
 	val parser = CmdLineParser()
 	val path = parser.addStringOption('p', "path")
 	val aiOption = parser.addStringOption("ai")
-	val lineOption = parser.addIntegerOption('l', "line")
+	val idOption = parser.addIntegerOption('i', "id")
 	val debugOption = parser.addBooleanOption('d', "debug")
 	parser.parse(args)
 	
-	basepath = File(parser.getOptionValue(path, System.getProperty("user.dir") + "/") as String)
+	basepath = File(parser.getOptionValue(path, System.getProperty("user.dir")) as String)
 	val server = startServer()
+	strategies = basepath.resolve("strategies")
+	bestFile = strategies.resolve("best.csv")
 	
 	debug = parser.getValue(debugOption, false)
-	ailoc = parser.getValue(aiOption, basepath.resolve("Jumper-1.6.1.jar")) { File(it as String) }
-	datafile = basepath.resolve("strategies.csv")
-	bestfile = basepath.resolve("strategies_best.csv")
+	ailoc = parser.getValue(aiOption, basepath.resolve("Jumper-1.8.2.jar")) { File(it as String) }
 	
 	try {
-		Evolution(parser.getValue(lineOption, 0))
+		Evolution(parser.getValue(idOption, 0))
 		while (true)
 			Evolution()
 	} finally {
@@ -45,40 +46,50 @@ fun main(args: Array<String>) {
 }
 
 private fun startServer(): Process {
-	val serverbuilder = ProcessBuilder(basepath.resolve("testserver/start.bat").toString())
-	serverbuilder.directory(basepath.resolve("testserver"))
-	serverbuilder.redirectErrorStream(true)
-	return serverbuilder.start()
+	val serverBuilder = ProcessBuilder(basepath.resolve("testserver/start.bat").toString())
+	serverBuilder.directory(basepath.resolve("testserver"))
+	serverBuilder.redirectErrorStream(true)
+	return serverBuilder.start()
 }
 
 private fun buildAI() = ProcessBuilder("java", "-jar", ailoc.toString())
 
-class Evolution constructor(lineparam: Int = 0) {
+private fun file(id: Int) = basepath.resolve(id.toString())
+
+fun getNextId(): Int {
+	val id = try {
+		basepath.resolve("lastid").readText().toInt()
+	} catch (t: Throwable) {
+		1
+	}
+	basepath.resolve("lastid").writeText((id+1).toString())
+	return id
+}
+
+class Evolution constructor(private val id: Int = 0) {
 	
 	private var strategy: Strategy
-	private var line: Int = lineparam
-	
 	private var started: Boolean = false
 	
+	private val outputFile = file(if(id == 0) getNextId() else id)
+	
 	init {
-		val file = datafile.readLines()
-		if (line == 0) {
-			line = file.size
-			strategy = Strategy(file[0])
+		strategy = if (this.id == 0) {
+			Strategy(file(0).readText())
 		} else {
-			println("Reading line $line")
-			strategy = Strategy(false, file[line])
+			println("Reading id $id")
+			Strategy(false, file(id).readText())
 		}
 		try {
 			while (strategy.games < 200) {
-				val AI = startAI()
+				val ai = startAI()
 				started = false
 				SysoutListener.addObserver { e -> if (e.contains("Ich bin")) started = true }
 				Thread.sleep(6000)
 				if (!started)
 					buildAI().start()
-				if (AI.waitFor(2, TimeUnit.MINUTES))
-					strategy.write(AI.exitValue())
+				if (ai.waitFor(2, TimeUnit.MINUTES))
+					strategy.write(ai.exitValue())
 			}
 			strategy.writeEnd("Finished")
 		} catch (e: IOException) {
@@ -104,7 +115,7 @@ class Evolution constructor(lineparam: Int = 0) {
 		internal var won: Int = 0
 		internal var score: Int = 0
 		
-		internal var bestline: Int = 0
+		internal val bestLine by lazy { bestFile.readLines().size }
 		
 		internal var c: Int = 0
 		
@@ -146,9 +157,9 @@ class Evolution constructor(lineparam: Int = 0) {
 				score += exitvalue % 100
 			}
 			
-			val towrite = toString()
-			datafile.write(line, towrite)
-			println("\"%s\" auf Zeile %s geschrieben".format(towrite, line))
+			val s = toString()
+			outputFile.writeText(s)
+			println("\"$s\" geschrieben")
 			if (games > 30) {
 				if (winrate < 0.45)
 					resetStrategy()
@@ -156,26 +167,19 @@ class Evolution constructor(lineparam: Int = 0) {
 					if (winrate < 0.5) {
 						resetStrategy()
 					} else if (winrate > 0.53) {
-						if (bestline == 0) {
-							val file = bestfile.readLines()
-							bestline = file.size
-						}
-						bestfile.write(bestline, towrite)
+						bestFile.write(bestLine, s)
 					}
 				}
 			}
 		}
 		
 		internal fun resetStrategy() {
-			var file: String? = null
-			while (file == null)
-				file = datafile.bufferedReader().readLine()
-			strategy = Strategy(file)
+			strategy = Strategy(file(0).readText())
 		}
 		
 		internal fun writeEnd(msg: String) {
 			println("Fertig!")
-			datafile.write(line, toString() + ";" + msg)
+			outputFile.writeText(toString() + ";" + msg)
 		}
 		
 		override fun toString(): String {
@@ -183,8 +187,7 @@ class Evolution constructor(lineparam: Int = 0) {
 			return arrayOf(joinparams(), variation.joinToString(","), winrate, score, games, won, formattedTime()).joinToString(",")
 		}
 		
-		internal fun joinparams() =
-				params.joinToString(",")
+		internal fun joinparams() = params.joinToString(",")
 		
 	}
 	

@@ -1,0 +1,12 @@
+
+sum() {
+	numbers=$(find -maxdepth 1 -name "1*" | xargs grep "$1: [0-9]" | cut -d ' ' -f2)
+	sum=$(echo $numbers | sed "s/ /+/g" | bc)
+	amount=$(echo $numbers | wc -w)
+	printf "%5s: %d %3d %3d\n" $1 $amount $sum $((sum/amount))
+}
+
+sum "1.6.0"
+sum "1.6.1"
+sum "1.7.0"
+sum "1.8.0"

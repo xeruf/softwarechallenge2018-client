@@ -84,7 +84,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			move = simpleMove(currentState)
 		}
 		
-		if(Timer.runtime() < 100) {
+		if (Timer.runtime() < 100) {
 			log.info("Invoking GC at ${Timer.runtime()}ms")
 			System.gc()
 		}
@@ -98,8 +98,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	// region Zugsuche
 	
 	@JvmField
-	protected val gameLogDir = log.isDebugEnabled.ifTrue(
-			Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs())
+	protected val gameLogDir = (debugLevel == 2).ifTrue(Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs())
 	protected val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	

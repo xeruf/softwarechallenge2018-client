@@ -14,7 +14,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_7 : LogicBase("1.7.2") {
+class Jumper1_7 : LogicBase("1.7.1") {
 	
 	fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer

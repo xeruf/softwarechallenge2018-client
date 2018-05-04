@@ -8,7 +8,7 @@ import java.util.Arrays
 val client = properties["c"] as String?
 val clientParams = if (client != null) listOf("-c", client) else emptyList()
 
-version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper2"}.kt").bufferedReader().use {
+version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper1_8"}.kt").bufferedReader().use {
 	var line: String
 	do {
 		line = it.readLine()
@@ -19,6 +19,7 @@ version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper2"}.kt"
 plugins {
 	kotlin("jvm") version "1.2.41"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
+	id("com.dorongold.task-tree") version "1.3"
 	application
 }
 
@@ -31,6 +32,7 @@ dependencies {
 }
 
 java.sourceSets.getByName("main").java.srcDir("src")
+java.sourceSets.getByName("main").resources.srcDir("resources")
 
 val javaArgs = listOf("-Dfile.encoding=UTF-8"
 		, "-XX:NewRatio=1"
@@ -63,20 +65,21 @@ tasks {
 	"scripts"(Exec::class) {
 		doFirst {
 			file("../start-client.sh").bufferedWriter().run {
-				write("""#!/usr/bin/env bash
-					client=${file("../$jumper.jar").absoluteFile}
+				write("""
+					#!/usr/bin/env bash
+					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar
 					if [ ${'$'}# -eq 0 ]; 
 					then args=0;
 					else args=2;
-					if [ -f ${'$'}1 ]; then client=${'$'}1; fi
+					${"if [ -f $1 ]; then client=$1; fi"}
 					fi;
 					java ${(javaArgs + cms + gcDebugParams).joinToString(" ")} -jar ${'$'}client "${'$'}{@}"
 				""".trimIndent())
 				close()
 			}
-			file("../start-new.sh").bufferedWriter().run {
+			file("../start-latest.sh").bufferedWriter().run {
 				appendln("#!/usr/bin/env bash")
-				write("\$(dirname \"\${BASH_SOURCE[0]}\")/start-client.sh \$(dirname \"\${BASH_SOURCE[0]}\")/$jumper.jar ${clientParams.joinToString(" ")} \"\$@\"")
+				write("\$(dirname \"\${BASH_SOURCE[0]}\")/start-client.sh \$(dirname \"\${BASH_SOURCE[0]}\")/$jumper.jar \"\$@\"")
 				close()
 			}
 		}
@@ -105,6 +108,9 @@ tasks {
 	
 	"classes" {
 		mustRunAfter("clean")
+		doFirst {
+			file("resources/activeclient").writeText(client.orEmpty())
+		}
 	}
 	
 	"zip"(Zip::class) {

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+cd testserver
+prefix="./start-"
+if (( $# < 3 )); then
+    tests=200
+else
+    tests=$3
+fi
+if (( $# < 4 )); then
+	port=13051
+else
+	port=$4
+fi
+echo "#!/usr/bin/env bash
+../start-client.sh ../Jumper-$1.jar \"\$@\"" > "$prefix$1"
+echo "#!/usr/bin/env bash
+../start-client.sh ../Jumper-$2.jar \"\$@\"" > "$prefix$2"
+chmod +x $prefix$1 $prefix$2
+java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
+    --name1 $1 --player1 "$prefix$1" \
+    --name2 $2 --player2 "$prefix$2" \
+    --tests $tests --start-server --port $port
+rm $prefix$1 $prefix$2

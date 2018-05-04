@@ -6,9 +6,12 @@ import org.slf4j.LoggerFactory
 import sc.plugin2018.AbstractClient
 import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
+import xerus.ktutil.getResource
+import xerus.ktutil.nullIfEmpty
 import xerus.softwarechallenge.logic2018.Jumper1_6
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.strategy
+import java.io.File
 
 lateinit var client: Client
 
@@ -41,9 +44,9 @@ fun main(args: Array<String>) {
 	strategy = parser.getOptionValue(strategyOption) as String?
 	debugLevel = parser.getOptionValue(debugOption, 1) as Int
 	
-	val handler = (parser.getOptionValue(clientOption) as String?)
-			?.let { Class.forName("xerus.softwarechallenge.logic2018.$it").newInstance() as IGameHandler }
-			?: Jumper1_6()
+	val clientClass = (parser.getOptionValue(clientOption) as String?)
+	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass 
+			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper2"}").newInstance() as IGameHandler
 	
 	// einen neuen Client erzeugen
 	try {

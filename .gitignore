@@ -5,7 +5,8 @@
 
 /*.jar
 /*.zip
-start-client.sh
+
+start-*
 
 **/.idea/workspace.xml
 **/.idea/libraries
