@@ -10,6 +10,7 @@ import xerus.ktutil.getResource
 import xerus.ktutil.nullIfEmpty
 import xerus.softwarechallenge.logic2018.Jumper1_6
 import xerus.softwarechallenge.util.debugLevel
+import xerus.softwarechallenge.util.evolution
 import xerus.softwarechallenge.util.strategy
 import java.io.File
 
@@ -18,8 +19,8 @@ lateinit var client: Client
 fun main(args: Array<String>) {
 	System.setProperty("file.encoding", "UTF-8")
 	
-	val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-	(rootLogger as ch.qos.logback.classic.Logger).level = ch.qos.logback.classic.Level.WARN
+	val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
+	rootLogger.level = ch.qos.logback.classic.Level.WARN
 	
 	val parser = CmdLineParser()
 	val hostOption = parser.addStringOption('h', "host")
@@ -29,6 +30,7 @@ fun main(args: Array<String>) {
 	val clientOption = parser.addStringOption('c', "client")
 	val strategyOption = parser.addStringOption('s', "strategy")
 	val debugOption = parser.addIntegerOption('d', "debug")
+	val evolutionOption = parser.addIntegerOption('e', "evolution")
 	
 	try {
 		parser.parse(args)
@@ -43,6 +45,7 @@ fun main(args: Array<String>) {
 	val reservation = parser.getOptionValue(reservationOption) as String?
 	strategy = parser.getOptionValue(strategyOption) as String?
 	debugLevel = parser.getOptionValue(debugOption, 1) as Int
+	evolution = parser.getOptionValue(evolutionOption) as Int?
 	
 	val clientClass = (parser.getOptionValue(clientOption) as String?)
 	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass 

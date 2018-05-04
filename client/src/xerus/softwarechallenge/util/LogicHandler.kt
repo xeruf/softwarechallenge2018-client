@@ -12,7 +12,10 @@ import xerus.ktutil.createDirs
 import xerus.ktutil.helpers.Timer
 import xerus.ktutil.ifTrue
 import xerus.ktutil.renameTo
+import xerus.ktutil.toInt
 import xerus.softwarechallenge.client
+import java.io.File
+import java.io.FileWriter
 import java.lang.management.ManagementFactory
 import java.nio.file.Paths
 import java.security.SecureRandom
@@ -22,6 +25,7 @@ import kotlin.math.sign
 
 var strategy: String? = null
 var debugLevel: Int = 1
+var evolution: Int? = null
 
 /** schafft Grundlagen fuer eine Logik */
 abstract class LogicHandler(identifier: String) : IGameHandler {
@@ -236,17 +240,17 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	override fun gameEnded(data: GameResult, color: PlayerColor, errorMessage: String?) {
 		val scores = data.scores
 		val cause = "Ich %s Gegner %s".format(scores[color.ordinal].cause, scores[color.opponent().ordinal].cause)
-		if (data.winners.isEmpty()) {
+		if (data.winners.isEmpty())
 			log.warn("Kein Gewinner! Grund: {}", cause)
-			// System.exit(0);
-		}
 		val winner = (data.winners[0] as Player).playerColor
-		val myscore = getScore(scores, color)
+		val score = getScore(scores, color)
 		if (data.isRegular)
-			log.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(identify(winner), myscore, getScore(scores, color.opponent())))
+			log.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(identify(winner), score, getScore(scores, color.opponent())))
 		else
-			log.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(myscore, cause))
-		// System.exit((color == winner ? 100 : 0) + myscore)
+			log.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(score, cause))
+		evolution?.let { 
+			File("strategies/result$it").writeText("${(color == winner).toInt()} $score")
+		}
 	}
 	
 	private fun getScore(scores: List<PlayerScore>, color: PlayerColor): Int =
