@@ -30,8 +30,8 @@ class Jumper2 : Moves2("2.0.0") {
 				actions.sumByDouble {
 					if (it is Card)
 						-when (it.type) {
-							CardType.TAKE_OR_DROP_CARROTS -> params[1] / 2
-							CardType.EAT_SALAD -> params[0] / 2
+							CardType.TAKE_OR_DROP_CARROTS -> carrotParam / 2
+							CardType.EAT_SALAD -> saladParam / 2
 							else -> 2.0
 						}
 					else
@@ -39,10 +39,10 @@ class Jumper2 : Moves2("2.0.0") {
 				} + when (state.fieldOfCurrentPlayer()) {
 					FieldType.GOAL -> 100.0
 					FieldType.CARROT -> -1.0
-					FieldType.SALAD -> +params[0]
+					FieldType.SALAD -> saladParam
 					else -> 0.0
 				}
-			} + (currentPlayer.salads - state.currentPlayer.salads) * params[0]
+			} + (currentPlayer.salads - state.currentPlayer.salads) * saladParam
 	
 	// 1.7: (1.1.pow(-((x - y * 5) / (30 + y)).square) * 10 + (x / (100 - y)))
 	// 1.6: (1.01).pow((player.carrots.minus(distance * 4)).square / (- 30 - distance))
@@ -69,10 +69,10 @@ class Jumper2 : Moves2("2.0.0") {
 			val otherField = fieldTypeAt(currentState.otherPos)
 			if (otherField == FieldType.POSITION_1) {
 				if (newState.currentPlayer.fieldIndex > currentState.otherPos)
-					evaluation -= params[1] / 3
+					evaluation -= carrotParam / 3
 			} else if (otherField == FieldType.POSITION_2)
 				if (currentState.otherPos > newState.currentPlayer.fieldIndex)
-					evaluation -= params[1]
+					evaluation -= carrotParam
 			mp.update(move, evaluation)
 			// Queue
 			if (!newState.otherPlayer.gewonnen() || myColor == PlayerColor.BLUE)

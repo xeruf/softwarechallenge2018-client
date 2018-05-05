@@ -46,7 +46,7 @@ val cms = listOf("-XX:+UseConcMarkSweepGC"
 		, "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
 		, "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
-val gcDebugParams = listOf(
+val gcDebugParams = if(properties["nogc"] != null) emptyList() else listOf(
 		"-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
 		, "-XX:+PrintPromotionFailure", "-noverify"
 )
@@ -87,6 +87,7 @@ tasks {
 	}
 	
 	withType<KotlinCompile> {
+		mustRunAfter("clean")
 		kotlinOptions {
 			jvmTarget = "1.8"
 			freeCompilerArgs = listOf("-Xno-param-assertions", "-Xno-call-assertions")
@@ -106,8 +107,7 @@ tasks {
 		dependsOn("clean", "classes")
 	}
 	
-	"classes" {
-		mustRunAfter("clean")
+	"processResources" {
 		doFirst {
 			file("resources/activeclient").writeText(client.orEmpty())
 		}

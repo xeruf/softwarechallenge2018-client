@@ -3,10 +3,8 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
 import sc.shared.PlayerColor
-import xerus.ktutil.createDir
-import xerus.ktutil.createFile
+import xerus.ktutil.*
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.to
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.addMove
 import xerus.softwarechallenge.util.str
@@ -14,11 +12,11 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_7 : LogicBase("1.7.1") {
+class Jumper1_7 : LogicBase("1.7.11") {
 	
 	fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		val distanceToGoal = 64.minus(player.fieldIndex).toDouble()
+		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		var points = 100.0 - distanceToGoal
 		
 		// Salat und Karten
@@ -30,10 +28,10 @@ class Jumper1_7 : LogicBase("1.7.1") {
 		// Karotten
 		points += carrotPoints(player.carrots, distanceToGoal) * 4
 		points -= carrotPoints(state.otherPlayer.carrots, 65.minus(state.otherPos).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).to(3, 0)
+		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
-		points += player.inGoal().to(100000, 0)
+		points += goalPoints(player)
 		val turnsLeft = 60 - state.turn
 		if (turnsLeft < 2 || turnsLeft < 6 && player.carrots > GameRuleLogic.calculateCarrots(distanceToGoal.toInt()) + turnsLeft * 10 + 20)
 			points -= distanceToGoal * 100
@@ -45,13 +43,13 @@ class Jumper1_7 : LogicBase("1.7.1") {
 	 * @param y distance to goal
 	 * */
 	private fun carrotPoints(x: Int, y: Double) =
-			(1.1.pow(-((x - y * 5) / (30 + y)).pow(2)) * 10 + (x / (100 - y))) * params[1]
+			(1.1.pow(-((x - y * 5) / (30 + y)).square) * 10 + (x / (100 - y))) * params[1]
 	
 	/** Salat/Karten, Karotten */
 	override fun defaultParams() = doubleArrayOf(15.0, 0.5)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	override fun breitensuche(): Move? {
+	/*override fun breitensuche(): Move? {
 		val queue = LinkedList<Node>()
 		val mp = MP()
 		
@@ -110,6 +108,73 @@ class Jumper1_7 : LogicBase("1.7.1") {
 			lastdepth = depth
 			bestMove = mp.obj!!
 			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
+		}
+		return bestMove
+	}*/
+	
+	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
+	override fun breitensuche(): Move? {
+		// Variablen vorbereiten
+		val queue = LinkedList<Node>()
+		val mp = MP()
+		var bestMove: Move
+		var moves = findMoves(currentState)
+		
+		for (move in moves) {
+			val newState = currentState.test(move) ?: continue
+			if (newState.currentPlayer.gewonnen())
+				return move
+			// Punkte
+			val points = evaluate(newState)
+			mp.update(move, points)
+			// Queue
+			if (!newState.otherPlayer.gewonnen()) {
+				val newnode = Node(move, newState, points)
+				queue.add(newnode)
+			}
+		}
+		
+		bestMove = mp.obj ?: moves.first()
+		if (queue.size < 2) {
+			System.gc()
+			log.debug("Nur einen validen Zug gefunden: {}", bestMove.str())
+			return bestMove
+		}
+		
+		// Breitensuche
+		mp.clear()
+		depth = 1
+		var maxDepth = 5.coerceAtMost(62.minus(currentTurn) / 2)
+		var node = queue.poll()
+		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
+			depth = node.depth
+			val divider = depth.toDouble().pow(0.3)
+			do {
+				val nodeState = node.gamestate
+				moves = findMoves(nodeState)
+				for (i in 0..moves.lastIndex) {
+					if (Timer.runtime() > 1600)
+						break@loop
+					val move = moves[i]
+					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
+					// Punkte
+					val points = evaluate(newState) / divider + node.points
+					if (points < mp.points - 100 / divider)
+						continue
+					mp.update(node.move, points)
+					// Queue
+					if (newState.turn > 59 || newState.currentPlayer.gewonnen())
+						maxDepth = depth
+					if (!newState.otherPlayer.gewonnen() && depth < maxDepth) {
+						val newNode = node.update(newState, points, move)
+						queue.add(newNode)
+					}
+				}
+				node = queue.poll() ?: break
+			} while (depth == node.depth)
+			lastdepth = depth
+			bestMove = mp.obj!!
+			log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
 		}
 		return bestMove
 	}
@@ -317,17 +382,87 @@ class Jumper1_7 : LogicBase("1.7.1") {
 		else listOf(Move(Skip()))
 	}
 	
+	override fun simpleMove(state: GameState): Move {
+		val possibleMoves = findMoves(state)
+		val winningMoves = ArrayList<Move>()
+		val selectedMoves = ArrayList<Move>()
+		val currentPlayer = state.currentPlayer
+		val index = currentPlayer.fieldIndex
+		for (Move in possibleMoves) {
+			for (action in Move.actions) {
+				if (action is Advance) {
+					when {
+						action.distance + index == 64 -> // Zug ins Ziel
+							winningMoves.add(Move)
+						state.board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
+							winningMoves.add(Move)
+						else -> // Ziehe Vorwärts, wenn möglich
+							selectedMoves.add(Move)
+					}
+				} else if (action is Card) {
+					if (action.type == CardType.EAT_SALAD) {
+						// Zug auf Hasenfeld und danach Salatkarte
+						winningMoves.add(Move)
+					} // Muss nicht zusätzlich ausgewählt werden, wurde schon durch Advance ausgewählt
+				} else if (action is ExchangeCarrots) {
+					if (action.value == 10 && currentPlayer.carrots < 30 && index < 40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
+						// Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal hintereinander
+						selectedMoves.add(Move)
+					} else if (action.value == -10 && currentPlayer.carrots > 30 && index >= 40) {
+						// abgeben von Karotten ist nur am Ende sinnvoll
+						selectedMoves.add(Move)
+					}
+				} else if (action is FallBack) {
+					if (index > 56 /* letztes Salatfeld */ && currentPlayer.salads > 0) {
+						// Falle nur am Ende (index > 56) zurück, außer du musst noch einen Salat loswerden
+						selectedMoves.add(Move)
+					} else if (index <= 56 && index - state.getPreviousFieldByType(FieldType.HEDGEHOG, index) < 5) {
+						// Falle zurück, falls sich Rückzug lohnt (nicht zu viele Karotten aufnehmen)
+						selectedMoves.add(Move)
+					}
+				} else {
+					// Füge Salatessen oder Skip hinzu
+					selectedMoves.add(Move)
+				}
+			}
+		}
+		val move = if (!winningMoves.isEmpty()) {
+			winningMoves[rand.nextInt(winningMoves.size)]
+		} else if (!selectedMoves.isEmpty()) {
+			selectedMoves[rand.nextInt(selectedMoves.size)]
+		} else {
+			possibleMoves[rand.nextInt(possibleMoves.size)]
+		}
+		move.setOrderInActions()
+		return move
+	}
+	
 	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
+		
+		constructor(move: Move, state: GameState, points: Double = 0.0) : this(move, state, points, 1,
+				gameLogDir?.resolve("turn$currentTurn")?.resolve("%.1f - %s".format(points, move.str())))
+		
+		init {
+			dir?.createDirs()
+		}
+		
+		fun update(newState: GameState, newPoints: Double, addedMove: Move) =
+				Node(move, newState, newPoints, depth + 1, dir?.resolve("%.1f - %s".format(newPoints, addedMove.str())))
+		
+		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
+		
+	}
+	
+	/*private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
 		
-		/** @return a new Node with adjusted values */
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)
 		
 		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
 		
-	}
+	}*/
 	
 }

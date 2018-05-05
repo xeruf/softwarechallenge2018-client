@@ -1,0 +1,80 @@
+QtiPlot 0.9.8 project file
+<scripting-lang>	muParser
+<windows>	2
+<SurfacePlot>
+Grafik1	04.05.18 16:11
+geometry	0	0	558	473	
+SurfaceFunction	1.1^(-((x - y * 5) / (30 + y))^(2)) * 10 + (x / (100 - y));40;40	0	400	0	64	2.11684	20.4441
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	13	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	40	24	40	24
+options	1	1	0
+numbersFont	Noto Sans	11	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	19	0	55
+zoom	234.117
+scaling	0.0025	0.015625	0.0545637
+shift	0	0	0
+LineWidth	1
+WindowLabel		2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<Range>2.116840199193	20.4440598186</Range>
+	<ColorStops>1</ColorStops>
+	<Stop>0	#0000ff</Stop>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<SurfacePlot>
+Grafik2	04.05.18 16:13
+geometry	558	0	558	473	active
+SurfaceFunction	1.1^(-((x - y^(1.6)) / (40 + y))^2) * 5 + x / (100 - y);40;40	0	400	0	64	2.11684	12.5492
+Style	box	nofloor	filledmesh
+grids	0
+title		#000000	Noto Sans	13	50	0
+colors	#000000	#000000	#000000	#000000	#ffffff	#000000	#0000ff	#ff0000	1	
+axesLabels	X-Achse	Y-Achse	Z-Achse
+tics	5	5	5	5	5	5
+tickLengths	6.4	3.84	40	24	40	24
+options	1	1	0
+numbersFont	Noto Sans	11	50	0
+xAxisLabelFont	Noto Sans	9	50	0
+yAxisLabelFont	Noto Sans	9	50	0
+zAxisLabelFont	Noto Sans	9	50	0
+rotation	7	0	47
+zoom	233.955
+scaling	0.0025	0.015625	0.0958554
+shift	0	0	0
+LineWidth	1
+WindowLabel		2
+Orthogonal	0
+<ColorMap>
+	<Mode>1</Mode>
+	<MinColor>#0000ff</MinColor>
+	<MaxColor>#ff0000</MaxColor>
+	<Range>2.116840199193	20.4440598186</Range>
+	<ColorStops>1</ColorStops>
+	<Stop>0	#0000ff</Stop>
+</ColorMap>
+axisType	0	0	0
+<Grid>
+	<Major>1	#0000ff	0	1</Major>
+	<Minor>1	#c0c0c0	1	0.8</Minor>
+</Grid>
+<AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
+</SurfacePlot>
+<open>1</open>

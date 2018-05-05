@@ -14,7 +14,11 @@ abstract class Moves2(version: String): LogicBase(version) {
 	 * @param y distance to goal
 	 */
 	protected fun carrotPoints(x: Double, y: Double) =
-			(1.1.pow(-((x - y.pow(1.6)) / (40 + y)).square) * 5 + x / (100 - y)) * params[0]
+			(1.1.pow(-((x - y.pow(1.6)) / (40 + y)).square) * 5 + x / (100 - y)) * carrotParam
+	
+	val carrotParam = params[0]
+	val saladParam = params[1]
+	val posParam = if(params.size > 2) params[2] else -100.0
 	
 	override fun findMoves(state: GameState): List<Move> {
 		val player = state.currentPlayer
@@ -65,7 +69,7 @@ abstract class Moves2(version: String): LogicBase(version) {
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 						if (newCarrots > 84 - fieldIndex && newPos > 42)
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-						if (newCarrots > 10 && newPos > 42)
+						if (newCarrots > 74 - fieldIndex)
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 					}
 					if (CardType.HURRY_AHEAD in cards && otherPos > newPos && state.accessible(otherPos + 1)) {
@@ -79,10 +83,12 @@ abstract class Moves2(version: String): LogicBase(version) {
 								if (CardType.FALL_BACK in cards && fieldTypeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
 									possibleMoves.add(hurry.addCard(CardType.FALL_BACK))*/
 								if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-									if (newCarrots > 84 - fieldIndex && otherPos + 1 > 42)
+									if (newCarrots > 84 - fieldIndex && otherPos > 41)
 										possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 									if (CardType.EAT_SALAD !in cards || newPos > otherPos)
 										possibleMoves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
+									if (newCarrots > 74 - fieldIndex)
+										possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 								}
 							}
 							else -> possibleMoves.add(hurry)
@@ -98,7 +104,7 @@ abstract class Moves2(version: String): LogicBase(version) {
 								if (CardType.HURRY_AHEAD in cards && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
 									possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD)) */
 								if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-									if (newCarrots > 84 - fieldIndex && otherPos - 1 > 42)
+									if (newCarrots > 84 - fieldIndex && otherPos > 43)
 										possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 									if (CardType.EAT_SALAD !in cards || newPos > otherPos)
 										possibleMoves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))

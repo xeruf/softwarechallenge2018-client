@@ -1,0 +1,110 @@
+20:26:48 INFO  sc.TestClient - Starting server...
+20:26:49 INFO  sc.TestClient - Creating TCP Network for localhost:13051
+20:26:49 INFO  sc.TestClient - Waiting for server...
+20:26:50 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:26:50 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:27:13 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:27:13 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 2, ∅Feldnummer 64,00, ∅Karotten  1,00 after 1 of 20 tests
+20:27:13 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 0, ∅Feldnummer 58,00, ∅Karotten 49,00 after 1 of 20 tests
+20:27:13 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:27:14 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:27:41 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:27:41 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 4, ∅Feldnummer 64,00, ∅Karotten  3,00 after 2 of 20 tests
+20:27:41 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 0, ∅Feldnummer 58,50, ∅Karotten 28,50 after 2 of 20 tests
+20:27:41 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:27:41 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:28:02 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:28:02 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 4, ∅Feldnummer 61,67, ∅Karotten  8,00 after 3 of 20 tests
+20:28:02 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 2, ∅Feldnummer 60,33, ∅Karotten 19,00 after 3 of 20 tests
+20:28:02 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:28:03 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:28:22 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:28:22 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 6, ∅Feldnummer 62,25, ∅Karotten  8,25 after 4 of 20 tests
+20:28:22 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 2, ∅Feldnummer 60,75, ∅Karotten 17,25 after 4 of 20 tests
+20:28:22 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:28:22 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:28:44 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:28:44 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 6, ∅Feldnummer 61,20, ∅Karotten 16,40 after 5 of 20 tests
+20:28:44 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 4, ∅Feldnummer 61,40, ∅Karotten 13,80 after 5 of 20 tests
+20:28:44 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:28:44 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:29:01 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:29:01 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 6, ∅Feldnummer 61,50, ∅Karotten 20,00 after 6 of 20 tests
+20:29:01 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 6, ∅Feldnummer 61,83, ∅Karotten 12,17 after 6 of 20 tests
+20:29:01 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:29:01 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:29:22 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:29:22 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 8, ∅Feldnummer 61,86, ∅Karotten 17,57 after 7 of 20 tests
+20:29:22 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 6, ∅Feldnummer 59,14, ∅Karotten 36,71 after 7 of 20 tests
+20:29:22 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:29:22 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:29:33 INFO  sc.TestClient - Received game result - game ended not regularly! Winner: 1.7.11
+20:29:33 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 8, ∅Feldnummer 56,25, ∅Karotten 33,25 after 8 of 20 tests
+20:29:33 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 8, ∅Feldnummer 54,13, ∅Karotten 39,88 after 8 of 20 tests
+20:29:33 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:29:33 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:29:52 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:29:52 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 10, ∅Feldnummer 57,11, ∅Karotten 30,33 after 9 of 20 tests
+20:29:52 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 8, ∅Feldnummer 55,00, ∅Karotten 35,78 after 9 of 20 tests
+20:29:52 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:29:52 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:30:11 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:30:11 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 10, ∅Feldnummer 57,20, ∅Karotten 32,60 after 10 of 20 tests
+20:30:11 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 10, ∅Feldnummer 55,90, ∅Karotten 32,70 after 10 of 20 tests
+20:30:11 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:30:11 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:30:24 INFO  sc.TestClient - Received game result - game ended not regularly! Winner: 1.7.11
+20:30:24 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 10, ∅Feldnummer 53,36, ∅Karotten 44,18 after 11 of 20 tests
+20:30:24 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 12, ∅Feldnummer 52,55, ∅Karotten 34,27 after 11 of 20 tests
+20:30:24 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:30:24 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:30:44 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:30:44 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 10, ∅Feldnummer 53,08, ∅Karotten 49,67 after 12 of 20 tests
+20:30:44 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 14, ∅Feldnummer 53,50, ∅Karotten 31,92 after 12 of 20 tests
+20:30:44 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:30:44 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:31:06 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:31:06 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 53,92, ∅Karotten 46,15 after 13 of 20 tests
+20:31:06 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 14, ∅Feldnummer 53,92, ∅Karotten 33,15 after 13 of 20 tests
+20:31:06 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:31:06 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:31:24 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:31:24 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 53,64, ∅Karotten 50,86 after 14 of 20 tests
+20:31:24 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 16, ∅Feldnummer 54,64, ∅Karotten 30,93 after 14 of 20 tests
+20:31:24 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:31:24 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:31:38 INFO  sc.TestClient - Received game result - game ended not regularly! Winner: 1.7.11
+20:31:38 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 51,53, ∅Karotten 56,47 after 15 of 20 tests
+20:31:38 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 18, ∅Feldnummer 52,20, ∅Karotten 35,13 after 15 of 20 tests
+20:31:38 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:31:39 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:31:58 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:31:58 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 52,19, ∅Karotten 55,75 after 16 of 20 tests
+20:31:58 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 20, ∅Feldnummer 52,94, ∅Karotten 33,56 after 16 of 20 tests
+20:31:58 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:31:58 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:32:17 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:32:17 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 52,06, ∅Karotten 58,00 after 17 of 20 tests
+20:32:17 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 22, ∅Feldnummer 53,59, ∅Karotten 31,71 after 17 of 20 tests
+20:32:17 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:32:17 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:32:28 INFO  sc.TestClient - Received game result - game ended not regularly! Winner: 1.7.11
+20:32:28 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 12, ∅Feldnummer 50,00, ∅Karotten 63,33 after 18 of 20 tests
+20:32:28 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 24, ∅Feldnummer 51,67, ∅Karotten 33,39 after 18 of 20 tests
+20:32:28 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:32:29 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:32:50 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.0
+20:32:50 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 14, ∅Feldnummer 50,74, ∅Karotten 60,21 after 19 of 20 tests
+20:32:50 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 24, ∅Feldnummer 51,95, ∅Karotten 32,68 after 19 of 20 tests
+20:32:50 INFO  sc.TestClient - Invoking client 1 1.7.0
+20:32:50 INFO  sc.TestClient - Invoking client 2 1.7.11
+20:33:11 INFO  sc.TestClient - Received game result - game ended regularly. Winner: 1.7.11
+20:33:11 WARN  sc.TestClient - New score for 1.7.0: Siegpunkte 14, ∅Feldnummer 51,25, ∅Karotten 58,50 after 20 of 20 tests
+20:33:11 WARN  sc.TestClient - New score for 1.7.11: Siegpunkte 26, ∅Feldnummer 52,55, ∅Karotten 31,10 after 20 of 20 tests
+20:33:11 WARN  sc.TestClient - End results: 
+=============== SCORES ================
+1.7.0:  14
+1.7.11:  26
+=======================================
+20:33:11 WARN  sc.networking.clients.XStreamClient - Client sc.TestClient@37918c79 disconnected (Cause: LOST_CONNECTION, Exception: java.io.EOFException)
+20:33:11 WARN  sc.networking.clients.XStreamClient - receiver thread is stopping itself

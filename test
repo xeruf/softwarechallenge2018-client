@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
 source ~/.bash_aliases
 
+amount=$1
 vs() {
+	echo "$amount games $1 vs $2"
 	cd testserver
 	./start.sh > server.log &
 	sleep 1
 	cd ..
-	./testclient $1 $2 100 > battles/$1-$2
+	./testclient $1 $2 $amount > battles/$1-$2
 	killJava
 	sleep 1
 }
 
-vs 1.6.0 1.6.1
-vs 1.6.0 1.7.0
-vs 1.6.0 1.8.0
-vs 1.6.1 1.7.0
-vs 1.6.1 1.8.0
-vs 1.7.0 1.8.0
-vs 1.6.0 2.0.0
-vs 1.7.0 2.0.0
-vs 1.8.0 2.0.0
+index=0
+for p1 in "${@:2}"
+do
+    for p2 in "${@:2}"
+    do
+        if [[ $(echo $p1 | sed 's/\.//g') -lt $(echo $p2 | sed 's/\.//g') ]]
+		then vs $p1 $p2
+        fi
+    done
+done

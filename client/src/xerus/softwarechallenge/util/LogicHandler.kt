@@ -102,7 +102,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	// region Zugsuche
 	
 	@JvmField
-	protected val gameLogDir = (debugLevel == 2).ifTrue(Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs())
+	protected val gameLogDir = (debugLevel == 2).ifTrue { Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() }
 	protected val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
@@ -141,7 +141,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			myColor = client.color
 			log.info("Ich bin {}", myColor)
 		}
-		log.info("Zug: {} Dran: {} - " + dran.str(), state.turn, identify(dran.playerColor))
+		log.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
 	}
 	
 	/*public static void display(GameState state) {
@@ -205,7 +205,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	 * @param clone if the state should be cloned prior to performing
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
 	 */
-	protected fun GameState.test(move: Move, clone: Boolean = true): GameState? {
+	protected open fun GameState.test(move: Move, clone: Boolean = true): GameState? {
 		val newState = if (clone) clone() else this
 		try {
 			move.setOrderInActions()
@@ -213,10 +213,12 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			val turnIndex = newState.turn
 			if (turnIndex < 60) {
 				val simpleMove = simpleMove(newState)
+				if (newState.currentPlayerColor == myColor)
+					log.error("SEARCHING SIMPLEMOVE FOR ME!")
 				try {
 					simpleMove.perform(newState)
 				} catch (exception: Throwable) {
-					log.warn("Fehler bei simpleMove ${simpleMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
+					log.warn("Fehler bei simpleMove: ${simpleMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
 					newState.turn = turnIndex + 1
 					newState.switchCurrentPlayer()
 				}
@@ -245,11 +247,11 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		val winner = (data.winners[0] as Player).playerColor
 		val score = getScore(scores, color)
 		if (data.isRegular)
-			log.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(identify(winner), score, getScore(scores, color.opponent())))
+			log.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(winner.identify(), score, getScore(scores, color.opponent())))
 		else
 			log.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(score, cause))
-		evolution?.let { 
-			File("strategies/result$it").writeText("${(color == winner).toInt()} $score")
+		evolution?.let {
+			File("evolution/result$it").writeText("${(color == winner).toInt()} $score")
 		}
 	}
 	
@@ -258,7 +260,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	override fun onUpdate(arg0: Player, arg1: Player) {}
 	
-	private fun identify(color: PlayerColor): String =
-			if (color == myColor) "ich" else "nicht ich"
+	private fun PlayerColor.identify(): String =
+			if (this == myColor) "me" else "other"
 	
 }

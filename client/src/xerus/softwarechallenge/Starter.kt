@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
 	
 	val clientClass = (parser.getOptionValue(clientOption) as String?)
 	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass 
-			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper2"}").newInstance() as IGameHandler
+			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper1_8"}").newInstance() as IGameHandler
 	
 	// einen neuen Client erzeugen
 	try {

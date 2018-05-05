@@ -2,13 +2,14 @@
 **/logs/
 **/*.log*
 /client/games
+/client/resources/activeclient
 
 /*.jar
 /*.zip
 
 start-*
 
-/strategies
+/evolution
 
 **/.idea/workspace.xml
 **/.idea/libraries

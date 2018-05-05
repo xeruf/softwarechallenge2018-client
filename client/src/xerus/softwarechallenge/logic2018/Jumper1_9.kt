@@ -6,30 +6,29 @@ import sc.plugin2018.GameState
 import sc.plugin2018.Move
 import sc.plugin2018.util.GameRuleLogic
 import sc.shared.PlayerColor
-import xerus.ktutil.createDir
-import xerus.ktutil.createFile
+import xerus.ktutil.*
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.toInt
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_8 : Moves2("1.8.1") {
+class Jumper1_9: Moves2("1.9.0") {
 	
 	fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = posParam * player.fieldIndex + 30
-		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
+		val distanceToGoal = 64.minus(player.fieldIndex).toDouble()
+		var points = 100.0 - distanceToGoal
 		
 		// Salat und Karten
-		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += saladParam * 0.5 * (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt())
-		points += player.cards.size * 2
+		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
+		points += saladParam * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.8, 0.0)
+				+ player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam, 0.0))
+		points += player.cards.size
 		
 		// Karotten
-		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
+		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 4
 		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
 		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
 		
@@ -41,8 +40,8 @@ class Jumper1_8 : Moves2("1.8.1") {
 		return points
 	}
 	
-	/** Karotten, Salat, Weite */
-	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 2.0)
+	/** Karotten, Salat/Karten */
+	override fun defaultParams() = doubleArrayOf(0.6, 15.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
@@ -71,13 +70,13 @@ class Jumper1_8 : Moves2("1.8.1") {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 4
+		var maxDepth = 5
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path?
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
-			val multiplicator = depth.toDouble().pow(0.4)
+			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
 				moves = findMoves(nodeState)
@@ -87,8 +86,8 @@ class Jumper1_8 : Moves2("1.8.1") {
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
 					// Punkte
-					val points = evaluate(newState) / multiplicator + node.points
-					if (points < mp.points - 60)
+					val points = evaluate(newState) / divider + node.points
+					if (points < mp.points - 100 / divider)
 						continue
 					if (mp.update(node.move, points))
 						node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
@@ -113,6 +112,7 @@ class Jumper1_8 : Moves2("1.8.1") {
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
 		
+		/** @return a new Node with adjusted values */
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)
 		

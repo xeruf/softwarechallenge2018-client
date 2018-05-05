@@ -29,8 +29,10 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	inline val Player.hasSalad
 		get() = salads > 0
 	
+	inline fun goalPoints(player: Player) = if (player.inGoal()) 1000 - player.carrots * 20 else 0
+	
 	/** clones the move and adds a Card Action to it */
-	fun Move.addCard(card: CardType, value: Int = 0) = 
+	fun Move.addCard(card: CardType, value: Int = 0) =
 			Move(this.actions).add(Card(card, value, 0))
 	
 	/** checks if the currentPlayer could jump on the Field at the given index */
@@ -73,8 +75,10 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 			advanceTo(field).addCard(card, value)
 	
 	override fun simpleMove(state: GameState): Move {
-		val possibleMoves = findMoves(state).nullIfEmpty() ?: state.possibleMoves
-		val winningMoves = ArrayList<Move>()
+		predefinedMove(state)?.let { return it }
+		
+		val possibleMoves = findMoves(state)
+		val winningMoves = ArrayList<Move>(4)
 		val selectedMoves = ArrayList<Move>()
 		val currentPlayer = state.currentPlayer
 		val index = currentPlayer.fieldIndex
