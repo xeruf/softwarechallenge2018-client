@@ -9,6 +9,7 @@ import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
 import sc.shared.PlayerScore
 import xerus.ktutil.createDirs
+import xerus.ktutil.helpers.Rater
 import xerus.ktutil.helpers.Timer
 import xerus.ktutil.renameTo
 import xerus.ktutil.toInt
@@ -63,7 +64,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		depth = 0
 		lastdepth = 0
 		var move: Move? = try {
-			predefinedMove()
+			currentState.predefinedMove()
 		} catch (e: Throwable) {
 			log.error("Error in predefinedMove!", e)
 			null
@@ -81,8 +82,19 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		}
 		
 		if (move.invalid()) {
+			if (move != null)
+				log.error("Invalid findBestMove: ${move.str()}")
+			move = try {
+				currentState.quickMove().first
+			} catch (e: Throwable) {
+				log.error("Error in quickMove!", e)
+				null
+			}
+		}
+		
+		if (move.invalid()) {
 			log.info("No valid Move: {} - using simpleMove!", move)
-			move = simpleMove(currentState)
+			move = currentState.simpleMove()
 		}
 		
 		if (Timer.runtime() < 100) {
@@ -92,24 +104,50 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		sendAction(move)
 		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, lastdepth))
 		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
+		clear()
 	}
 	
 	fun Move?.invalid() = this == null || currentState.test(this) == null
 	
 	// region Zugsuche
 	
-	@F protected val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
+	/** log directory for this game */
+	@F protected val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $identifier").createDirs() else null
+	/** log directory for the current turn*/
 	protected val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
-	/** if a predefined Move is appropriate then this method can return it, otherwise null */
-	protected open fun predefinedMove(state: GameState = currentState): Move? = null
+	protected fun GameState.quickMove(): Pair<Move, GameState> {
+		val moves = findMoves()
+		val best = Rater<Pair<Move, GameState>>()
+		for (move in moves) {
+			val moveState = clone()
+			move.setOrderInActions()
+			move.perform(moveState)
+			moveState.turn -= 1
+			moveState.switchCurrentPlayer()
+			if (best.points < evaluate(moveState)) {
+				moveState.turn += 1
+				moveState.switchCurrentPlayer()
+				best.obj = Pair(move, moveState)
+			}
+		}
+		return best.obj!!
+	}
 	
-	/** finds moves for the given [state] */
-	protected abstract fun findMoves(state: GameState = currentState): List<Move>
+	/** if a predefined Move is appropriate then this method can return it, otherwise null */
+	protected open fun GameState.predefinedMove(): Move? = null
+	
+	/** finds relevant moves for this [GameState] */
+	protected abstract fun GameState.findMoves(): List<Move>
+	
+	protected abstract fun GameState.simpleMove(): Move
 	
 	/** findet den Move der beim aktuellen GameState am besten ist */
 	protected abstract fun findBestMove(): Move?
+	
+	/** called after the Move is sent to allow resetting back to neutral */
+	protected open fun clear() {}
 	
 	/** bewertet die gegebene Situation
 	 * @return Einschätzung der gegebenen Situation in Punkten */
@@ -197,7 +235,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			}
 	
 	/**
-	 * tests a Move on the given [state]
+	 * tests a Move against this [GameState]
 	 *
 	 * führt jetzt auch einen Move für den Gegenspieler aus!
 	 *
@@ -205,31 +243,39 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	 * @param move  der zu testende Move
 	 * @param clone if the state should be cloned prior to performing
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
-	 */
-	protected open fun GameState.test(move: Move, clone: Boolean = true): GameState? {
+	 */ 
+	protected fun GameState.test(move: Move, clone: Boolean = true): GameState? {
 		val newState = if (clone) clone() else this
 		try {
 			move.setOrderInActions()
 			move.perform(newState)
-			val turnIndex = newState.turn
-			if (turnIndex < 60) {
-				val simpleMove = simpleMove(newState)
-				if (newState.currentPlayerColor == myColor)
-					log.error("SEARCHING SIMPLEMOVE FOR ME!")
-				try {
-					simpleMove.perform(newState)
-				} catch (exception: Throwable) {
-					log.warn("Fehler bei simpleMove: ${simpleMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
-					newState.turn = turnIndex + 1
-					newState.switchCurrentPlayer()
+			val bestState = Rater<GameState>()
+			if (newState.turn < 60 && newState.otherPlayer.fieldIndex != 64) {
+				for (otherMove in newState.findMoves()) {
+					val moveState = newState.clone()
+					otherMove.setOrderInActions()
+					try {
+						otherMove.perform(moveState)
+					} catch (exception: Throwable) {
+						log.warn("Fehler bei otherMove: ${otherMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
+					}
+					moveState.turn -= 1
+					moveState.switchCurrentPlayer()
+					if (bestState.update(moveState, evaluate(moveState))) {
+						moveState.turn += 1
+						moveState.switchCurrentPlayer()
+					}
 				}
 			}
 			
 			validMoves++
-			return newState
+			return bestState.obj ?: newState.apply {
+				turn += 1
+				switchCurrentPlayer()
+			}
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
-			if (log.isDebugEnabled)
+			if (debugLevel > 0)
 				log.warn("FEHLERHAFTER ZUG: {} FEHLER: {} " + this.str(), move.str(), e.message)
 		}
 		return null
@@ -237,8 +283,6 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	@F protected var validMoves: Int = 0
 	@F protected var invalidMoves: Int = 0
-	
-	protected abstract fun simpleMove(state: GameState): Move
 	
 	override fun gameEnded(data: GameResult, color: PlayerColor, errorMessage: String?) {
 		val scores = data.scores

@@ -36,7 +36,7 @@ java.sourceSets.getByName("main").resources.srcDir("resources")
 
 val javaArgs = listOf("-Dfile.encoding=UTF-8"
 		, "-XX:NewRatio=1"
-		, "-ms600m", "-mx600m"
+		, "-ms1000m", "-mx1000m"
 		, "-XX:MaxGCPauseMillis=80", "-XX:GCPauseIntervalMillis=1000"
 		, "-XX:TargetSurvivorRatio=90"
 )

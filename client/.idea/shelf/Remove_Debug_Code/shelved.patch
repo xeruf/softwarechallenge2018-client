@@ -1,0 +1,79 @@
+Index: src/xerus/softwarechallenge/logic2018/Jumper1_8.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package xerus.softwarechallenge.logic2018\n\nimport sc.plugin2018.CardType\nimport sc.plugin2018.FieldType\nimport sc.plugin2018.GameState\nimport sc.plugin2018.Move\nimport sc.plugin2018.util.GameRuleLogic\nimport sc.shared.InvalidMoveException\nimport sc.shared.PlayerColor\nimport xerus.ktutil.createDir\nimport xerus.ktutil.createFile\nimport xerus.ktutil.forRange\nimport xerus.ktutil.helpers.Rater\nimport xerus.ktutil.helpers.Timer\nimport xerus.ktutil.toInt\nimport xerus.softwarechallenge.util.F\nimport xerus.softwarechallenge.util.MP\nimport xerus.softwarechallenge.util.debugLevel\nimport xerus.softwarechallenge.util.str\nimport java.nio.file.Path\nimport java.util.*\nimport kotlin.math.pow\n\nclass Jumper1_8 : Moves2(\"1.8.3\") {\n\t\n\toverride fun evaluate(state: GameState): Double {\n\t\tval player = state.currentPlayer\n\t\tvar points = posParam * player.fieldIndex + 80\n\t\tval distanceToGoal = 65.minus(player.fieldIndex).toDouble()\n\t\t\n\t\t// Salat und Karten\n\t\tpoints -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)\n\t\tpoints += saladParam * 0.5 * (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt())\n\t\tpoints += player.cards.size * 2\n\t\t\n\t\t// Karotten\n\t\tpoints += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3\n\t\tpoints -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())\n\t\tpoints -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()\n\t\t\n\t\t// Zieleinlauf\n\t\treturn points + goalPoints(player)\n\t}\n\t\n\t/** Karotten, Salat, Weite */\n\toverride fun defaultParams() = doubleArrayOf(2.0, 30.0, 2.0)\n\t\n\t/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */\n\toverride fun breitensuche(): Move? {\n\t\tval mp = MP()\n\t\t\n\t\tvar moves = currentState.findMoves()\n\t\tfor (move in moves) {\n\t\t\tval newState = currentState.test(move) ?: continue\n\t\t\tif (newState.currentPlayer.gewonnen())\n\t\t\t\treturn move\n\t\t\t// Punkte\n\t\t\tval points = evaluate(newState)\n\t\t\tmp.update(move, points)\n\t\t\t// Queue\n\t\t\tif (!newState.otherPlayer.gewonnen() || myColor == PlayerColor.BLUE)\n\t\t\t\tqueue.add(Node(move, newState, points))\n\t\t}\n\t\t\n\t\tvar bestMove = mp.obj ?: moves.first()\n\t\tif (queue.size < 2) {\n\t\t\tlog.info(\"Nur einen validen Zug gefunden: ${bestMove.str()}\")\n\t\t\treturn bestMove\n\t\t}\n\t\t\n\t\t// Breitensuche\n\t\tmp.clear()\n\t\tdepth = 1\n\t\tvar maxDepth = 4\n\t\tvar node = queue.poll()\n\t\tvar nodeState: GameState\n\t\tvar subDir: Path? = null\n\t\tloop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {\n\t\t\tdepth = node.depth\n\t\t\tval multiplicator = depth.toDouble().pow(0.4)\n\t\t\tdo {\n\t\t\t\tnodeState = node.gamestate\n\t\t\t\tmoves = nodeState.findMoves()\n\t\t\t\tif (nodeState.turn > 57)\n\t\t\t\t\tmaxDepth = depth\n\t\t\t\tforRange(0, moves.size) { i ->\n\t\t\t\t\tval move = moves[i]\n\t\t\t\t\tval newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange\n\t\t\t\t\t// Punkte\n\t\t\t\t\tval points = evaluate(newState) / multiplicator + node.points\n\t\t\t\t\tif (points < mp.points - 60)\n\t\t\t\t\t\treturn@forRange\n\t\t\t\t\tval update = mp.update(node.move, points)\n\t\t\t\t\t//Debug\n\t\t\t\t\tif (isDebug) {\n\t\t\t\t\t\tif (update)\n\t\t\t\t\t\t\tnode.dir?.resolve(\"Best: %.1f - %s\".format(points, move.str()))?.createFile()\n\t\t\t\t\t\tsubDir = node.dir?.resolve(\"%.1f - %s - %s\".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()\n\t\t\t\t\t}\n\t\t\t\t\t// Queue\n\t\t\t\t\tif (newState.currentPlayer.gewonnen())\n\t\t\t\t\t\tmaxDepth = depth\n\t\t\t\t\tif (depth < maxDepth && (!newState.otherPlayer.gewonnen() || newState.startPlayerColor != myColor))\n\t\t\t\t\t\tqueue.add(node.update(newState, points, subDir))\n\t\t\t\t}\n\t\t\t\tif (Timer.runtime() > 1600)\n\t\t\t\t\tbreak@loop\n\t\t\t\tnode = queue.poll() ?: break\n\t\t\t} while (depth == node.depth)\n\t\t\tlastdepth = depth\n\t\t\tbestMove = mp.obj!!\n\t\t\tlog.info(\"Neuer bester Zug bei Tiefe $depth: $mp\")\n\t\t}\n\t\treturn bestMove\n\t}\n\t\n\toverride fun clear() {\n\t\tqueue.clear()\n\t}\n\t\n\tprivate val queue: Queue<Node> = ArrayDeque<Node>(16000)\n\t\n\tprivate inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {\n\t\t\n\t\tconstructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,\n\t\t\t\tcurrentLogDir?.resolve(\"%.1f - %s\".format(points, move.str()))?.createDir())\n\t\t\n\t\tfun update(newState: GameState, newPoints: Double, dir: Path?) =\n\t\t\t\tNode(move, newState, newPoints, depth + 1, dir)\n\t\t\n\t\toverride fun toString() = \"Node depth %d %s points %.1f\".format(depth, move.str(), points)\n\t\t\n\t}\n\t\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/xerus/softwarechallenge/logic2018/Jumper1_8.kt	(date 1525631479000)
++++ src/xerus/softwarechallenge/logic2018/Jumper1_8.kt	(date 1525637575000)
+@@ -4,20 +4,13 @@
+ import sc.plugin2018.FieldType
+ import sc.plugin2018.GameState
+ import sc.plugin2018.Move
+-import sc.plugin2018.util.GameRuleLogic
+-import sc.shared.InvalidMoveException
+ import sc.shared.PlayerColor
+-import xerus.ktutil.createDir
+-import xerus.ktutil.createFile
+ import xerus.ktutil.forRange
+-import xerus.ktutil.helpers.Rater
+ import xerus.ktutil.helpers.Timer
+ import xerus.ktutil.toInt
+ import xerus.softwarechallenge.util.F
+ import xerus.softwarechallenge.util.MP
+-import xerus.softwarechallenge.util.debugLevel
+ import xerus.softwarechallenge.util.str
+-import java.nio.file.Path
+ import java.util.*
+ import kotlin.math.pow
+ 
+@@ -74,7 +67,6 @@
+ 		var maxDepth = 4
+ 		var node = queue.poll()
+ 		var nodeState: GameState
+-		var subDir: Path? = null
+ 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
+ 			depth = node.depth
+ 			val multiplicator = depth.toDouble().pow(0.4)
+@@ -90,18 +82,18 @@
+ 					val points = evaluate(newState) / multiplicator + node.points
+ 					if (points < mp.points - 60)
+ 						return@forRange
+-					val update = mp.update(node.move, points)
++					/*val update =*/ mp.update(node.move, points)
+ 					//Debug
+-					if (isDebug) {
++					/*if (isDebug) {
+ 						if (update)
+ 							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
+ 						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
+-					}
++					}*/
+ 					// Queue
+ 					if (newState.currentPlayer.gewonnen())
+ 						maxDepth = depth
+ 					if (depth < maxDepth && (!newState.otherPlayer.gewonnen() || newState.startPlayerColor != myColor))
+-						queue.add(node.update(newState, points, subDir))
++						queue.add(node.update(newState, points))
+ 				}
+ 				if (Timer.runtime() > 1600)
+ 					break@loop
+@@ -120,13 +112,12 @@
+ 	
+ 	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
+ 	
+-	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
++	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int) {
+ 		
+-		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
+-				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
++		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1)
+ 		
+-		fun update(newState: GameState, newPoints: Double, dir: Path?) =
+-				Node(move, newState, newPoints, depth + 1, dir)
++		fun update(newState: GameState, newPoints: Double) =
++				Node(move, newState, newPoints, depth + 1)
+ 		
+ 		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
+ 		

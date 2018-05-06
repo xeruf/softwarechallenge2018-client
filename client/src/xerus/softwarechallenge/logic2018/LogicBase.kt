@@ -27,7 +27,7 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	protected inline val Player.hasSalad
 		get() = salads > 0
 	
-	protected inline fun goalPoints(player: Player) = if (player.inGoal()) 1000 - player.carrots * 10 else 0
+	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64) 1000 - player.carrots * 10 else 0
 	
 	/** clones the move and adds a Card Action to it */
 	protected fun Move.addCard(card: CardType, value: Int = 0) =
@@ -69,36 +69,36 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	protected inline fun GameState.playCard(field: Int, card: CardType, value: Int = 0): Move =
 			advanceTo(field).addCard(card, value)
 	
-	override fun simpleMove(state: GameState): Move {
-		val possibleMoves = state.possibleMoves
+	override fun GameState.simpleMove(): Move {
+		val possibleMoves = possibleMoves
 		val winningMoves = ArrayList<Move>(4)
 		val selectedMoves = ArrayList<Move>()
-		val currentPlayer = state.currentPlayer
-		val index = currentPlayer.fieldIndex
+		val player = currentPlayer
+		val index = player.fieldIndex
 		for (Move in possibleMoves) {
 			for (action in Move.actions) {
 				if (action is Advance) {
 					when {
 						action.distance + index == 64 -> // Zug ins Ziel
 							winningMoves.add(Move)
-						state.board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
+						board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
 							winningMoves.add(Move)
 						else -> // Ziehe Vorwärts, wenn möglich
 							selectedMoves.add(Move)
 					}
 				} else if (action is ExchangeCarrots) {
-					if (action.value == 10 && currentPlayer.carrots < 30 && index < 40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
+					if (action.value == 10 && player.carrots < 30 && index < 40 && player.lastNonSkipAction !is ExchangeCarrots) {
 						// Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal hintereinander
 						selectedMoves.add(Move)
-					} else if (action.value == -10 && currentPlayer.carrots > 30 && index >= 40) {
+					} else if (action.value == -10 && player.carrots > 30 && index >= 40) {
 						// abgeben von Karotten ist nur am Ende sinnvoll
 						selectedMoves.add(Move)
 					}
 				} else if (action is FallBack) {
-					if (index > 56 /* letztes Salatfeld */ && currentPlayer.salads > 0) {
+					if (index > 56 /* letztes Salatfeld */ && player.salads > 0) {
 						// Falle nur am Ende (index > 56) zurück, außer du musst noch einen Salat loswerden
 						selectedMoves.add(Move)
-					} else if (index <= 56 && index - state.getPreviousFieldByType(FieldType.HEDGEHOG, index) < 5) {
+					} else if (index <= 56 && index - getPreviousFieldByType(FieldType.HEDGEHOG, index) < 5) {
 						// Falle zurück, falls sich Rückzug lohnt (nicht zu viele Karotten aufnehmen)
 						selectedMoves.add(Move)
 					}
@@ -108,12 +108,10 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 				}
 			}
 		}
-		val move = if (!winningMoves.isEmpty()) {
-			winningMoves[0]
-		} else if (!selectedMoves.isEmpty()) {
-			selectedMoves[rand.nextInt(selectedMoves.size)]
-		} else {
-			possibleMoves[rand.nextInt(possibleMoves.size)]
+		val move = when {
+			winningMoves.isNotEmpty() -> winningMoves[0]
+			selectedMoves.isNotEmpty() -> selectedMoves[rand.nextInt(selectedMoves.size)]
+			else -> possibleMoves[rand.nextInt(possibleMoves.size)]
 		}
 		move.setOrderInActions()
 		return move

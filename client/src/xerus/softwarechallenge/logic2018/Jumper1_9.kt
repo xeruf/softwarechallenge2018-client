@@ -11,13 +11,14 @@ import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
 import xerus.ktutil.to
 import xerus.ktutil.toInt
+import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_9: Moves2("1.9.0") {
+class Jumper1_9 : Moves2("1.9.0") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -48,10 +49,9 @@ class Jumper1_9: Moves2("1.9.0") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
-		var moves = findMoves(currentState)
+		var moves = currentState.findMoves()
 		for (move in moves) {
 			val newState = currentState.test(move) ?: continue
 			if (newState.currentPlayer.gewonnen())
@@ -82,7 +82,7 @@ class Jumper1_9: Moves2("1.9.0") {
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
-				moves = findMoves(nodeState)
+				moves = nodeState.findMoves()
 				for (i in 0..moves.lastIndex) {
 					if (Timer.runtime() > 1600)
 						break@loop
@@ -110,12 +110,17 @@ class Jumper1_9: Moves2("1.9.0") {
 		return bestMove
 	}
 	
-	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
+	override fun clear() {
+		queue.clear()
+	}
+	
+	private val queue: Queue<Node> = ArrayDeque<Node>(32000)
+	
+	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
 		
-		/** @return a new Node with adjusted values */
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)
 		

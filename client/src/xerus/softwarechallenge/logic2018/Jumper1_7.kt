@@ -51,10 +51,9 @@ class Jumper1_7 : LogicBase("1.7.2") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
-		var moves = findMoves(currentState)
+		var moves = currentState.findMoves()
 		for (move in moves) {
 			val newState = currentState.test(move) ?: continue
 			if (newState.currentPlayer.gewonnen())
@@ -84,7 +83,7 @@ class Jumper1_7 : LogicBase("1.7.2") {
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				val nodeState = node.gamestate
-				moves = findMoves(nodeState)
+				moves = nodeState.findMoves()
 				for (i in 0..moves.lastIndex) {
 					if (Timer.runtime() > 1600)
 						break@loop
@@ -115,45 +114,45 @@ class Jumper1_7 : LogicBase("1.7.2") {
 	}
 	
 	val afterHedgehog = intArrayOf(12, 16, 20)
-	override fun predefinedMove(state: GameState): Move? {
-		val player = state.currentPlayer
+	override fun GameState.predefinedMove(): Move? {
+		val player = currentPlayer
 		val pos = player.fieldIndex
-		val otherPos = state.otherPos
+		val otherPos = otherPos
 		
-		if (state.canAdvanceTo(10))
-			return state.advanceTo(10)
+		if (canAdvanceTo(10))
+			return advanceTo(10)
 		
 		if (pos == 10) {
 			if (player.lastNonSkipAction !is EatSalad)
 				return Move(EatSalad())
 			else {
 				val pos2 = findField(FieldType.POSITION_2)
-				if (otherPos > 10 && state.canAdvanceTo(pos2))
-					return state.advanceTo(pos2)
+				if (otherPos > 10 && canAdvanceTo(pos2))
+					return advanceTo(pos2)
 				val pos1 = findField(FieldType.POSITION_1)
-				if (otherPos < 11 && state.canAdvanceTo(pos1))
-					return state.advanceTo(pos1)
+				if (otherPos < 11 && canAdvanceTo(pos1))
+					return advanceTo(pos1)
 				val hare = findField(FieldType.HARE, 12)
-				if (otherPos != hare && state.turn < 6)
-					return state.playCard(hare, CardType.TAKE_OR_DROP_CARROTS, 20)
+				if (otherPos != hare && turn < 6)
+					return playCard(hare, CardType.TAKE_OR_DROP_CARROTS, 20)
 			}
 		}
 		
 		if (otherPos == 22 && pos < 22) {
 			val pos21 = findField(FieldType.POSITION_2)
-			if (state.canAdvanceTo(pos21)) {
+			if (canAdvanceTo(pos21)) {
 				val pos2circular = findCircular(FieldType.POSITION_2, 11 + pos / 2)
-				if (state.otherEatingSalad == 2) {
-					if (pos2circular < 22 && state.canAdvanceTo(pos2circular))
-						return state.advanceTo(pos2circular)
+				if (otherEatingSalad == 2) {
+					if (pos2circular < 22 && canAdvanceTo(pos2circular))
+						return advanceTo(pos2circular)
 					if (pos21 < 22)
-						return state.advanceTo(pos21)
+						return advanceTo(pos21)
 				} else {
 					val pos22 = findField(FieldType.POSITION_2, 20)
 					if (pos22 < 22 && pos < pos21 && pos21 != pos22)
-						return state.advanceTo(pos21)
-					if (pos22 == 21 && state.canAdvanceTo(21) && pos in afterHedgehog)
-						return state.advanceTo(pos22)
+						return advanceTo(pos21)
+					if (pos22 == 21 && canAdvanceTo(21) && pos in afterHedgehog)
+						return advanceTo(pos22)
 				}
 				if (pos > 11)
 					return Move(FallBack())
@@ -161,34 +160,34 @@ class Jumper1_7 : LogicBase("1.7.2") {
 		}
 		
 		// eat last salad
-		if (otherPos == 57 && pos > 57 && state.otherEatingSalad == 2 && player.hasSalad)
+		if (otherPos == 57 && pos > 57 && otherEatingSalad == 2 && player.hasSalad)
 			return Move(FallBack())
 		
-		when (state.turn) {
+		when (turn) {
 		// region Rot
 			6 -> {
-				if (state.canAdvanceTo(22))
-					return state.advanceTo(22)
+				if (canAdvanceTo(22))
+					return advanceTo(22)
 				if (otherPos < 11) {
 					val pos1 = findField(FieldType.POSITION_1)
-					if (state.canAdvanceTo(pos1))
-						return state.advanceTo(pos1)
+					if (canAdvanceTo(pos1))
+						return advanceTo(pos1)
 				}
 				val pos2 = findField(FieldType.POSITION_2, 16)
 				if (otherPos > 19) {
 					if (pos < pos2)
-						return state.advanceTo(pos2)
+						return advanceTo(pos2)
 					else if (otherPos == 22)
 						return Move(FallBack())
 				}
 			}
 			8 -> {
-				if (state.canAdvanceTo(22))
-					return state.advanceTo(22)
+				if (canAdvanceTo(22))
+					return advanceTo(22)
 				if (otherPos == 22) {
 					val pos2 = findField(FieldType.POSITION_2)
 					if (pos2 < 21)
-						return state.advanceTo(pos2)
+						return advanceTo(pos2)
 					else if (fieldTypeAt(pos) != FieldType.HEDGEHOG)
 						return Move(FallBack())
 				}
@@ -199,20 +198,20 @@ class Jumper1_7 : LogicBase("1.7.2") {
 				if (otherPos == 10) {
 					val field2 = findField(FieldType.POSITION_2)
 					return if ((field2 < 5 && findField(FieldType.HARE, field2) < 10) || field2 < findField(FieldType.HARE))
-						state.advanceTo(field2)
+						advanceTo(field2)
 					else {
 						val hare = findCircular(FieldType.HARE, field2 / 2)
-						state.playCard(hare, CardType.EAT_SALAD)
+						playCard(hare, CardType.EAT_SALAD)
 					}
 				}
 			}
 			3 -> {
 				if (otherPos == 10) {
 					return if (fieldTypeAt(pos) != FieldType.POSITION_2)
-						state.advanceTo(findField(FieldType.POSITION_2, pos))
+						advanceTo(findField(FieldType.POSITION_2, pos))
 					else {
 						val hare = findCircular(FieldType.HARE, (10 + pos) / 2)
-						state.playCard(hare, CardType.EAT_SALAD)
+						playCard(hare, CardType.EAT_SALAD)
 					}
 				}
 			}
@@ -221,8 +220,8 @@ class Jumper1_7 : LogicBase("1.7.2") {
 		return null
 	}
 	
-	override fun findMoves(state: GameState): List<Move> {
-		val player = state.currentPlayer
+	override fun GameState.findMoves(): List<Move> {
+		val player = currentPlayer
 		val fieldIndex = player.fieldIndex
 		val currentField = fieldTypeAt(fieldIndex)
 		if (currentField == FieldType.SALAD && player.lastNonSkipAction !is EatSalad)
@@ -236,11 +235,11 @@ class Jumper1_7 : LogicBase("1.7.2") {
 				possibleMoves.addMove(ExchangeCarrots(10))
 		}
 		
-		val hedgehog = state.getPreviousFieldByType(FieldType.HEDGEHOG, fieldIndex)
-		if (hedgehog != -1 && !state.isOccupied(hedgehog))
+		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, fieldIndex)
+		if (hedgehog != -1 && !isOccupied(hedgehog))
 			possibleMoves.addMove(FallBack())
 		
-		val otherPos = state.otherPos
+		val otherPos = otherPos
 		moves@ for (i in 1..GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - player.fieldIndex)) {
 			val newField = fieldIndex + i
 			val newType = fieldTypeAt(newField)
@@ -272,7 +271,7 @@ class Jumper1_7 : LogicBase("1.7.2") {
 							possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 						possibleMoves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 					}
-					if (cards.contains(CardType.HURRY_AHEAD) && otherPos > newField && state.accessible(otherPos + 1)) {
+					if (cards.contains(CardType.HURRY_AHEAD) && otherPos > newField && accessible(otherPos + 1)) {
 						val hurry = advance.addCard(CardType.HURRY_AHEAD)
 						when (fieldTypeAt(otherPos + 1)) {
 							FieldType.SALAD -> possibleMoves.add(hurry)
@@ -291,7 +290,7 @@ class Jumper1_7 : LogicBase("1.7.2") {
 							else -> possibleMoves.add(hurry)
 						}
 					}
-					if (cards.contains(CardType.FALL_BACK) && otherPos < newField && state.accessible(otherPos - 1)) {
+					if (cards.contains(CardType.FALL_BACK) && otherPos < newField && accessible(otherPos - 1)) {
 						val fall = advance.addCard(CardType.FALL_BACK)
 						when (fieldTypeAt(otherPos - 1)) {
 							FieldType.HARE -> {
@@ -318,63 +317,13 @@ class Jumper1_7 : LogicBase("1.7.2") {
 		else listOf(Move(Skip()))
 	}
 	
-	override fun simpleMove(state: GameState): Move {
-		val possibleMoves = findMoves(state)
-		val winningMoves = ArrayList<Move>()
-		val selectedMoves = ArrayList<Move>()
-		val currentPlayer = state.currentPlayer
-		val index = currentPlayer.fieldIndex
-		for (Move in possibleMoves) {
-			for (action in Move.actions) {
-				if (action is Advance) {
-					when {
-						action.distance + index == 64 -> // Zug ins Ziel
-							winningMoves.add(Move)
-						state.board.getTypeAt(action.distance + index) == FieldType.SALAD -> // Zug auf Salatfeld
-							winningMoves.add(Move)
-						else -> // Ziehe Vorwärts, wenn möglich
-							selectedMoves.add(Move)
-					}
-				} else if (action is Card) {
-					if (action.type == CardType.EAT_SALAD) {
-						// Zug auf Hasenfeld und danach Salatkarte
-						winningMoves.add(Move)
-					} // Muss nicht zusätzlich ausgewählt werden, wurde schon durch Advance ausgewählt
-				} else if (action is ExchangeCarrots) {
-					if (action.value == 10 && currentPlayer.carrots < 30 && index < 40 && currentPlayer.lastNonSkipAction !is ExchangeCarrots) {
-						// Nehme nur Karotten auf, wenn weniger als 30 und nur am Anfang und nicht zwei mal hintereinander
-						selectedMoves.add(Move)
-					} else if (action.value == -10 && currentPlayer.carrots > 30 && index >= 40) {
-						// abgeben von Karotten ist nur am Ende sinnvoll
-						selectedMoves.add(Move)
-					}
-				} else if (action is FallBack) {
-					if (index > 56 /* letztes Salatfeld */ && currentPlayer.salads > 0) {
-						// Falle nur am Ende (index > 56) zurück, außer du musst noch einen Salat loswerden
-						selectedMoves.add(Move)
-					} else if (index <= 56 && index - state.getPreviousFieldByType(FieldType.HEDGEHOG, index) < 5) {
-						// Falle zurück, falls sich Rückzug lohnt (nicht zu viele Karotten aufnehmen)
-						selectedMoves.add(Move)
-					}
-				} else {
-					// Füge Salatessen oder Skip hinzu
-					selectedMoves.add(Move)
-				}
-			}
-		}
-		val move = if (!winningMoves.isEmpty()) {
-			winningMoves[rand.nextInt(winningMoves.size)]
-		} else if (!selectedMoves.isEmpty()) {
-			selectedMoves[rand.nextInt(selectedMoves.size)]
-		} else {
-			possibleMoves[rand.nextInt(possibleMoves.size)]
-		}
-		move.setOrderInActions()
-		return move
+	override fun clear() {
+		queue.clear()
 	}
 	
-	private inner class Node private constructor(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F
-	val dir: Path?) {
+	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
+	
+	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
