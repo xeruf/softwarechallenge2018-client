@@ -6,8 +6,11 @@ import sc.plugin2018.GameState
 import sc.plugin2018.Move
 import sc.plugin2018.util.GameRuleLogic
 import sc.shared.PlayerColor
-import xerus.ktutil.*
+import xerus.ktutil.createDir
+import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
+import xerus.ktutil.to
+import xerus.ktutil.toInt
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
@@ -16,7 +19,7 @@ import kotlin.math.pow
 
 class Jumper1_9: Moves2("1.9.0") {
 	
-	fun evaluate(state: GameState): Double {
+	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
 		val distanceToGoal = 64.minus(player.fieldIndex).toDouble()
 		var points = 100.0 - distanceToGoal
@@ -30,7 +33,7 @@ class Jumper1_9: Moves2("1.9.0") {
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 4
 		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
+		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		points += goalPoints(player)
@@ -45,7 +48,7 @@ class Jumper1_9: Moves2("1.9.0") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue = LinkedList<Node>()
+		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
 		var moves = findMoves(currentState)

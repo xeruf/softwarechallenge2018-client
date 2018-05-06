@@ -15,9 +15,9 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_6: LogicBase("1.6.1") {
+class Jumper1_6 : LogicBase("1.6.2") {
 	
-	fun evaluate(state: GameState): Double {
+	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
 		var points = params[0] * player.fieldIndex + 30
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
@@ -30,7 +30,7 @@ class Jumper1_6: LogicBase("1.6.1") {
 		// Karotten
 		points += carrotPoints(player, distanceToGoal) * 3
 		points -= carrotPoints(state.otherPlayer, 65.minus(state.otherPos).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
+		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		points += player.inGoal().toInt() * 1000
@@ -48,7 +48,7 @@ class Jumper1_6: LogicBase("1.6.1") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue = LinkedList<Node>()
+		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
 		var moves = findMoves(currentState)
@@ -76,7 +76,7 @@ class Jumper1_6: LogicBase("1.6.1") {
 		var maxDepth = 4
 		var node = queue.poll()
 		var nodeState: GameState
-		var subDir: Path?
+		var subDir: Path? = null
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
 			val multiplicator = depth.toDouble().pow(0.4)
@@ -92,10 +92,12 @@ class Jumper1_6: LogicBase("1.6.1") {
 					val points = evaluate(newState) / multiplicator + node.points
 					if (points < mp.points - 60)
 						continue
-					if (mp.update(node.move, points))
+					val update = mp.update(node.move, points)
+					if (update && isDebug)
 						node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
 					// Queue
-					subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
+					if (isDebug)
+						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
 					if (newState.turn > 59 || newState.currentPlayer.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !newState.otherPlayer.gewonnen())
@@ -110,6 +112,7 @@ class Jumper1_6: LogicBase("1.6.1") {
 		return bestMove
 	}
 	
+	private val afterHedgehog = intArrayOf(12, 16, 20)
 	override fun predefinedMove(state: GameState): Move? {
 		val player = state.currentPlayer
 		val pos = player.fieldIndex
@@ -147,7 +150,7 @@ class Jumper1_6: LogicBase("1.6.1") {
 					val pos22 = findField(FieldType.POSITION_2, 20)
 					if (pos22 < 22 && pos < pos21 && pos21 != pos22)
 						return state.advanceTo(pos21)
-					if (pos22 == 21 && state.canAdvanceTo(21) && pos in arrayOf(12, 16, 20))
+					if (pos22 == 21 && state.canAdvanceTo(21) && pos in afterHedgehog)
 						return state.advanceTo(pos22)
 				}
 				if (pos > 11)

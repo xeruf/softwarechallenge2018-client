@@ -1,0 +1,261 @@
+14:33:03 INFO  sc.TestClient - Starting server...
+14:33:04 INFO  sc.TestClient - Creating TCP Network for localhost:13051
+14:33:04 INFO  sc.TestClient - Waiting for server...
+14:33:04 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:04 INFO  sc.TestClient - Invoking client 1.8.0
+14:33:18 INFO  sc.TestClient - Game 0 ended regularly - Winner: 1.8.0
+14:33:18 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 0, ∅Feldnummer 51,00, ∅Karotten 72,00 after 1 of 50 tests
+14:33:18 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 2, ∅Feldnummer 64,00, ∅Karotten  8,00 after 1 of 50 tests
+14:33:18 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:19 INFO  sc.TestClient - Invoking client 1.8.0
+14:33:27 INFO  sc.TestClient - Game 1 ended regularly - Winner: 1.8.0
+14:33:27 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 0, ∅Feldnummer 54,50, ∅Karotten 50,50 after 2 of 50 tests
+14:33:27 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 4, ∅Feldnummer 64,00, ∅Karotten  8,50 after 2 of 50 tests
+14:33:27 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:27 INFO  sc.TestClient - Invoking client 1.8.0
+14:33:35 INFO  sc.TestClient - Game 2 ended regularly - Winner: 1.8.0
+14:33:35 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 0, ∅Feldnummer 54,67, ∅Karotten 36,67 after 3 of 50 tests
+14:33:35 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 6, ∅Feldnummer 64,00, ∅Karotten  7,00 after 3 of 50 tests
+14:33:35 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:35 INFO  sc.TestClient - Invoking client 1.8.0
+14:33:44 INFO  sc.TestClient - Game 3 ended regularly - Winner: 1.7.2
+14:33:44 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 2, ∅Feldnummer 57,00, ∅Karotten 28,25 after 4 of 50 tests
+14:33:44 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 6, ∅Feldnummer 58,75, ∅Karotten 33,75 after 4 of 50 tests
+14:33:44 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:44 INFO  sc.TestClient - Invoking client 1.8.0
+14:33:51 INFO  sc.TestClient - Game 4 ended regularly - Winner: 1.7.2
+14:33:51 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 4, ∅Feldnummer 58,40, ∅Karotten 23,00 after 5 of 50 tests
+14:33:51 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 6, ∅Feldnummer 59,60, ∅Karotten 29,20 after 5 of 50 tests
+14:33:51 INFO  sc.TestClient - Invoking client 1.7.2
+14:33:51 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:01 INFO  sc.TestClient - Game 5 ended regularly - Winner: 1.7.2
+14:34:01 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,33, ∅Karotten 19,33 after 6 of 50 tests
+14:34:01 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 6, ∅Feldnummer 56,67, ∅Karotten 62,33 after 6 of 50 tests
+14:34:01 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:01 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:09 INFO  sc.TestClient - Game 6 ended regularly - Winner: 1.8.0
+14:34:09 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,43, ∅Karotten 25,57 after 7 of 50 tests
+14:34:09 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 8, ∅Feldnummer 57,71, ∅Karotten 54,43 after 7 of 50 tests
+14:34:09 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:10 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:16 INFO  sc.TestClient - Game 7 ended regularly - Winner: 1.8.0
+14:34:16 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,50, ∅Karotten 27,63 after 8 of 50 tests
+14:34:16 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 10, ∅Feldnummer 58,50, ∅Karotten 48,00 after 8 of 50 tests
+14:34:16 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:16 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:24 INFO  sc.TestClient - Game 8 ended regularly - Winner: 1.8.0
+14:34:24 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,56, ∅Karotten 25,22 after 9 of 50 tests
+14:34:24 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 12, ∅Feldnummer 59,11, ∅Karotten 43,22 after 9 of 50 tests
+14:34:24 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:24 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:32 INFO  sc.TestClient - Game 9 ended regularly - Winner: 1.8.0
+14:34:32 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,70, ∅Karotten 23,30 after 10 of 50 tests
+14:34:32 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 14, ∅Feldnummer 59,60, ∅Karotten 39,40 after 10 of 50 tests
+14:34:32 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:32 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:40 INFO  sc.TestClient - Game 10 ended regularly - Winner: 1.8.0
+14:34:40 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 6, ∅Feldnummer 59,00, ∅Karotten 26,45 after 11 of 50 tests
+14:34:40 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 16, ∅Feldnummer 60,00, ∅Karotten 36,73 after 11 of 50 tests
+14:34:40 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:40 INFO  sc.TestClient - Invoking client 1.8.0
+14:34:51 INFO  sc.TestClient - Game 11 ended regularly - Winner: 1.7.2
+14:34:51 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 59,42, ∅Karotten 24,25 after 12 of 50 tests
+14:34:51 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 16, ∅Feldnummer 58,50, ∅Karotten 44,83 after 12 of 50 tests
+14:34:51 INFO  sc.TestClient - Invoking client 1.7.2
+14:34:52 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:02 INFO  sc.TestClient - Game 12 ended regularly - Winner: 1.8.0
+14:35:02 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 58,92, ∅Karotten 26,31 after 13 of 50 tests
+14:35:02 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 18, ∅Feldnummer 58,92, ∅Karotten 41,92 after 13 of 50 tests
+14:35:02 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:02 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:11 INFO  sc.TestClient - Game 13 ended regularly - Winner: 1.8.0
+14:35:11 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 58,93, ∅Karotten 25,50 after 14 of 50 tests
+14:35:11 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 20, ∅Feldnummer 59,29, ∅Karotten 39,00 after 14 of 50 tests
+14:35:11 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:12 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:19 INFO  sc.TestClient - Game 14 ended regularly - Winner: 1.8.0
+14:35:19 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 58,93, ∅Karotten 24,20 after 15 of 50 tests
+14:35:19 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 22, ∅Feldnummer 59,60, ∅Karotten 36,73 after 15 of 50 tests
+14:35:19 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:19 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:26 INFO  sc.TestClient - Game 15 ended regularly - Winner: 1.8.0
+14:35:26 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 59,19, ∅Karotten 22,81 after 16 of 50 tests
+14:35:26 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 24, ∅Feldnummer 59,87, ∅Karotten 34,94 after 16 of 50 tests
+14:35:26 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:26 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:34 INFO  sc.TestClient - Game 16 ended regularly - Winner: 1.8.0
+14:35:34 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 58,88, ∅Karotten 25,29 after 17 of 50 tests
+14:35:34 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 26, ∅Feldnummer 60,12, ∅Karotten 33,00 after 17 of 50 tests
+14:35:34 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:34 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:41 INFO  sc.TestClient - Game 17 ended regularly - Winner: 1.8.0
+14:35:41 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 8, ∅Feldnummer 58,78, ∅Karotten 25,72 after 18 of 50 tests
+14:35:41 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 28, ∅Feldnummer 60,33, ∅Karotten 31,50 after 18 of 50 tests
+14:35:41 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:41 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:48 INFO  sc.TestClient - Game 18 ended regularly - Winner: 1.7.2
+14:35:48 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 10, ∅Feldnummer 59,05, ∅Karotten 24,37 after 19 of 50 tests
+14:35:48 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 28, ∅Feldnummer 60,37, ∅Karotten 30,53 after 19 of 50 tests
+14:35:48 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:48 INFO  sc.TestClient - Invoking client 1.8.0
+14:35:55 INFO  sc.TestClient - Game 19 ended regularly - Winner: 1.7.2
+14:35:55 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 59,30, ∅Karotten 23,25 after 20 of 50 tests
+14:35:55 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 28, ∅Feldnummer 60,45, ∅Karotten 29,45 after 20 of 50 tests
+14:35:55 INFO  sc.TestClient - Invoking client 1.7.2
+14:35:55 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:07 INFO  sc.TestClient - Game 20 ended regularly - Winner: 1.8.0
+14:36:07 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 59,00, ∅Karotten 25,43 after 21 of 50 tests
+14:36:07 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 30, ∅Feldnummer 60,62, ∅Karotten 28,24 after 21 of 50 tests
+14:36:07 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:07 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:15 INFO  sc.TestClient - Game 21 ended regularly - Winner: 1.8.0
+14:36:15 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 59,05, ∅Karotten 24,86 after 22 of 50 tests
+14:36:15 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 32, ∅Feldnummer 60,77, ∅Karotten 27,36 after 22 of 50 tests
+14:36:15 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:15 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:23 INFO  sc.TestClient - Game 22 ended regularly - Winner: 1.8.0
+14:36:23 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 58,87, ∅Karotten 25,74 after 23 of 50 tests
+14:36:23 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 34, ∅Feldnummer 60,91, ∅Karotten 26,57 after 23 of 50 tests
+14:36:23 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:23 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:30 INFO  sc.TestClient - Game 23 ended regularly - Winner: 1.8.0
+14:36:30 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 58,96, ∅Karotten 25,08 after 24 of 50 tests
+14:36:30 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 36, ∅Feldnummer 61,04, ∅Karotten 25,54 after 24 of 50 tests
+14:36:30 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:30 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:41 INFO  sc.TestClient - Game 24 ended regularly - Winner: 1.8.0
+14:36:41 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 12, ∅Feldnummer 59,08, ∅Karotten 26,20 after 25 of 50 tests
+14:36:41 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 38, ∅Feldnummer 61,16, ∅Karotten 24,52 after 25 of 50 tests
+14:36:41 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:41 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:50 INFO  sc.TestClient - Game 25 ended regularly - Winner: 1.7.2
+14:36:50 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 14, ∅Feldnummer 59,27, ∅Karotten 25,19 after 26 of 50 tests
+14:36:50 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 38, ∅Feldnummer 61,19, ∅Karotten 25,85 after 26 of 50 tests
+14:36:50 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:50 INFO  sc.TestClient - Invoking client 1.8.0
+14:36:56 INFO  sc.TestClient - Game 26 ended regularly - Winner: 1.7.2
+14:36:56 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 16, ∅Feldnummer 59,44, ∅Karotten 24,30 after 27 of 50 tests
+14:36:56 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 38, ∅Feldnummer 61,26, ∅Karotten 25,11 after 27 of 50 tests
+14:36:56 INFO  sc.TestClient - Invoking client 1.7.2
+14:36:57 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:05 INFO  sc.TestClient - Game 27 ended regularly - Winner: 1.8.0
+14:37:05 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 16, ∅Feldnummer 59,43, ∅Karotten 24,04 after 28 of 50 tests
+14:37:05 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 40, ∅Feldnummer 61,36, ∅Karotten 24,43 after 28 of 50 tests
+14:37:05 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:05 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:13 INFO  sc.TestClient - Game 28 ended regularly - Winner: 1.7.2
+14:37:13 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 18, ∅Feldnummer 59,59, ∅Karotten 23,24 after 29 of 50 tests
+14:37:13 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 40, ∅Feldnummer 61,34, ∅Karotten 24,07 after 29 of 50 tests
+14:37:13 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:13 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:22 INFO  sc.TestClient - Game 29 ended regularly - Winner: 1.7.2
+14:37:22 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 20, ∅Feldnummer 59,73, ∅Karotten 22,47 after 30 of 50 tests
+14:37:22 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 40, ∅Feldnummer 61,40, ∅Karotten 24,43 after 30 of 50 tests
+14:37:22 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:22 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:30 INFO  sc.TestClient - Game 30 ended regularly - Winner: 1.8.0
+14:37:30 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 20, ∅Feldnummer 59,55, ∅Karotten 21,77 after 31 of 50 tests
+14:37:30 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 42, ∅Feldnummer 61,48, ∅Karotten 23,74 after 31 of 50 tests
+14:37:30 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:30 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:37 INFO  sc.TestClient - Game 31 ended regularly - Winner: 1.7.2
+14:37:37 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 22, ∅Feldnummer 59,69, ∅Karotten 21,09 after 32 of 50 tests
+14:37:37 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 42, ∅Feldnummer 61,47, ∅Karotten 23,16 after 32 of 50 tests
+14:37:37 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:38 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:44 INFO  sc.TestClient - Game 32 ended regularly - Winner: 1.7.2
+14:37:44 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 24, ∅Feldnummer 59,82, ∅Karotten 20,61 after 33 of 50 tests
+14:37:44 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 42, ∅Feldnummer 61,39, ∅Karotten 23,36 after 33 of 50 tests
+14:37:44 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:44 INFO  sc.TestClient - Invoking client 1.8.0
+14:37:51 INFO  sc.TestClient - Game 33 ended regularly - Winner: 1.7.2
+14:37:51 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 59,94, ∅Karotten 20,15 after 34 of 50 tests
+14:37:51 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 42, ∅Feldnummer 61,38, ∅Karotten 22,94 after 34 of 50 tests
+14:37:51 INFO  sc.TestClient - Invoking client 1.7.2
+14:37:52 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:00 INFO  sc.TestClient - Game 34 ended regularly - Winner: 1.8.0
+14:38:00 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 59,94, ∅Karotten 20,91 after 35 of 50 tests
+14:38:00 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 44, ∅Feldnummer 61,46, ∅Karotten 22,51 after 35 of 50 tests
+14:38:00 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:00 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:04 INFO  sc.TestClient - Game 35 did not end regularly! Winner: 1.8.0
+14:38:04 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,89, ∅Karotten 24,11 after 36 of 50 tests
+14:38:04 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 46, ∅Feldnummer 60,22, ∅Karotten 24,56 after 36 of 50 tests
+14:38:04 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:05 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:17 INFO  sc.TestClient - Game 36 ended regularly - Winner: 1.8.0
+14:38:17 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,65, ∅Karotten 24,76 after 37 of 50 tests
+14:38:17 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 48, ∅Feldnummer 60,32, ∅Karotten 24,16 after 37 of 50 tests
+14:38:17 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:17 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:24 INFO  sc.TestClient - Game 37 ended regularly - Winner: 1.8.0
+14:38:25 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,71, ∅Karotten 24,37 after 38 of 50 tests
+14:38:25 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 50, ∅Feldnummer 60,42, ∅Karotten 23,63 after 38 of 50 tests
+14:38:25 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:25 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:33 INFO  sc.TestClient - Game 38 ended regularly - Winner: 1.8.0
+14:38:33 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,79, ∅Karotten 24,05 after 39 of 50 tests
+14:38:33 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 52, ∅Feldnummer 60,51, ∅Karotten 23,18 after 39 of 50 tests
+14:38:33 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:33 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:40 INFO  sc.TestClient - Game 39 ended regularly - Winner: 1.8.0
+14:38:40 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,77, ∅Karotten 24,50 after 40 of 50 tests
+14:38:40 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 54, ∅Feldnummer 60,60, ∅Karotten 22,75 after 40 of 50 tests
+14:38:40 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:40 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:47 INFO  sc.TestClient - Game 40 ended regularly - Winner: 1.8.0
+14:38:47 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 26, ∅Feldnummer 58,83, ∅Karotten 24,15 after 41 of 50 tests
+14:38:47 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 56, ∅Feldnummer 60,68, ∅Karotten 22,37 after 41 of 50 tests
+14:38:47 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:47 INFO  sc.TestClient - Invoking client 1.8.0
+14:38:58 INFO  sc.TestClient - Game 41 ended regularly - Winner: 1.7.2
+14:38:58 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 28, ∅Feldnummer 58,95, ∅Karotten 23,57 after 42 of 50 tests
+14:38:58 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 56, ∅Feldnummer 60,24, ∅Karotten 24,95 after 42 of 50 tests
+14:38:58 INFO  sc.TestClient - Invoking client 1.7.2
+14:38:58 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:10 INFO  sc.TestClient - Game 42 ended regularly - Winner: 1.8.0
+14:39:10 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 28, ∅Feldnummer 58,74, ∅Karotten 23,74 after 43 of 50 tests
+14:39:10 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 58, ∅Feldnummer 60,33, ∅Karotten 24,53 after 43 of 50 tests
+14:39:10 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:10 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:17 INFO  sc.TestClient - Game 43 ended regularly - Winner: 1.8.0
+14:39:17 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 28, ∅Feldnummer 58,84, ∅Karotten 23,27 after 44 of 50 tests
+14:39:17 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 60, ∅Feldnummer 60,41, ∅Karotten 24,14 after 44 of 50 tests
+14:39:17 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:17 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:24 INFO  sc.TestClient - Game 44 ended regularly - Winner: 1.7.2
+14:39:24 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 30, ∅Feldnummer 58,96, ∅Karotten 22,76 after 45 of 50 tests
+14:39:24 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 60, ∅Feldnummer 60,44, ∅Karotten 23,87 after 45 of 50 tests
+14:39:24 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:24 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:33 INFO  sc.TestClient - Game 45 ended regularly - Winner: 1.8.0
+14:39:34 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 30, ∅Feldnummer 58,91, ∅Karotten 22,76 after 46 of 50 tests
+14:39:34 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 62, ∅Feldnummer 60,52, ∅Karotten 23,48 after 46 of 50 tests
+14:39:34 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:34 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:41 INFO  sc.TestClient - Game 46 ended regularly - Winner: 1.8.0
+14:39:42 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 30, ∅Feldnummer 58,89, ∅Karotten 22,55 after 47 of 50 tests
+14:39:42 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 64, ∅Feldnummer 60,60, ∅Karotten 23,04 after 47 of 50 tests
+14:39:42 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:42 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:48 INFO  sc.TestClient - Game 47 ended regularly - Winner: 1.8.0
+14:39:48 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 30, ∅Feldnummer 58,87, ∅Karotten 22,77 after 48 of 50 tests
+14:39:48 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 66, ∅Feldnummer 60,67, ∅Karotten 22,56 after 48 of 50 tests
+14:39:48 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:48 INFO  sc.TestClient - Invoking client 1.8.0
+14:39:57 INFO  sc.TestClient - Game 48 ended regularly - Winner: 1.8.0
+14:39:57 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 30, ∅Feldnummer 58,84, ∅Karotten 23,41 after 49 of 50 tests
+14:39:57 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 68, ∅Feldnummer 60,73, ∅Karotten 22,24 after 49 of 50 tests
+14:39:57 INFO  sc.TestClient - Invoking client 1.7.2
+14:39:58 INFO  sc.TestClient - Invoking client 1.8.0
+14:40:05 INFO  sc.TestClient - Game 49 ended regularly - Winner: 1.7.2
+14:40:05 WARN  sc.TestClient - New score for 1.7.2: Siegpunkte 32, ∅Feldnummer 58,94, ∅Karotten 22,96 after 50 of 50 tests
+14:40:05 WARN  sc.TestClient - New score for 1.8.0: Siegpunkte 68, ∅Feldnummer 60,74, ∅Karotten 22,76 after 50 of 50 tests
+14:40:05 WARN  sc.TestClient - End results: 
+=============== SCORES ================
+1.7.2: 32
+1.8.0: 68
+=======================================
+14:40:05 WARN  sc.TestClient - 1 of 50 games did not end regularly!
+14:40:05 WARN  sc.networking.clients.XStreamClient - Client sc.TestClient@358ee631 disconnected (Cause: LOST_CONNECTION, Exception: java.io.EOFException)
+14:40:05 WARN  sc.networking.clients.XStreamClient - Receiver thread is stopping itself

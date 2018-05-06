@@ -3,9 +3,7 @@
 package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
-import sc.plugin2018.util.Constants
 import sc.plugin2018.util.GameRuleLogic
-import xerus.ktutil.nullIfEmpty
 import xerus.softwarechallenge.util.LogicHandler
 import xerus.softwarechallenge.util.add
 import xerus.softwarechallenge.util.str
@@ -18,25 +16,25 @@ import java.util.*
 abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	
 	override fun Player.str() =
-			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex)} S:$salads K:$carrots [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
+			this.strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
 	
-	fun Player.strShort() =
+	protected inline fun Player.strShort() =
 			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex)} S:$salads K:$carrots"
 	
-	inline fun Player.gewonnen() = fieldIndex == 64
+	protected inline fun Player.gewonnen() = fieldIndex == 64
 	
 	/** @return whether the player has one or more salads */
-	inline val Player.hasSalad
+	protected inline val Player.hasSalad
 		get() = salads > 0
 	
-	inline fun goalPoints(player: Player) = if (player.inGoal()) 1000 - player.carrots * 20 else 0
+	protected inline fun goalPoints(player: Player) = if (player.inGoal()) 1000 - player.carrots * 10 else 0
 	
 	/** clones the move and adds a Card Action to it */
-	fun Move.addCard(card: CardType, value: Int = 0) =
+	protected fun Move.addCard(card: CardType, value: Int = 0) =
 			Move(this.actions).add(Card(card, value, 0))
 	
 	/** checks if the currentPlayer could jump on the Field at the given index */
-	fun GameState.accessible(field: Int) =
+	protected fun GameState.accessible(field: Int) =
 			field in 1..64 && !isOccupied(field) && when (fieldTypeAt(field)) {
 				FieldType.HEDGEHOG -> false
 				FieldType.SALAD -> currentPlayer.hasSalad
@@ -46,38 +44,33 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 	
 	/** checks if the player owns sufficient carrots to move to that field,
 	 * that it isn't blocked by the other player and that it is actually before the player */
-	fun GameState.canAdvanceTo(field: Int) =
+	protected fun GameState.canAdvanceTo(field: Int) =
 			field > currentPlayer.fieldIndex && field != otherPlayer.fieldIndex && currentPlayer.hasCarrotsTo(field)
 	
 	
 	/** position of the otherPlayer for this GameState */
-	inline val GameState.otherPos
+	protected inline val GameState.otherPos
 		get() = otherPlayer.fieldIndex
 	
 	/** @return 0 when enemy is not on salad, 1 when he just arrived at salad, 2 if he just ate salad */
-	val GameState.otherEatingSalad
+	protected val GameState.otherEatingSalad
 		get() = when {
 			getTypeAt(otherPos) != FieldType.SALAD -> 0
 			otherPlayer.lastNonSkipAction !is EatSalad -> 1
 			else -> 2
 		}
 	
-	fun FieldType.isNot(vararg types: FieldType) =
-			!types.any { this == it }
-	
-	inline fun Player.hasCarrotsTo(field: Int) =
+	protected inline fun Player.hasCarrotsTo(field: Int) =
 			GameRuleLogic.calculateCarrots(field - fieldIndex) <= carrots
 	
-	inline fun GameState.advanceTo(field: Int) =
+	protected inline fun GameState.advanceTo(field: Int) =
 			Move(Advance(field - currentPlayer.fieldIndex))
 	
-	inline fun GameState.playCard(field: Int, card: CardType, value: Int = 0): Move =
+	protected inline fun GameState.playCard(field: Int, card: CardType, value: Int = 0): Move =
 			advanceTo(field).addCard(card, value)
 	
 	override fun simpleMove(state: GameState): Move {
-		predefinedMove(state)?.let { return it }
-		
-		val possibleMoves = findMoves(state)
+		val possibleMoves = state.possibleMoves
 		val winningMoves = ArrayList<Move>(4)
 		val selectedMoves = ArrayList<Move>()
 		val currentPlayer = state.currentPlayer
@@ -125,15 +118,6 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 		move.setOrderInActions()
 		return move
 	}
-	
-	/**
-	 * stellt mögliche Moves zusammen basierend auf dem gegebenen GameState
-	 *
-	 * @param state gegebener GameState
-	 * @return ArrayList mit gefundenen Moves
-	 */
-	protected open fun findMoves(state: GameState): List<Move> =
-			throw UnsupportedOperationException("findMoves is not defined!")
 	
 	override fun findBestMove() = breitensuche()
 	

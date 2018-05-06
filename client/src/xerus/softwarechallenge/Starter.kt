@@ -8,11 +8,9 @@ import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
 import xerus.ktutil.getResource
 import xerus.ktutil.nullIfEmpty
-import xerus.softwarechallenge.logic2018.Jumper1_6
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.evolution
 import xerus.softwarechallenge.util.strategy
-import java.io.File
 
 lateinit var client: Client
 

@@ -10,12 +10,10 @@ import sc.shared.PlayerColor
 import sc.shared.PlayerScore
 import xerus.ktutil.createDirs
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.ifTrue
 import xerus.ktutil.renameTo
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.client
 import java.io.File
-import java.io.FileWriter
 import java.lang.management.ManagementFactory
 import java.nio.file.Paths
 import java.security.SecureRandom
@@ -30,16 +28,15 @@ var evolution: Int? = null
 /** schafft Grundlagen fuer eine Logik */
 abstract class LogicHandler(identifier: String) : IGameHandler {
 	
-	protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
+	@F protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
 	
-	@JvmField
-	protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
+	@F protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
 	
-	@JvmField
-	protected val rand: Random = SecureRandom()
+	@F protected val rand: Random = SecureRandom()
 	
-	@JvmField
-	protected var currentState = GameState()
+	@F protected var currentState = GameState()
+	
+	@F protected val isDebug = debugLevel == 2
 	
 	protected inline val currentPlayer: Player
 		get() = currentState.currentPlayer
@@ -101,23 +98,27 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	// region Zugsuche
 	
-	@JvmField
-	protected val gameLogDir = (debugLevel == 2).ifTrue { Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() }
+	@F protected val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date())).createDirs() else null
 	protected val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
-	/** kann einen vordefinierten Zug zurückgeben oder null wenn nicht sinnvoll */
+	/** if a predefined Move is appropriate then this method can return it, otherwise null */
 	protected open fun predefinedMove(state: GameState = currentState): Move? = null
+	
+	/** finds moves for the given [state] */
+	protected abstract fun findMoves(state: GameState = currentState): List<Move>
 	
 	/** findet den Move der beim aktuellen GameState am besten ist */
 	protected abstract fun findBestMove(): Move?
 	
+	/** bewertet die gegebene Situation
+	 * @return Einschätzung der gegebenen Situation in Punkten */
+	protected abstract fun evaluate(state: GameState): Double
+	
 	protected abstract fun defaultParams(): DoubleArray
 	
-	@JvmField
-	protected var depth: Int = 0
-	@JvmField
-	protected var lastdepth: Int = 0
+	@F protected var depth: Int = 0
+	@F protected var lastdepth: Int = 0
 	
 	// GRUNDLAGEN
 	
@@ -234,8 +235,8 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		return null
 	}
 	
-	private var validMoves: Int = 0
-	private var invalidMoves: Int = 0
+	@F protected var validMoves: Int = 0
+	@F protected var invalidMoves: Int = 0
 	
 	protected abstract fun simpleMove(state: GameState): Move
 	

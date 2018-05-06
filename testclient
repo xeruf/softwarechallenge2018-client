@@ -17,7 +17,7 @@ echo "#!/usr/bin/env bash
 ../start-client.sh ../Jumper-$2.jar \"\$@\"" > "$prefix$2"
 chmod +x $prefix$1 $prefix$2
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
-    --name1 $1 --player1 "$prefix$1" \
-    --name2 $2 --player2 "$prefix$2" \
+    --name1 "$1" --player1 "$prefix$1" \
+    --name2 "$2" --player2 "$prefix$2" \
     --tests $tests --start-server --port $port
 rm $prefix$1 $prefix$2

@@ -3,22 +3,18 @@
 package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
-import sc.plugin2018.util.GameRuleLogic
 import sc.shared.PlayerColor
-import xerus.ktutil.*
+import xerus.ktutil.createDir
+import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.util.MP
-import xerus.softwarechallenge.util.addMove
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
 import java.util.*
-import kotlin.math.pow
 
 class Jumper2 : Moves2("2.0.0") {
 	
-	/** bewertet die gegebene Situation
-	 * @return Einschätzung der gegebenen Situation in Punkten */
-	fun evaluate(state: GameState): Double {
+	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
 		return player.fieldIndex + carrotPoints(player.carrots.toDouble(), 64.minus(player.fieldIndex).toDouble())
 	}
@@ -55,7 +51,7 @@ class Jumper2 : Moves2("2.0.0") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue = LinkedList<Node>()
+		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
 		var moves = findMoves(currentState)

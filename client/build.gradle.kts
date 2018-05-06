@@ -77,11 +77,6 @@ tasks {
 				""".trimIndent())
 				close()
 			}
-			file("../start-latest.sh").bufferedWriter().run {
-				appendln("#!/usr/bin/env bash")
-				write("\$(dirname \"\${BASH_SOURCE[0]}\")/start-client.sh \$(dirname \"\${BASH_SOURCE[0]}\")/$jumper.jar \"\$@\"")
-				close()
-			}
 		}
 		commandLine("chmod", "+x", "../start-client.sh")
 	}
@@ -104,10 +99,11 @@ tasks {
 		classifier = ""
 		destinationDir = file("..")
 		from(java.sourceSets.getByName("main").output)
-		dependsOn("clean", "classes")
+		dependsOn("classes")
 	}
 	
 	"processResources" {
+		setOnlyIf { true }
 		doFirst {
 			file("resources/activeclient").writeText(client.orEmpty())
 		}

@@ -4,7 +4,12 @@ package xerus.softwarechallenge.util
 
 import sc.plugin2018.*
 
+typealias F = JvmField
+
 inline fun Field.isType(type: FieldType) = this.type == type
+
+fun FieldType.isNot(vararg types: FieldType) =
+		!types.any { this == it }
 
 inline fun MutableCollection<Move>.addMove(vararg actions: Action) = add(Move(*actions))
 

@@ -3,11 +3,12 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.square
+import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.addMove
-import java.util.ArrayList
+import java.util.*
 import kotlin.math.pow
 
-abstract class Moves2(version: String): LogicBase(version) {
+abstract class Moves2(version: String) : LogicBase(version) {
 	
 	/** Uses a function to gauge the worth of the carrots at the given position
 	 * @param x carrots
@@ -16,9 +17,9 @@ abstract class Moves2(version: String): LogicBase(version) {
 	protected fun carrotPoints(x: Double, y: Double) =
 			(1.1.pow(-((x - y.pow(1.6)) / (40 + y)).square) * 5 + x / (100 - y)) * carrotParam
 	
-	val carrotParam = params[0]
-	val saladParam = params[1]
-	val posParam = if(params.size > 2) params[2] else -100.0
+	@F val carrotParam = params[0]
+	@F val saladParam = params[1]
+	@F val posParam = if (params.size > 2) params[2] else -100.0
 	
 	override fun findMoves(state: GameState): List<Move> {
 		val player = state.currentPlayer
