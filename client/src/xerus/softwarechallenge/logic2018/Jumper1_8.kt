@@ -10,6 +10,7 @@ import xerus.ktutil.createDir
 import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
 import xerus.ktutil.toInt
+import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
@@ -18,7 +19,7 @@ import kotlin.math.pow
 
 class Jumper1_8 : Moves2("1.8.1") {
 	
-	fun evaluate(state: GameState): Double {
+	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
 		var points = posParam * player.fieldIndex + 30
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
@@ -31,7 +32,7 @@ class Jumper1_8 : Moves2("1.8.1") {
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
 		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
+		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		points += goalPoints(player)
@@ -46,7 +47,7 @@ class Jumper1_8 : Moves2("1.8.1") {
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun breitensuche(): Move? {
-		val queue = LinkedList<Node>()
+		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
 		var moves = findMoves(currentState)
@@ -74,7 +75,7 @@ class Jumper1_8 : Moves2("1.8.1") {
 		var maxDepth = 4
 		var node = queue.poll()
 		var nodeState: GameState
-		var subDir: Path?
+		var subDir: Path? = null
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
 			val multiplicator = depth.toDouble().pow(0.4)
@@ -90,10 +91,12 @@ class Jumper1_8 : Moves2("1.8.1") {
 					val points = evaluate(newState) / multiplicator + node.points
 					if (points < mp.points - 60)
 						continue
-					if (mp.update(node.move, points))
+					val update = mp.update(node.move, points)
+					if (update && isDebug)
 						node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
 					// Queue
-					subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
+					if (isDebug)
+						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
 					if (newState.turn > 59 || newState.currentPlayer.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !newState.otherPlayer.gewonnen())
@@ -108,7 +111,45 @@ class Jumper1_8 : Moves2("1.8.1") {
 		return bestMove
 	}
 	
-	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
+	/*override fun GameState.test(move: Move, clone: Boolean): GameState? {
+		val newState = if (clone) clone() else this
+		try {
+			move.setOrderInActions()
+			move.perform(newState)
+			val turnIndex = newState.turn
+			val bestState = Rater<GameState>()
+			if (turnIndex < 60) {
+				for (otherMove in findMoves(newState)) {
+					val moveState = newState.clone()
+					otherMove.setOrderInActions()
+					try {
+						otherMove.perform(moveState)
+					} catch (exception: Throwable) {
+						log.warn("Fehler bei otherMove: ${otherMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
+					}
+					moveState.turn -= 1
+					moveState.switchCurrentPlayer()
+					if (bestState.update(moveState, evaluate(moveState))) {
+						moveState.turn += 1
+						moveState.switchCurrentPlayer()
+					}
+				}
+			}
+			
+			validMoves++
+			return bestState.obj ?: newState.apply {
+				turn += 1
+				switchCurrentPlayer()
+			}
+		} catch (e: InvalidMoveException) {
+			invalidMoves++
+			if (debugLevel > 0)
+				log.warn("FEHLERHAFTER ZUG: {} FEHLER: {} " + this.str(), move.str(), e.message)
+		}
+		return null
+	}*/
+	
+	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())

@@ -5,6 +5,7 @@ import sc.plugin2018.util.GameRuleLogic
 import sc.shared.PlayerColor
 import xerus.ktutil.*
 import xerus.ktutil.helpers.Timer
+import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.addMove
 import xerus.softwarechallenge.util.str
@@ -12,9 +13,9 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_7 : LogicBase("1.7.11") {
+class Jumper1_7 : LogicBase("1.7.2") {
 	
-	fun evaluate(state: GameState): Double {
+	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		var points = 100.0 - distanceToGoal
@@ -28,7 +29,7 @@ class Jumper1_7 : LogicBase("1.7.11") {
 		// Karotten
 		points += carrotPoints(player.carrots, distanceToGoal) * 4
 		points -= carrotPoints(state.otherPlayer.carrots, 65.minus(state.otherPos).toDouble())
-		points -= (state.fieldOfCurrentPlayer() == FieldType.CARROT).toInt()
+		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		points += goalPoints(player)
@@ -49,8 +50,8 @@ class Jumper1_7 : LogicBase("1.7.11") {
 	override fun defaultParams() = doubleArrayOf(15.0, 0.5)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	/*override fun breitensuche(): Move? {
-		val queue = LinkedList<Node>()
+	override fun breitensuche(): Move? {
+		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
 		var moves = findMoves(currentState)
@@ -77,75 +78,7 @@ class Jumper1_7 : LogicBase("1.7.11") {
 		depth = 1
 		var maxDepth = 5
 		var node = queue.poll()
-		var nodeState: GameState
-		var subDir: Path?
-		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
-			depth = node.depth
-			val divider = depth.toDouble().pow(0.3)
-			do {
-				nodeState = node.gamestate
-				moves = findMoves(nodeState)
-				for (i in 0..moves.lastIndex) {
-					if (Timer.runtime() > 1600)
-						break@loop
-					val move = moves[i]
-					val newState = nodeState.test(move, i < moves.lastIndex) ?: continue
-					// Punkte
-					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 100 / divider)
-						continue
-					if (mp.update(node.move, points))
-						node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
-					// Queue
-					subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
-					if (newState.turn > 59 || newState.currentPlayer.gewonnen())
-						maxDepth = depth
-					if (depth < maxDepth && !newState.otherPlayer.gewonnen())
-						queue.add(node.update(newState, points, subDir))
-				}
-				node = queue.poll() ?: break
-			} while (depth == node.depth)
-			lastdepth = depth
-			bestMove = mp.obj!!
-			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
-		}
-		return bestMove
-	}*/
-	
-	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	override fun breitensuche(): Move? {
-		// Variablen vorbereiten
-		val queue = LinkedList<Node>()
-		val mp = MP()
-		var bestMove: Move
-		var moves = findMoves(currentState)
-		
-		for (move in moves) {
-			val newState = currentState.test(move) ?: continue
-			if (newState.currentPlayer.gewonnen())
-				return move
-			// Punkte
-			val points = evaluate(newState)
-			mp.update(move, points)
-			// Queue
-			if (!newState.otherPlayer.gewonnen()) {
-				val newnode = Node(move, newState, points)
-				queue.add(newnode)
-			}
-		}
-		
-		bestMove = mp.obj ?: moves.first()
-		if (queue.size < 2) {
-			System.gc()
-			log.debug("Nur einen validen Zug gefunden: {}", bestMove.str())
-			return bestMove
-		}
-		
-		// Breitensuche
-		mp.clear()
-		depth = 1
-		var maxDepth = 5.coerceAtMost(62.minus(currentTurn) / 2)
-		var node = queue.poll()
+		var subDir: Path? = null
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			depth = node.depth
 			val divider = depth.toDouble().pow(0.3)
@@ -161,24 +94,27 @@ class Jumper1_7 : LogicBase("1.7.11") {
 					val points = evaluate(newState) / divider + node.points
 					if (points < mp.points - 100 / divider)
 						continue
-					mp.update(node.move, points)
+					val update = mp.update(node.move, points)
+					if (update && isDebug)
+						node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
 					// Queue
+					if (isDebug)
+						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
 					if (newState.turn > 59 || newState.currentPlayer.gewonnen())
 						maxDepth = depth
-					if (!newState.otherPlayer.gewonnen() && depth < maxDepth) {
-						val newNode = node.update(newState, points, move)
-						queue.add(newNode)
-					}
+					if (depth < maxDepth && !newState.otherPlayer.gewonnen())
+						queue.add(node.update(newState, points, subDir))
 				}
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
 			lastdepth = depth
 			bestMove = mp.obj!!
-			log.debug("Neuer bester Zug bei Tiefe {}: {}", depth, bestMove.str())
+			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
 		}
 		return bestMove
 	}
 	
+	val afterHedgehog = intArrayOf(12, 16, 20)
 	override fun predefinedMove(state: GameState): Move? {
 		val player = state.currentPlayer
 		val pos = player.fieldIndex
@@ -216,7 +152,7 @@ class Jumper1_7 : LogicBase("1.7.11") {
 					val pos22 = findField(FieldType.POSITION_2, 20)
 					if (pos22 < 22 && pos < pos21 && pos21 != pos22)
 						return state.advanceTo(pos21)
-					if (pos22 == 21 && state.canAdvanceTo(21) && pos in arrayOf(12, 16, 20))
+					if (pos22 == 21 && state.canAdvanceTo(21) && pos in afterHedgehog)
 						return state.advanceTo(pos22)
 				}
 				if (pos > 11)
@@ -437,23 +373,8 @@ class Jumper1_7 : LogicBase("1.7.11") {
 		return move
 	}
 	
-	private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
-		
-		constructor(move: Move, state: GameState, points: Double = 0.0) : this(move, state, points, 1,
-				gameLogDir?.resolve("turn$currentTurn")?.resolve("%.1f - %s".format(points, move.str())))
-		
-		init {
-			dir?.createDirs()
-		}
-		
-		fun update(newState: GameState, newPoints: Double, addedMove: Move) =
-				Node(move, newState, newPoints, depth + 1, dir?.resolve("%.1f - %s".format(newPoints, addedMove.str())))
-		
-		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
-		
-	}
-	
-	/*private inner class Node private constructor(val move: Move, val gamestate: GameState, val points: Double, val depth: Int, val dir: Path?) {
+	private inner class Node private constructor(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F
+	val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
@@ -463,6 +384,6 @@ class Jumper1_7 : LogicBase("1.7.11") {
 		
 		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
 		
-	}*/
+	}
 	
 }
