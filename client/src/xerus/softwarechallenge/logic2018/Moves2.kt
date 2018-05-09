@@ -33,8 +33,7 @@ abstract class Moves2(version: String) : LogicBase(version) {
 		if (currentField == FieldType.CARROT) {
 			if (fieldIndex > 42 && player.carrots > 74 - fieldIndex)
 				moves.addMove(ExchangeCarrots(-10))
-			if (player.carrots < 40)
-				moves.addMove(ExchangeCarrots(10))
+			moves.addMove(ExchangeCarrots(10))
 		}
 		
 		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, fieldIndex)

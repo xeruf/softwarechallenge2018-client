@@ -70,7 +70,7 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 			advanceTo(field).addCard(card, value)
 	
 	override fun GameState.simpleMove(): Move {
-		val possibleMoves = possibleMoves
+		val possibleMoves = findMoves()
 		val winningMoves = ArrayList<Move>(4)
 		val selectedMoves = ArrayList<Move>()
 		val player = currentPlayer

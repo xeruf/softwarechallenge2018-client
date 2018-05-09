@@ -235,9 +235,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			}
 	
 	/**
-	 * tests a Move against this [GameState]
-	 *
-	 * führt jetzt auch einen Move für den Gegenspieler aus!
+	 * tests a Move against this [GameState] and then executes a move for the enemy player
 	 *
 	 * @param state gegebener State
 	 * @param move  der zu testende Move
@@ -249,30 +247,22 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		try {
 			move.setOrderInActions()
 			move.perform(newState)
-			val bestState = Rater<GameState>()
-			if (newState.turn < 60 && newState.otherPlayer.fieldIndex != 64) {
-				for (otherMove in newState.findMoves()) {
-					val moveState = newState.clone()
-					otherMove.setOrderInActions()
-					try {
-						otherMove.perform(moveState)
-					} catch (exception: Throwable) {
-						log.warn("Fehler bei otherMove: ${otherMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
-					}
-					moveState.turn -= 1
-					moveState.switchCurrentPlayer()
-					if (bestState.update(moveState, evaluate(moveState))) {
-						moveState.turn += 1
-						moveState.switchCurrentPlayer()
-					}
+			val turnIndex = newState.turn
+			if (turnIndex < 60) {
+				val simpleMove = newState.simpleMove()
+				if (newState.currentPlayerColor == myColor)
+					log.error("SEARCHING SIMPLEMOVE FOR ME!")
+				try {
+					simpleMove.perform(newState)
+				} catch (exception: Throwable) {
+					log.warn("Fehler bei simpleMove: ${simpleMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
+					newState.turn = turnIndex + 1
+					newState.switchCurrentPlayer()
 				}
 			}
 			
 			validMoves++
-			return bestState.obj ?: newState.apply {
-				turn += 1
-				switchCurrentPlayer()
-			}
+			return newState
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)

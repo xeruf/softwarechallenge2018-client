@@ -7,12 +7,9 @@ import sc.plugin2018.Move
 import sc.plugin2018.util.GameRuleLogic
 import sc.shared.InvalidMoveException
 import sc.shared.PlayerColor
-import xerus.ktutil.createDir
-import xerus.ktutil.createFile
-import xerus.ktutil.forRange
+import xerus.ktutil.*
 import xerus.ktutil.helpers.Rater
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.toInt
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.debugLevel
@@ -21,7 +18,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_8 : Moves2("1.8.3") {
+class Jumper1_8 : Moves2("1.8.4") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -30,7 +27,7 @@ class Jumper1_8 : Moves2("1.8.3") {
 		
 		// Salat und Karten
 		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += saladParam * 0.5 * (player.ownsCardOfType(CardType.EAT_SALAD).toInt() + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).toInt())
+		points += saladParam * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.6, 0.0) + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(0.3, 0.0))
 		points += player.cards.size * 2
 		
 		// Karotten
@@ -62,9 +59,14 @@ class Jumper1_8 : Moves2("1.8.3") {
 				queue.add(Node(move, newState, points))
 		}
 		
-		var bestMove = mp.obj ?: moves.first()
+		var bestMove = mp.obj
 		if (queue.size < 2) {
-			log.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
+			if (bestMove != null) {
+				log.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
+			} else {
+				bestMove = moves.first()
+				log.warn("Keinen sinnvollen Zug gefunden, sende ${bestMove.str()}!")
+			}
 			return bestMove
 		}
 		
@@ -103,7 +105,7 @@ class Jumper1_8 : Moves2("1.8.3") {
 					if (depth < maxDepth && (!newState.otherPlayer.gewonnen() || newState.startPlayerColor != myColor))
 						queue.add(node.update(newState, points, subDir))
 				}
-				if (Timer.runtime() > 1600)
+				if (Timer.runtime() > 1700)
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
