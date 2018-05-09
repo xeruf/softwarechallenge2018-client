@@ -4,7 +4,7 @@
 /client/games
 /client/resources/activeclient
 
-/*.jar
+/clients/*.jar
 /*.zip
 
 start-*

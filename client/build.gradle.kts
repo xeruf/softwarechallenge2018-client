@@ -36,7 +36,7 @@ java.sourceSets.getByName("main").resources.srcDir("resources")
 
 val javaArgs = listOf("-Dfile.encoding=UTF-8"
 		, "-XX:NewRatio=1"
-		, "-ms1000m", "-mx1000m"
+		, "-ms1500000000", "-mx1500000000"
 		, "-XX:MaxGCPauseMillis=80", "-XX:GCPauseIntervalMillis=1000"
 		, "-XX:TargetSurvivorRatio=90"
 )
@@ -60,11 +60,13 @@ application {
 tasks {
 	
 	val MAIN = "_main"
+	val clients = file("../clients")
 	val jumper = "Jumper-$version"
 	
 	"scripts"(Exec::class) {
+		val script = clients.resolve("start-client.sh")
 		doFirst {
-			file("../start-client.sh").bufferedWriter().run {
+			script.bufferedWriter().run {
 				write("""
 					#!/usr/bin/env bash
 					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar
@@ -78,7 +80,7 @@ tasks {
 				close()
 			}
 		}
-		commandLine("chmod", "+x", "../start-client.sh")
+		commandLine("chmod", "+x", script)
 	}
 	
 	withType<KotlinCompile> {
@@ -97,7 +99,7 @@ tasks {
 	"shadowJar"(ShadowJar::class) {
 		baseName = "Jumper"
 		classifier = ""
-		destinationDir = file("..")
+		destinationDir = clients
 		from(java.sourceSets.getByName("main").output)
 		dependsOn("classes")
 	}
@@ -111,7 +113,7 @@ tasks {
 	
 	"zip"(Zip::class) {
 		dependsOn("jar")
-		from("..")
+		from(clients)
 		include("$jumper.jar", "start-client.sh")
 		archiveName = "$jumper.zip"
 		destinationDir = file("..")
@@ -120,16 +122,11 @@ tasks {
 		}
 	}
 	
-	"clean"(Delete::class) {
-		delete += setOf("games", "../testserver/log", "../testserver/logs", "../softwarechallenge-tools/build")
-	}
-	
 	tasks.replace("jar").apply {
 		group = MAIN
 		dependsOn("shadowJar", "scripts")
 		doFirst {
-			file("..").listFiles { _, name -> name.startsWith("Jumper") && name.endsWith("jar") && name != "$jumper.jar" }
-			//.forEach { it.renameTo(file("../Archiv/Jumper/${it.name}").also { it.delete() }) }
+			//file("..").listFiles { _, name -> name.startsWith("Jumper") && name.endsWith("jar") && name != "$jumper.jar" }.forEach { it.renameTo(file("../Archiv/Jumper/${it.name}").also { it.delete() }) }
 		}
 	}
 	
