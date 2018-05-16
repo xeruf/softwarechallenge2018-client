@@ -117,8 +117,4 @@ abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
 		return move
 	}
 	
-	override fun findBestMove() = breitensuche()
-	
-	protected abstract fun breitensuche(): Move?
-	
 }

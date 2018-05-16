@@ -19,7 +19,6 @@ version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper1_8"}.k
 plugins {
 	kotlin("jvm") version "1.2.41"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
-	id("com.dorongold.task-tree") version "1.3"
 	application
 }
 
@@ -27,7 +26,6 @@ repositories { jcenter() }
 
 dependencies {
 	compile("xerus.util", "kotlin")
-	compile(kotlin("stdlib-jdk8"))
 	compile(fileTree("lib"))
 }
 

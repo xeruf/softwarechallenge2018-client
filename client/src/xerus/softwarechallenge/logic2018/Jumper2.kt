@@ -51,7 +51,7 @@ class Jumper2 : Moves2("2.0.0") {
 	override fun defaultParams() = doubleArrayOf(10.0, 10.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	override fun breitensuche(): Move? {
+	override fun findBestMove(): Move? {
 		val mp = MP()
 		
 		var moves = currentState.findMoves()

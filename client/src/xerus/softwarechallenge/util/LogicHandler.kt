@@ -107,7 +107,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		clear()
 	}
 	
-	fun Move?.invalid() = this == null || currentState.test(this) == null
+	fun Move?.invalid() = this == null || currentState.test(this, true, false) == null
 	
 	// region Zugsuche
 	
@@ -242,13 +242,13 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	 * @param clone if the state should be cloned prior to performing
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
 	 */ 
-	protected fun GameState.test(move: Move, clone: Boolean = true): GameState? {
+	protected fun GameState.test(move: Move, clone: Boolean = true, otherMove: Boolean = true): GameState? {
 		val newState = if (clone) clone() else this
 		try {
 			move.setOrderInActions()
 			move.perform(newState)
 			val turnIndex = newState.turn
-			if (turnIndex < 60) {
+			if (otherMove && turnIndex < 60) {
 				val simpleMove = newState.simpleMove()
 				if (newState.currentPlayerColor == myColor)
 					log.error("SEARCHING SIMPLEMOVE FOR ME!")

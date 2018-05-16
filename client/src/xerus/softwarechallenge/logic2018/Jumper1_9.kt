@@ -47,8 +47,7 @@ class Jumper1_9 : Moves2("1.9.0") {
 	/** Karotten, Salat/Karten */
 	override fun defaultParams() = doubleArrayOf(0.6, 15.0)
 	
-	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	override fun breitensuche(): Move? {
+	override fun findBestMove(): Move? {
 		val mp = MP()
 		
 		var moves = currentState.findMoves()

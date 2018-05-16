@@ -47,7 +47,7 @@ class Jumper1_6 : LogicBase("1.6.2") {
 	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 15.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
-	override fun breitensuche(): Move? {
+	override fun findBestMove(): Move? {
 		val queue: Queue<Node> = ArrayDeque<Node>(20000)
 		val mp = MP()
 		
