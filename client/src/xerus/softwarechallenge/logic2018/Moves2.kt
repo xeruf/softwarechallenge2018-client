@@ -107,7 +107,7 @@ abstract class Moves2(version: String) : LogicBase(version) {
 										if (newCarrots > 84 - otherPos && otherPos > 43)
 											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
 										if (newCarrots > 74 - otherPos)
-											moves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
+											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 										if (CardType.EAT_SALAD !in cards)
 											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
 									}
@@ -120,6 +120,12 @@ abstract class Moves2(version: String) : LogicBase(version) {
 				else -> moves.add(advance)
 			}
 		}
+		
+		/*if (debugLevel > 1) {
+			val double = moves.find { moves.indexOf(it) != moves.lastIndexOf(it) }
+			if (double != null)
+				log.error("Double Move: $double")
+		}*/
 		
 		return if (moves.isNotEmpty()) moves
 		else listOf(Move(Skip()))

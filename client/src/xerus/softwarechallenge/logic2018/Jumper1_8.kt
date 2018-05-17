@@ -1,18 +1,11 @@
 package xerus.softwarechallenge.logic2018
 
-import sc.plugin2018.CardType
-import sc.plugin2018.FieldType
-import sc.plugin2018.GameState
-import sc.plugin2018.Move
-import sc.plugin2018.util.GameRuleLogic
-import sc.shared.InvalidMoveException
+import sc.plugin2018.*
 import sc.shared.PlayerColor
 import xerus.ktutil.*
-import xerus.ktutil.helpers.Rater
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
-import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.str
 import java.nio.file.Path
 import java.util.*
@@ -102,7 +95,7 @@ class Jumper1_8 : Moves2("1.8.4") {
 					// Queue
 					if (newState.currentPlayer.gewonnen())
 						maxDepth = depth
-					if (depth < maxDepth && (!newState.otherPlayer.gewonnen() || newState.startPlayerColor != myColor))
+					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
 						queue.add(node.update(newState, points, subDir))
 				}
 				if (Timer.runtime() > 1700)

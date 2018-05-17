@@ -4,10 +4,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import org.slf4j.LoggerFactory
 import sc.plugin2018.*
-import sc.shared.GameResult
-import sc.shared.InvalidMoveException
-import sc.shared.PlayerColor
-import sc.shared.PlayerScore
+import sc.shared.*
 import xerus.ktutil.createDirs
 import xerus.ktutil.helpers.Rater
 import xerus.ktutil.helpers.Timer
@@ -199,7 +196,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	abstract fun Player.str(): String
 	
 	fun GameState.str() =
-			"GameState: Zug: %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
+			"GameState: Zug %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
 	
 	protected fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
@@ -241,32 +238,40 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	 * @param move  der zu testende Move
 	 * @param clone if the state should be cloned prior to performing
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
-	 */ 
-	protected fun GameState.test(move: Move, clone: Boolean = true, otherMove: Boolean = true): GameState? {
-		val newState = if (clone) clone() else this
+	 */
+	protected fun GameState.test(move: Move, clone: Boolean = true, moveOther: Boolean = true): GameState? {
+		val newState = clone()//if (clone) clone() else this
 		try {
 			move.setOrderInActions()
 			move.perform(newState)
-			val turnIndex = newState.turn
-			if (otherMove && turnIndex < 60) {
-				val simpleMove = newState.simpleMove()
-				if (newState.currentPlayerColor == myColor)
-					log.error("SEARCHING SIMPLEMOVE FOR ME!")
-				try {
-					simpleMove.perform(newState)
-				} catch (exception: Throwable) {
-					log.warn("Fehler bei simpleMove: ${simpleMove.str()} - ${this.otherPlayer.str()}: $exception\n${newState.str()}")
-					newState.turn = turnIndex + 1
-					newState.switchCurrentPlayer()
+			val bestState = Rater<GameState>()
+			if (moveOther && newState.turn < 60 && newState.otherPlayer.fieldIndex != 64) {
+				for (otherMove in newState.findMoves()) {
+					val moveState = newState.clone()
+					otherMove.setOrderInActions()
+					try {
+						otherMove.perform(moveState)
+						moveState.turn -= 1
+						moveState.switchCurrentPlayer()
+						if (bestState.update(moveState, evaluate(moveState))) {
+							moveState.turn += 1
+							moveState.switchCurrentPlayer()
+						}
+					} catch (exception: Throwable) {
+						log.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
+					}
 				}
 			}
 			
 			validMoves++
-			return newState
+			return bestState.obj ?: newState.apply {
+				turn += 1
+				switchCurrentPlayer()
+			}
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)
-				log.warn("FEHLERHAFTER ZUG: {} FEHLER: {} " + this.str(), move.str(), e.message)
+				log.warn("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
 		}
 		return null
 	}

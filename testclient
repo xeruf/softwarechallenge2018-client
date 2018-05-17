@@ -17,7 +17,7 @@ cd ..
 ./docker-client.sh Jumper-$1.jar \"\$@\"" > "$prefix$1"
 echo "#!/usr/bin/env bash
 cd ..
-./docker-client.sh -c Jumper_$2 \"\$@\"" > "$prefix$2"
+./docker-client.sh Jumper-$2.jar \"\$@\"" > "$prefix$2"
 chmod +x $prefix$1 $prefix$2
 
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
