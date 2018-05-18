@@ -105,6 +105,10 @@ tasks {
 	"processResources" {
 		setOnlyIf { true }
 		doFirst {
+			sync {
+				from("src/xerus/softwarechallenge")
+				into("resources/sources")
+			}
 			file("resources/activeclient").writeText(client.orEmpty())
 		}
 	}

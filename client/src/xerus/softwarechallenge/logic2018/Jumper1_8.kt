@@ -15,12 +15,12 @@ class Jumper1_8 : Moves2("1.8.4") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = posParam * player.fieldIndex + 80
+		var points = posParam * player.fieldIndex + 100 - state.turn * 2
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		
 		// Salat und Karten
 		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += saladParam * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.6, 0.0) + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(0.3, 0.0))
+		points += saladParam * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.6, 0.0) + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(0.2, 0.0))
 		points += player.cards.size * 2
 		
 		// Karotten
@@ -66,13 +66,15 @@ class Jumper1_8 : Moves2("1.8.4") {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 4
+		var maxDepth = 5
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path? = null
+		var acceptedMoves: Int
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
+			acceptedMoves = 0
 			depth = node.depth
-			val multiplicator = depth.toDouble().pow(0.4)
+			val divider = depth.toDouble().pow(0.4)
 			do {
 				nodeState = node.gamestate
 				moves = nodeState.findMoves()
@@ -82,12 +84,13 @@ class Jumper1_8 : Moves2("1.8.4") {
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
 					// Punkte
-					val points = evaluate(newState) / multiplicator + node.points
-					if (points < mp.points - 60)
+					val points = evaluate(newState) / divider + node.points
+					if (points < mp.points - 20 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					//Debug
 					if (isDebug) {
+						acceptedMoves++
 						if (update)
 							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
 						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
@@ -104,7 +107,7 @@ class Jumper1_8 : Moves2("1.8.4") {
 			} while (depth == node.depth)
 			lastdepth = depth
 			bestMove = mp.obj!!
-			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
+			log.info("Neuer bester Zug bei Tiefe $depth: $mp, accepted $acceptedMoves")
 		}
 		return bestMove
 	}

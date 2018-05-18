@@ -3,6 +3,7 @@
 **/*.log*
 /client/games
 /client/resources/activeclient
+/client/resources/sources
 
 /clients/*.jar
 /*.zip
