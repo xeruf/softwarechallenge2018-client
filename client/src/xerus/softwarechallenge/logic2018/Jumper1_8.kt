@@ -11,7 +11,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_8 : Moves2("1.8.4") {
+class Jumper1_8 : Moves2("1.8.5") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -88,9 +88,9 @@ class Jumper1_8 : Moves2("1.8.4") {
 					if (points < mp.points - 20 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
-					//Debug
+					// Debug
+					acceptedMoves++
 					if (isDebug) {
-						acceptedMoves++
 						if (update)
 							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
 						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
