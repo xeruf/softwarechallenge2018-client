@@ -13,7 +13,7 @@ import xerus.softwarechallenge.util.str
 import java.nio.file.Path
 import java.util.*
 
-class Jumper2 : Moves2("2.0.0") {
+object Jumper2 : CommonLogic("2.0.0") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -129,7 +129,7 @@ class Jumper2 : Moves2("2.0.0") {
 	
 	private val queue: Queue<Node> = ArrayDeque<Node>(32000)
 	
-	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
+	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double, evaluation: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(evaluation, move.str()))?.createDir())

@@ -8,6 +8,7 @@ import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
 import xerus.ktutil.getResource
 import xerus.ktutil.nullIfEmpty
+import xerus.ktutil.reflectField
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.evolution
 import xerus.softwarechallenge.util.strategy
@@ -47,7 +48,7 @@ fun main(args: Array<String>) {
 	
 	val clientClass = (parser.getOptionValue(clientOption) as String?)
 	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass 
-			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper1_8"}").newInstance() as IGameHandler
+			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper1_8"}").kotlin.objectInstance as IGameHandler
 	
 	// einen neuen Client erzeugen
 	try {

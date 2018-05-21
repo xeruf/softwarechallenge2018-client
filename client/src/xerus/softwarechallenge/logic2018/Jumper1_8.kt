@@ -11,7 +11,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_8 : Moves2("1.8.5") {
+object Jumper1_8 : CommonLogic("1.8.5") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -74,7 +74,7 @@ class Jumper1_8 : Moves2("1.8.5") {
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
-			val divider = depth.toDouble().pow(0.4)
+			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
 				moves = nodeState.findMoves()
@@ -85,7 +85,7 @@ class Jumper1_8 : Moves2("1.8.5") {
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
 					// Punkte
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 20 / divider)
+					if (points < mp.points - 30 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
@@ -118,10 +118,11 @@ class Jumper1_8 : Moves2("1.8.5") {
 	
 	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
 	
-	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
+	
+	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
-				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
+				Jumper1_8.currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
 		
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)

@@ -26,6 +26,7 @@ repositories { jcenter() }
 
 dependencies {
 	compile("xerus.util", "kotlin")
+	compile(kotlin("reflect"))
 	compile(fileTree("lib"))
 }
 

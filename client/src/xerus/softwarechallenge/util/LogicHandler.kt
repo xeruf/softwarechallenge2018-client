@@ -109,9 +109,9 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	// region Zugsuche
 	
 	/** log directory for this game */
-	@F protected val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $identifier").createDirs() else null
+	@F val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $identifier").createDirs() else null
 	/** log directory for the current turn*/
-	protected val currentLogDir
+	val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
 	protected fun GameState.quickMove(): Pair<Move, GameState> {
@@ -148,9 +148,9 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	/** bewertet die gegebene Situation
 	 * @return Einschätzung der gegebenen Situation in Punkten */
-	protected abstract fun evaluate(state: GameState): Double
+	abstract fun evaluate(state: GameState): Double
 	
-	protected abstract fun defaultParams(): DoubleArray
+	abstract fun defaultParams(): DoubleArray
 	
 	@F protected var depth: Int = 0
 	@F protected var lastdepth: Int = 0

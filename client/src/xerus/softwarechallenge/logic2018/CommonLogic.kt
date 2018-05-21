@@ -9,7 +9,7 @@ import xerus.softwarechallenge.util.addMove
 import java.util.*
 import kotlin.math.pow
 
-abstract class Moves2(version: String) : LogicBase(version) {
+abstract class CommonLogic(version: String) : LogicBase(version) {
 	
 	/** Uses a function to gauge the worth of the carrots at the given position
 	 * @param x carrots

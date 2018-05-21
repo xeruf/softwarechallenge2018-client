@@ -8,7 +8,9 @@ vs() {
 	./start.sh > server.log &
 	sleep 1
 	cd ..
-	./testclient $1 $2 $amount > clients/battles/$1-$2
+	battlefile="clients/battles/$1-$2"
+	[ -f $battlefile ] && mv $battlefile $(dirname $battlefile)/archiv/$(basename $battlefile)
+	./testclient $1 $2 $amount > $battlefile
 	killJava
 	sleep 1
 }

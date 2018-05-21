@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 cd testserver
 if (( $# < 3 )); then
-    tests=200
+    tests=100
 else
     tests=$3
 fi

@@ -18,7 +18,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-class Jumper1_9 : Moves2("1.9.0") {
+object Jumper1_9 : CommonLogic("1.9.0") {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -115,7 +115,7 @@ class Jumper1_9 : Moves2("1.9.0") {
 	
 	private val queue: Queue<Node> = ArrayDeque<Node>(32000)
 	
-	private inner class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
+	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
