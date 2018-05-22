@@ -59,7 +59,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		validMoves = 0
 		invalidMoves = 0
 		depth = 0
-		lastdepth = 0
+		depthUsed = 0
 		var move: Move? = try {
 			currentState.predefinedMove()
 		} catch (e: Throwable) {
@@ -99,7 +99,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 			System.gc()
 		}
 		sendAction(move)
-		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, lastdepth))
+		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
 		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
 		clear()
 	}
@@ -153,7 +153,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	abstract fun defaultParams(): DoubleArray
 	
 	@F protected var depth: Int = 0
-	@F protected var lastdepth: Int = 0
+	@F protected var depthUsed: Int = 0
 	
 	// GRUNDLAGEN
 	

@@ -116,7 +116,7 @@ object Jumper2 : CommonLogic("2.0.0") {
 				}
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
-			lastdepth = depth
+			depthUsed = depth
 			bestMove = mp.obj!!
 			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
 		}

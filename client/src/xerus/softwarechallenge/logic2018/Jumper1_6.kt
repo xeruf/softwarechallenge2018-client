@@ -6,7 +6,6 @@ import sc.shared.PlayerColor
 import xerus.ktutil.createDir
 import xerus.ktutil.createFile
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.square
 import xerus.ktutil.toInt
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.addMove
@@ -105,7 +104,7 @@ object Jumper1_6 : LogicBase("1.6.2") {
 				}
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
-			lastdepth = depth
+			depthUsed = depth
 			bestMove = mp.obj!!
 			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
 		}
