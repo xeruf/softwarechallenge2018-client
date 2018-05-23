@@ -1,6 +1,7 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
 	application
-	java
 	kotlin("jvm") version "1.2.41"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
 }
@@ -10,7 +11,8 @@ application {
 }
 
 java.sourceSets.getByName("main") {
-	java.srcDirs("src")
+	java.srcDir("src")
+	resources.srcDir("resources")
 }
 
 repositories {
@@ -19,7 +21,15 @@ repositories {
 }
 
 dependencies {
-	compile("xerus.util", "kotlin")
+	compile("xerus.util", "javafx")
 	compile("xerus.util", "utilities")
 	compile("jargs", "jargs", "1.0")
+}
+
+
+tasks.withType<KotlinCompile> {
+	kotlinOptions {
+		jvmTarget = "1.8"
+		freeCompilerArgs = listOf("-Xno-param-assertions", "-Xno-call-assertions")
+	}
 }

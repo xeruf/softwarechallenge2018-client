@@ -71,7 +71,7 @@ java -jar mississippi_queen_player.jar
 				[{-c,--client} client]
 				
 Example:
-java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy 10.0,5.0 --client Jumper1_6
+java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy 10.0,5.0 --client Special
 """)
 }
 

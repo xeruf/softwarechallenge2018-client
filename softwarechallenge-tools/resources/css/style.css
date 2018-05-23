@@ -1,0 +1,21 @@
+.chart-series-line {
+    -fx-stroke-width: 3px;
+    -fx-opacity: 0.5;
+    -fx-effect: null;
+}
+
+/*.default-color0.chart-series-line { -fx-stroke: hsb(10, 80%, 80%); }
+.default-color1.chart-series-line { -fx-stroke: hsb(10, 80%, 60%); }
+.default-color2.chart-series-line { -fx-stroke: hsb(60, 80%, 80%); }
+.default-color3.chart-series-line { -fx-stroke: hsb(60, 80%, 60%); }
+.default-color4.chart-series-line { -fx-stroke: hsb(110, 80%, 80%); }
+.default-color5.chart-series-line { -fx-stroke: hsb(110, 80%, 60%); }*/
+.default-color3.chart-series-line { -fx-opacity: 1.0; -fx-stroke: hsb(240, 80%, 70%); }
+
+/*.default-color0.chart-line-symbol { -fx-background-color: hsb(10, 80%, 80%); }
+.default-color1.chart-line-symbol { -fx-background-color: hsb(10, 80%, 60%); }
+.default-color2.chart-line-symbol { -fx-background-color: hsb(60, 80%, 80%); }
+.default-color3.chart-line-symbol { -fx-background-color: hsb(60, 80%, 60%); }
+.default-color4.chart-line-symbol { -fx-background-color: hsb(110, 80%, 80%); }
+.default-color5.chart-line-symbol { -fx-background-color: hsb(110, 80%, 60%); }*/
+.default-color3.chart-line-symbol { -fx-background-color: hsb(240, 80%, 70%), white; }

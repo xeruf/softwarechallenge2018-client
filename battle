@@ -1,0 +1,28 @@
+#!/bin/zsh
+. ~/.functions
+
+amount=$1
+vs() {
+	echo "$amount games $1 vs $2"
+	cd testserver
+	./start.sh > server.log &
+	sleep 1
+	cd ..
+	battlefile="clients/battles/$1-$2"
+	[ -f $battlefile ] && mv $battlefile $(dirname $battlefile)/archiv/$(basename $battlefile)
+	./testclient $1 $2 $amount > $battlefile
+	killJava
+	sleep 1
+}
+
+index=0
+for p1 in "${@:2}"; do
+	for p2 in "${@:2}"; do
+		if [[ $(echo $p1 | sed 's/\.//g') -lt $(echo $p2 | sed 's/\.//g') ]]
+		then vs $p1 $p2
+    fi
+  done
+done
+
+cd clients/battles
+./sum "${@:2}"

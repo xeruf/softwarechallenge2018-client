@@ -1,0 +1,13 @@
+#!/bin/zsh
+i=${1:-1}
+j=$i
+end=${2:-20}
+while (( i < end )); do
+	while
+		((j++))
+		echo -e "\n\e[1;32mTesting $i vs $j\e[m"
+		./test ${@:3} -l warn $i $j
+		[ $? != 0 ] && (( j < end ))
+	do continue; done
+	i=$j
+done

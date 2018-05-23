@@ -1,0 +1,37 @@
+language: java
+jdk:
+  - oraclejdk8
+
+env:
+  global:
+    - GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.caching=true"
+
+install:
+  - git clone https://github.com/Xerus2000/util ../util
+
+script:
+  - new="new-$(git rev-parse --short HEAD)"
+  - old="old-$(git rev-parse --short HEAD^)"
+  - cd client
+  - gradle jar -Pj=$new
+  - git checkout HEAD^ -- src
+  - gradle jar -Pj=$old
+  - cd ..
+  - ls ./clients
+  - ./duel $new $old 50
+
+after_script:
+  - cd /root/src/gitlab.com/Xerus2000/softwarechallenge2018
+  - cd testserver/logs; ls | xargs cat
+  - cd /root/src/gitlab.com/Xerus2000/softwarechallenge2018
+  - mkdir -p ./shippable/logs
+  - mv ./testserver/logs/* ./shippable/logs
+
+integrations:
+  notifications:
+    - integrationName: email
+      type: email
+      on_success: never
+      on_failure: never
+      on_cancel: never
+      on_pull_request: never

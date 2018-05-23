@@ -27,7 +27,7 @@
     </layout>
   </appender>
 
-  <logger name="sc" level="trace" />
+  <logger name="sc" level="info" />
 
   <root level="INFO">
     <appender-ref ref="FILE"/>

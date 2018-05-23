@@ -1,2 +1,0 @@
-#!/bin/sh
-java -Dfile.encoding=UTF-8 -XX:+ExplicitGCInvokesConcurrent -XX:NewRatio=1 -mx800m -ms800m -XX:MaxGCPauseMillis=80 -XX:GCPauseIntervalMillis=1000 -XX:TargetSurvivorRatio=90 -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintHeapAtGC -XX:+PrintPromotionFailure -XX:+PrintTenuringDistribution -XX:+UseG1GC -jar Jumper-1.5.1.jar "$@"

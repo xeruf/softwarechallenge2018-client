@@ -15,10 +15,14 @@ version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper1_8"}.k
 	} while (!line.contains("Jumper"))
 	line.split('"')[1]
 }
+println("Version: $version")
+
+version = properties["j"] ?: version
 
 plugins {
 	kotlin("jvm") version "1.2.41"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
+	id("com.dorongold.task-tree") version "1.3"
 	application
 }
 
@@ -68,18 +72,19 @@ tasks {
 			script.bufferedWriter().run {
 				write("""
 					#!/usr/bin/env bash
+					if [ -f $1 ]
+					then client=$1
+					args=2
+					else
 					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar
-					if [ ${'$'}# -eq 0 ]; 
-					then args=0;
-					else args=2;
-					${"if [ -f $1 ]; then client=$1; fi"}
-					fi;
-					java ${(javaArgs + cms + gcDebugParams).joinToString(" ")} -jar ${'$'}client "${'$'}{@}"
+					args=1
+					fi
+					java ${(javaArgs + cms + gcDebugParams).joinToString(" ")} -jar ${'$'}client "${'$'}{@:${'$'}args}"
 				""".trimIndent())
 				close()
 			}
 		}
-		commandLine("chmod", "+x", script)
+		commandLine("chmod", "777", script)
 	}
 	
 	withType<KotlinCompile> {
@@ -134,6 +139,3 @@ tasks {
 	}
 	
 }
-
-println("Java version: ${JavaVersion.current()}")
-println("Version: $version")

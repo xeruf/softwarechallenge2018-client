@@ -122,7 +122,7 @@ object Jumper1_8 : CommonLogic("1.8.5") {
 	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
-				Jumper1_8.currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
+				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
 		
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)

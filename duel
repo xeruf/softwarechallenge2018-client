@@ -1,15 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash
 cd testserver
-if (( $# < 3 )); then
-    tests=100
-else
-    tests=$3
-fi
-if (( $# < 4 )); then
-	port=13051
-else
-	port=$4
-fi
+tests=${3:-100}
+port=${4:-13052}
 
 prefix="./start-"
 echo "#!/usr/bin/env bash
@@ -20,9 +12,10 @@ cd ..
 ./docker-client.sh Jumper-$2.jar \"\$@\"" > "$prefix$2"
 chmod +x $prefix$1 $prefix$2
 
+mkdir -p ../clients/games/
+chmod 777 ../clients/games/
+echo -e "\e[1mPlaying $tests games of $1 vs $2 on port $port\e[m"
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
     --name1 "$1" --player1 "$prefix$1" \
     --name2 "$2" --player2 "$prefix$2" \
-    --tests $tests --start-server --port $port
-    
-rm $prefix$1 $prefix$2
+    --tests $tests --start-server --port $port ${@:5}
