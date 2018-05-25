@@ -3,7 +3,7 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.GameState
 import sc.plugin2018.Move
 
-object Jumper3 : CommonLogic("3.0.0") {
+object Jumper3 : CommonLogic() {
 	
 	override fun findBestMove(): Move? {
 		return null

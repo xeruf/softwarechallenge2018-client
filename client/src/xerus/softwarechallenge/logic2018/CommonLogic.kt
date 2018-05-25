@@ -9,7 +9,7 @@ import xerus.softwarechallenge.util.addMove
 import java.util.*
 import kotlin.math.pow
 
-abstract class CommonLogic(version: String) : LogicBase(version) {
+abstract class CommonLogic : LogicBase() {
 	
 	/** Uses a function to gauge the worth of the carrots at the given position
 	 * @param x carrots
@@ -124,7 +124,7 @@ abstract class CommonLogic(version: String) : LogicBase(version) {
 		/*if (debugLevel > 1) {
 			val double = moves.find { moves.indexOf(it) != moves.lastIndexOf(it) }
 			if (double != null)
-				log.error("Double Move: $double")
+				logger.error("Double Move: $double")
 		}*/
 		
 		return if (moves.isNotEmpty()) moves

@@ -14,7 +14,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-object Jumper1_72 : CommonLogic("1.72.0") {
+object Jumper1_72 : CommonLogic() {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -56,7 +56,7 @@ object Jumper1_72 : CommonLogic("1.72.0") {
 		
 		var bestMove = mp.obj ?: moves.first()
 		if (queue.size < 2) {
-			log.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
+			logger.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
 			return bestMove
 		}
 		
@@ -95,7 +95,7 @@ object Jumper1_72 : CommonLogic("1.72.0") {
 			} while (depth == node.depth)
 			depthUsed = depth
 			bestMove = mp.obj!!
-			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
+			logger.info("Neuer bester Zug bei Tiefe $depth: $mp")
 		}
 		return bestMove
 	}

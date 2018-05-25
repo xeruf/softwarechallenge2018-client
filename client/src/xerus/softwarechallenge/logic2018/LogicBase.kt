@@ -13,7 +13,7 @@ import java.util.*
  * - benötigte Karotten für x Felder: 0.5x * (x + 1)
  * - Igel: 11, 15, 19, 24, 30, 37, 43, 50, 56
  * - Salate: 10, 22, 42, 57  */
-abstract class LogicBase(version: String) : LogicHandler("Jumper $version") {
+abstract class LogicBase : LogicHandler() {
 	
 	override fun Player.str() =
 			this.strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"

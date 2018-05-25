@@ -4,17 +4,14 @@ import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.Writer
 import java.util.Arrays
+import java.util.Scanner
 
-val client = properties["c"] as String?
-val clientParams = if (client != null) listOf("-c", client) else emptyList()
+val v = properties["c"] as String? ?: "8"
+val client = "Jumper1_$v"
+val clientParams = listOf("-c", client)
+val hash: String = Scanner(Runtime.getRuntime().exec(arrayOf("git", "rev-parse", "--short", "HEAD")).inputStream).next()
 
-version = file("src/xerus/softwarechallenge/logic2018/${client ?: "Jumper1_8"}.kt").bufferedReader().use {
-	var line: String
-	do {
-		line = it.readLine()
-	} while (!line.contains("Jumper"))
-	line.split('"')[1]
-}
+version = "1.$v-$hash"
 println("Version: $version")
 
 version = properties["j"] ?: version
@@ -97,7 +94,7 @@ tasks {
 	
 	"run"(JavaExec::class) {
 		group = MAIN
-		args = listOf("-d", "2") + clientParams
+		args = listOf("-d", "2")
 	}
 	
 	"shadowJar"(ShadowJar::class) {
@@ -115,7 +112,8 @@ tasks {
 				from("src/xerus/softwarechallenge")
 				into("resources/sources")
 			}
-			file("resources/activeclient").writeText(client.orEmpty())
+			file("resources/activeclient").writeText(client)
+			file("resources/version").writeText(hash)
 		}
 	}
 	

@@ -13,7 +13,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.pow
 
-object Jumper1_7 : LogicBase("1.7.4") {
+object Jumper1_7 : LogicBase() {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
@@ -68,7 +68,7 @@ object Jumper1_7 : LogicBase("1.7.4") {
 		
 		var bestMove = mp.obj ?: moves.first()
 		if (queue.size < 2) {
-			log.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
+			logger.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
 			return bestMove
 		}
 		
@@ -108,7 +108,7 @@ object Jumper1_7 : LogicBase("1.7.4") {
 			} while (depth == node.depth)
 			depthUsed = depth
 			bestMove = mp.obj!!
-			log.info("Neuer bester Zug bei Tiefe $depth: $mp")
+			logger.info("Neuer bester Zug bei Tiefe $depth: $mp")
 		}
 		return bestMove
 	}

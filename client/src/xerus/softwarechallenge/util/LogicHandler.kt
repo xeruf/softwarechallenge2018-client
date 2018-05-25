@@ -5,11 +5,9 @@ import ch.qos.logback.classic.Logger
 import org.slf4j.LoggerFactory
 import sc.plugin2018.*
 import sc.shared.*
-import xerus.ktutil.createDirs
+import xerus.ktutil.*
 import xerus.ktutil.helpers.Rater
 import xerus.ktutil.helpers.Timer
-import xerus.ktutil.renameTo
-import xerus.ktutil.toInt
 import xerus.softwarechallenge.client
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -24,9 +22,9 @@ var debugLevel: Int = 1
 var evolution: Int? = null
 
 /** schafft Grundlagen fuer eine Logik */
-abstract class LogicHandler(identifier: String) : IGameHandler {
+abstract class LogicHandler : IGameHandler {
 	
-	@F protected val log: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
+	@F protected val logger: Logger = LoggerFactory.getLogger(this.javaClass) as Logger
 	
 	@F protected var params = strategy?.split(',')?.map { it.toDouble() }?.toDoubleArray() ?: defaultParams()
 	
@@ -42,16 +40,18 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	protected inline val currentTurn
 		get() = currentState.turn
 	
+	@F val version = this.javaClass.simpleName + "-" + getResource("version")!!.openStream().reader().readText()
+	
 	init {
-		log.warn("$identifier - Parameter: ${params.joinToString()}")
+		logger.warn("$version - Parameter: ${params.joinToString()}")
 		if (debugLevel == 2) {
-			log.level = Level.DEBUG
-			log.info("Debug enabled")
+			logger.level = Level.DEBUG
+			logger.info("Debug enabled")
 		} else if (debugLevel == 1) {
-			log.level = Level.INFO
-			log.info("Info enabled")
+			logger.level = Level.INFO
+			logger.info("Info enabled")
 		}
-		log.info("JVM args: " + ManagementFactory.getRuntimeMXBean().inputArguments)
+		logger.info("JVM args: " + ManagementFactory.getRuntimeMXBean().inputArguments)
 	}
 	
 	override fun onRequestAction() {
@@ -63,43 +63,43 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		var move: Move? = try {
 			currentState.predefinedMove()
 		} catch (e: Throwable) {
-			log.error("Error in predefinedMove!", e)
+			logger.error("Error in predefinedMove!", e)
 			null
 		}
 		
 		if (move.invalid()) {
 			if (move != null)
-				log.error("Invalid predefined Move: ${move.str()}")
+				logger.error("Invalid predefined Move: ${move.str()}")
 			move = try {
 				findBestMove()
 			} catch (e: Throwable) {
-				log.error("Error in findBestMove!", e)
+				logger.error("Error in findBestMove!", e)
 				null
 			}
 		}
 		
 		if (move.invalid()) {
 			if (move != null)
-				log.error("Invalid findBestMove: ${move.str()}")
+				logger.error("Invalid findBestMove: ${move.str()}")
 			move = try {
 				currentState.quickMove().first
 			} catch (e: Throwable) {
-				log.error("Error in quickMove!", e)
+				logger.error("Error in quickMove!", e)
 				null
 			}
 		}
 		
 		if (move.invalid()) {
-			log.info("No valid Move: {} - using simpleMove!", move)
+			logger.info("No valid Move: {} - using simpleMove!", move)
 			move = currentState.simpleMove()
 		}
 		
 		if (Timer.runtime() < 100) {
-			log.info("Invoking GC at ${Timer.runtime()}ms")
+			logger.info("Invoking GC at ${Timer.runtime()}ms")
 			System.gc()
 		}
 		sendAction(move)
-		log.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
+		logger.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
 		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
 		clear()
 	}
@@ -109,7 +109,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	// region Zugsuche
 	
 	/** log directory for this game */
-	@F val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $identifier").createDirs() else null
+	@F val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $version").createDirs() else null
 	/** log directory for the current turn*/
 	val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
@@ -159,11 +159,11 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 	
 	override fun sendAction(move: Move?) {
 		if (move == null) {
-			log.warn("Kein Zug möglich!")
+			logger.warn("Kein Zug möglich!")
 			client.sendMove(Move())
 			return
 		}
-		log.info("Sende {}", move.str())
+		logger.info("Sende {}", move.str())
 		move.setOrderInActions()
 		client.sendMove(move)
 	}
@@ -175,9 +175,9 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		val dran = state.currentPlayer
 		if (!::myColor.isInitialized && client.color != null) {
 			myColor = client.color
-			log.info("Ich bin {}", myColor)
+			logger.info("Ich bin {}", myColor)
 		}
-		log.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
+		logger.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
 	}
 	
 	/*public static void display(GameState state) {
@@ -258,7 +258,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 							moveState.switchCurrentPlayer()
 						}
 					} catch (exception: Throwable) {
-						log.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
+						logger.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
 					}
 				}
 			}
@@ -271,7 +271,7 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)
-				log.warn("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
+				logger.warn("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
 		}
 		return null
 	}
@@ -283,13 +283,13 @@ abstract class LogicHandler(identifier: String) : IGameHandler {
 		val scores = data.scores
 		val cause = "Ich %s Gegner %s".format(scores[color.ordinal].cause, scores[color.opponent().ordinal].cause)
 		if (data.winners.isEmpty())
-			log.warn("Kein Gewinner! Grund: {}", cause)
+			logger.warn("Kein Gewinner! Grund: {}", cause)
 		val winner = (data.winners[0] as Player).playerColor
 		val score = getScore(scores, color)
 		if (data.isRegular)
-			log.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(winner.identify(), score, getScore(scores, color.opponent())))
+			logger.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(winner.identify(), score, getScore(scores, color.opponent())))
 		else
-			log.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(score, cause))
+			logger.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(score, cause))
 		evolution?.let {
 			File("evolution/result$it").writeText("${(color == winner).toInt()} $score")
 		}
