@@ -6,7 +6,7 @@ while (( i < end )); do
 	while
 		((j++))
 		echo -e "\n\e[1;32mTesting $i vs $j\e[m"
-		./test ${@:3} -l warn $i $j
+		./test ${@:3} $i $j
 		[ $? != 0 ] && (( j < end ))
 	do continue; done
 	i=$j

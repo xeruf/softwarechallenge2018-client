@@ -40,7 +40,7 @@ abstract class LogicHandler : IGameHandler {
 	protected inline val currentTurn
 		get() = currentState.turn
 	
-	@F val version = this.javaClass.simpleName + "-" + getResource("version")!!.openStream().reader().readText()
+	@F val version = this.javaClass.simpleName + " " + getResource("version")!!.readText()
 	
 	init {
 		logger.warn("$version - Parameter: ${params.joinToString()}")
@@ -106,8 +106,6 @@ abstract class LogicHandler : IGameHandler {
 	
 	fun Move?.invalid() = this == null || currentState.test(this, true, false) == null
 	
-	// region Zugsuche
-	
 	/** log directory for this game */
 	@F val gameLogDir = if (isDebug) Paths.get("games", SimpleDateFormat("MM-dd HH-mm-ss").format(Date()) + " $version").createDirs() else null
 	/** log directory for the current turn*/
@@ -121,11 +119,9 @@ abstract class LogicHandler : IGameHandler {
 			val moveState = clone()
 			move.setOrderInActions()
 			move.perform(moveState)
-			moveState.turn -= 1
-			moveState.switchCurrentPlayer()
+			moveState.nextPlayer(false)
 			if (best.points < evaluate(moveState)) {
-				moveState.turn += 1
-				moveState.switchCurrentPlayer()
+				moveState.nextPlayer()
 				best.obj = Pair(move, moveState)
 			}
 		}
@@ -240,7 +236,7 @@ abstract class LogicHandler : IGameHandler {
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
 	 */
 	protected fun GameState.test(move: Move, clone: Boolean = true, moveOther: Boolean = true): GameState? {
-		val newState = clone()//if (clone) clone() else this
+		val newState = if (clone) clone() else this
 		try {
 			move.setOrderInActions()
 			move.perform(newState)
@@ -251,12 +247,9 @@ abstract class LogicHandler : IGameHandler {
 					otherMove.setOrderInActions()
 					try {
 						otherMove.perform(moveState)
-						moveState.turn -= 1
-						moveState.switchCurrentPlayer()
-						if (bestState.update(moveState, evaluate(moveState))) {
-							moveState.turn += 1
-							moveState.switchCurrentPlayer()
-						}
+						moveState.nextPlayer(false)
+						if (bestState.update(moveState, evaluate(moveState)))
+							moveState.nextPlayer()
 					} catch (exception: Throwable) {
 						logger.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
 					}
@@ -274,6 +267,11 @@ abstract class LogicHandler : IGameHandler {
 				logger.warn("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
 		}
 		return null
+	}
+	
+	protected inline fun GameState.nextPlayer(forward: Boolean = true) {
+		turn += if (forward) 1 else -1
+		switchCurrentPlayer()
 	}
 	
 	@F protected var validMoves: Int = 0

@@ -4,25 +4,22 @@ set -e
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
-		-c) c=$2; client="-Pc=Jumper1_$2"; shift 2;;
+		-c) c=$2; client="-Pc=$2"; shift 2;;
 		-g) games="$2"; shift 2;;
-		-l) loglevel=(--loglevel $2); shift 2;;
 		-p) port=$2; shift 2;;
 		-*) echo "Unknown argument: \"$1\""; exit 1;;
 		*) break;;
 	esac
 done
 
-if [ -z $1 ]; then
-hash=$(git rev-parse --short HEAD)
-else
-hash=$( ([[ ${#1} < 7 ]] && git rev-parse --short "HEAD~$1") || echo $1 )
+if [ -z $1 ]; then hash=$(git rev-parse --short HEAD)
+else hash=$( ([[ ${#1} < 7 ]] && git rev-parse --short "HEAD~$1") || echo $1 )
 fi
-if [ -z $2 ]; then
-hashOld=$(git rev-parse --short "$hash^")
-else
-hashOld=$( ([[ ${#2} < 7 ]] && git rev-parse --short "HEAD~$2") || echo $2 )
+if [ -z $2 ]; then hashOld=$(git rev-parse --short "$hash^")
+else hashOld=$( ([[ ${#2} < 7 ]] && git rev-parse --short "HEAD~$2") || echo $2 )
 fi
+new="$(git rev-list --count $hash)-$hash"
+old="$(git rev-list --count $hashOld)-$hashOld"
 depth=$(( $(git log --oneline $hashOld..HEAD | wc -l) + 1 ))
 echo "Depth: $depth"
 
@@ -33,7 +30,7 @@ cd /tmp
 git clone file://$projects_dir/softwarechallenge2018 $clone --depth $depth
 trap 'rm -rf $clone' INT TERM EXIT
 if [ -d util ]
-then git -C util fetch && git -C util reset --hard origin/master
+then git -C util fetch && echo "util: $(git -C util reset --hard origin/master)"
 else git clone file://$projects_dir/util --depth 1
 fi
 println
@@ -42,16 +39,16 @@ println
 cd $clone/client
 rm -r src
 git checkout $hash -- src
-gradle jar --no-daemon --build-cache -Pj=new-$hash -q $client
+gradle jar --no-daemon --build-cache -Pj=$new -q $client
 
 rm -r src
 git checkout $hashOld -- src
-gradle jar --no-daemon --build-cache -Pj=old-$hashOld -q $client
+gradle jar --no-daemon --build-cache -Pj=$old -q $client
 cd ..
 println
 
-tests="$projects_dir/softwarechallenge2018/tests$c"
+tests="$projects_dir/softwarechallenge2018/logs/tests$c"
 mkdir -p $tests
-log="$tests/$stamp-$hash.log"
+log="$tests/$stamp-$new-$old.log"
 echo "$1 vs $2" > $log
-source ./duel new-$hash old-$hashOld ${games:-50} ${port:-13060} ${loglevel:0} | tee -ia $log
+source ./duel -g ${games:-50} -p ${port:-13060} $new $old | tee -ia $log

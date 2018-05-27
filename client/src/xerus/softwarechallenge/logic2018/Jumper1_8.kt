@@ -44,7 +44,7 @@ object Jumper1_8 : CommonLogic() {
 			val newState = currentState.test(move) ?: continue
 			if (newState.currentPlayer.gewonnen())
 				return move
-			// Punkte
+			// Points
 			val points = evaluate(newState)
 			mp.update(move, points)
 			// Queue
@@ -83,9 +83,9 @@ object Jumper1_8 : CommonLogic() {
 				forRange(0, moves.size) { i ->
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
-					// Punkte
+					// Points
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 30 / divider)
+					if (points < mp.points - 40 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
@@ -105,9 +105,11 @@ object Jumper1_8 : CommonLogic() {
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
-			depthUsed = depth
-			bestMove = mp.obj!!
-			logger.info("Neuer bester Zug bei Tiefe $depth: $mp, accepted $acceptedMoves")
+			if(bestMove != mp.obj!!) {
+				depthUsed = depth
+				bestMove = mp.obj!!
+			}
+			logger.info("Bester Zug bei Tiefe $depth: $mp, accepted $acceptedMoves")
 		}
 		return bestMove
 	}

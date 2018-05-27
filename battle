@@ -1,28 +1,37 @@
 #!/bin/zsh
-. ~/.functions
 
-amount=$1
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		-g) games="-g $2"; shift 2;;
+		-p) port=$2; shift 2;;
+		-*) echo "Unknown argument: \"$1\""; exit 1;;
+		*) break;;
+	esac
+done
+
 vs() {
-	echo "$amount games $1 vs $2"
-	cd testserver
-	./start.sh > server.log &
-	sleep 1
-	cd ..
-	battlefile="clients/battles/$1-$2"
-	[ -f $battlefile ] && mv $battlefile $(dirname $battlefile)/archiv/$(basename $battlefile)
-	./testclient $1 $2 $amount > $battlefile
-	killJava
-	sleep 1
+	battlefile="logs/battles/$1 vs $2"
+	[ -f $battlefile ] && mv "$battlefile" "$(dirname $battlefile)/archiv/$(basename $battlefile)"
+	./duel -e -p ${port:-13055} $games $1 $2 | tee $battlefile
+}
+
+number() {
+	i=-1; s=0; 
+	for n in $(echo -n "$1" | od -An -t uC -w1 -v)
+		do ((i++))
+		s=$(echo "$s+($n-44)*(100^$i)" | bc)
+	done
+	echo $s
 }
 
 index=0
-for p1 in "${@:2}"; do
-	for p2 in "${@:2}"; do
-		if [[ $(echo $p1 | sed 's/\.//g') -lt $(echo $p2 | sed 's/\.//g') ]]
+for p1 in "$@"; do
+	for p2 in "$@"; do
+		if [ $(echo "$(number $p1)<$(number $p2)" | bc) -eq 1 ]
 		then vs $p1 $p2
-    fi
-  done
+		fi
+	done
 done
 
-cd clients/battles
-./sum "${@:2}"
+cd logs
+./sum "$@"

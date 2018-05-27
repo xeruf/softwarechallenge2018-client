@@ -1,21 +1,38 @@
 #!/bin/bash
 cd testserver
-tests=${3:-100}
-port=${4:-13052}
 
-prefix="./start-"
-echo "#!/usr/bin/env bash
+port=13052
+games=100
+prefix="./starters/docker-"
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		-g) games="$2"; shift 2;;
+		-p) port=$2; shift 2;;
+		-e) echo=1; shift 1;;
+		--no-docker) start="cd clients && ./start-client.sh"; prefix="./starters/start-"; shift 1;;
+		-v) loglevel="info"; shift 1;;
+		-vv) loglevel="debug"; shift 1;;
+		-*) echo "Unknown argument: \"$1\""; exit 1;;
+		*) break;;
+	esac
+done
+
+echo "#!/bin/bash
 cd ..
-./docker-client.sh Jumper-$1.jar \"\$@\"" > "$prefix$1"
-echo "#!/usr/bin/env bash
+${start:-"./docker-client.sh"} Jumper-$1.jar \"\$@\"" > "$prefix$1"
+echo "#!/bin/bash
 cd ..
-./docker-client.sh Jumper-$2.jar \"\$@\"" > "$prefix$2"
+${start:-"./docker-client.sh"} Jumper-$2.jar \"\$@\"" > "$prefix$2"
 chmod +x $prefix$1 $prefix$2
 
-mkdir -p ../clients/games/
-chmod 777 ../clients/games/
-echo -e "\e[1mPlaying $tests games of $1 vs $2 on port $port\e[m"
+logs="../logs/duels"
+gameLogs="../clients/games/"
+mkdir -p $gameLogs $logs
+chmod 777 $gameLogs
+( ((echo==1)) || [[ -t 1 ]] ) && echo -e "\e[1mPlaying $games games of $1 vs $2 on port $port\e[m"
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
     --name1 "$1" --player1 "$prefix$1" \
     --name2 "$2" --player2 "$prefix$2" \
-    --tests $tests --start-server --port $port ${@:5}
+    --timeout1 false --timeout2 false \
+    --tests $games --significance 0.07 --loglevel ${loglevel:-warn} \
+    --start-server --port $port "${@:3}" | tee -ia "$logs/$1 vs $2"

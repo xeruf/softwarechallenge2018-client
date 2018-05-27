@@ -6,12 +6,13 @@ import java.io.Writer
 import java.util.Arrays
 import java.util.Scanner
 
-val v = properties["c"] as String? ?: "8"
-val client = "Jumper1_$v"
+val c = properties["c"] as String? ?: "1_8"
+val client = "Jumper$c"
 val clientParams = listOf("-c", client)
-val hash: String = Scanner(Runtime.getRuntime().exec(arrayOf("git", "rev-parse", "--short", "HEAD")).inputStream).next()
+val hash: String = Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)
+val id: String = Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()
 
-version = "1.$v-$hash"
+version = "$id-$hash"
 println("Version: $version")
 
 version = properties["j"] ?: version
@@ -60,7 +61,7 @@ application {
 tasks {
 	
 	val MAIN = "_main"
-	val clients = file("../clients")
+	val clients = file("../clients").apply { mkdirs() }
 	val jumper = "Jumper-$version"
 	
 	"scripts"(Exec::class) {
@@ -113,7 +114,7 @@ tasks {
 				into("resources/sources")
 			}
 			file("resources/activeclient").writeText(client)
-			file("resources/version").writeText(hash)
+			file("resources/version").writeText(version as String)
 		}
 	}
 	

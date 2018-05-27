@@ -2,14 +2,13 @@
 **/logs/
 **/*.log*
 /client/games
-/client/resources/activeclient
-/client/resources/sources
-
-/tests
-/clients/*.jar
-/*.zip
-
 start*
+/client/resources/sources
+/client/resources/activeclient
+/client/resources/version
+
+/clients
+/*.zip
 
 /evolution
 

@@ -44,12 +44,11 @@ object Jumper1_9 : CommonLogic() {
 			val newState = currentState.test(move, moveOther = false) ?: continue
 			if (newState.currentPlayer.gewonnen())
 				return move
-			// Punkte
+			// Points
 			val points = evaluate(newState)
 			mp.update(move, points)
 			// Queue
-			if (!newState.otherPlayer.gewonnen() || myColor == PlayerColor.BLUE)
-				queue.add(Node(move, newState, points))
+			queue.add(Node(move, newState, points))
 		}
 		
 		var bestMove = mp.obj
@@ -77,8 +76,7 @@ object Jumper1_9 : CommonLogic() {
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
-				nodeState.turn -= 1
-				nodeState.switchCurrentPlayer()
+				nodeState.nextPlayer(false)
 				nodeState = nodeState.quickMove().second
 				moves = nodeState.findMoves()
 				if (nodeState.turn > 57)
@@ -86,9 +84,9 @@ object Jumper1_9 : CommonLogic() {
 				forRange(0, moves.size) { i ->
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
-					// Punkte
+					// Points
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 30 / divider)
+					if (points < mp.points - 40 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
