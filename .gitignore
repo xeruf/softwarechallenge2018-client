@@ -5,10 +5,11 @@
 start*
 /client/resources/sources
 /client/resources/activeclient
-/client/resources/version
+version
 
 /clients
 /*.zip
+/*.jar
 
 /evolution
 

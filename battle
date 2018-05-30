@@ -33,5 +33,5 @@ for p1 in "$@"; do
 	done
 done
 
-cd logs
+cd logs/battles
 ./sum "$@"

@@ -9,13 +9,9 @@ import java.util.Scanner
 val c = properties["c"] as String? ?: "1_8"
 val client = "Jumper$c"
 val clientParams = listOf("-c", client)
-val hash: String = Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)
-val id: String = Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()
 
-version = "$id-$hash"
+version = properties["j"]?.toString() ?: "${Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()}-${properties["n"]?.toString() ?: Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)}"
 println("Version: $version")
-
-version = properties["j"] ?: version
 
 plugins {
 	kotlin("jvm") version "1.2.41"

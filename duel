@@ -31,8 +31,6 @@ mkdir -p $gameLogs $logs
 chmod 777 $gameLogs
 ( ((echo==1)) || [[ -t 1 ]] ) && echo -e "\e[1mPlaying $games games of $1 vs $2 on port $port\e[m"
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
-    --name1 "$1" --player1 "$prefix$1" \
-    --name2 "$2" --player2 "$prefix$2" \
-    --timeout1 false --timeout2 false \
-    --tests $games --significance 0.07 --loglevel ${loglevel:-warn} \
+    --name1 "$1" --player1 "$prefix$1" --name2 "$2" --player2 "$prefix$2" \
+    --tests $games --significance 0.07 --loglevel ${loglevel:-warn} --no-timeout \
     --start-server --port $port "${@:3}" | tee -ia "$logs/$1 vs $2"

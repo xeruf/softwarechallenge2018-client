@@ -3,19 +3,16 @@ import xerus.ktutil.*
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-object Evolution : EvolutionBase() {
-	
-	private const val GAMES = 100
+/*
+object Evolution2 : EvolutionBase() {
 	
 	override lateinit var basepath: File
 	override lateinit var strategies: File
-	private lateinit var aiLocation: String
+	private lateinit var starter: String
 	private lateinit var bestFile: File
 	
 	private var debug: Boolean = false
-	private lateinit var server: Process
 	
-	@JvmStatic
 	fun main(args: Array<String>) {
 		val parser = CmdLineParser()
 		val path = parser.addStringOption('p', "path")
@@ -26,29 +23,19 @@ object Evolution : EvolutionBase() {
 		parser.parse(args)
 		
 		basepath = parser.getValue(path, File(System.getProperty("user.dir"))) { File(it as String) }
-		server = startServer()
+		val server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
 			server.destroyForcibly()
 		}))
 		strategies = basepath.resolve("evolution")
-		strategies.resolve("failed").mkdirs()
-		bestFile = strategies.resolve("best")
+		bestFile = strategies.resolve("best.csv")
 		
 		debug = parser.getValue(debugOption, false)
-		aiLocation = parser.getValue(aiOption, basepath.resolve("docker-client.sh").toString())
+		starter = parser.getValue(aiOption, basepath.resolve("start-client.sh").toString())
 		
 		Evolve(parser.getValue(idOption, getNextId())).start()
-		while (server.isAlive)
+		while (true)
 			Evolve().start()
-	}
-	
-	private fun buildAI(): ProcessBuilder {
-		val builder =
-				if (aiLocation.endsWith(".jar")) ProcessBuilder("java", "-jar", aiLocation)
-				else ProcessBuilder(aiLocation)
-		if (!debug)
-			builder.command().addAll("-d", "0")
-		return builder
 	}
 	
 	class Evolve constructor(private val id: Int = getNextId()) {
@@ -56,19 +43,30 @@ object Evolution : EvolutionBase() {
 		private val outputFile = file(id)
 		private var strategy = if (file(id).exists()) {
 			println("Reading id $id")
-			Strategy(file(id).readText(), false)
+			createStrategy(file(id).readText(), false)
 		} else {
-			Strategy()
+			createStrategy(file(0).readText())
+		}
+		
+		fun createStrategy(input: String, mutate: Boolean = true) {
+			val split = input.split(separator)
+			val params = split[0].split(',').map { it.toDouble() }.toDoubleArray()
+			val variation = split[1].split(',').map { it.toDouble() }.toDoubleArray()
+			if (mutate) {
+				for (i in params.indices) {
+					variation[i] = ((Math.random() * 2.2 - 1.1) * variation[i]).round()
+					params[i] += variation[i]
+				}
+			}
 		}
 		
 		fun start() {
+			
 			try {
 				while (strategy.games < GAMES) {
 					val ai = startAI()
 					if (ai.waitFor(2, TimeUnit.MINUTES)) {
-						if(!server.isAlive)
-							return
-						val result = File("clients/result$id")
+						val result = File("evolution/result$id")
 						strategy.write(result.readText())
 						result.delete()
 					}
@@ -87,11 +85,13 @@ object Evolution : EvolutionBase() {
 		}
 		
 		internal fun resetStrategy() {
-			outputFile.renameTo(File(strategies, "failed/${outputFile.name}"))
-			strategy = Strategy()
+			strategy.canceled = true
+			//strategy = Strategy(file(0).readText())
 		}
 		
-		private inner class Strategy internal constructor(input: String = bestFile.readLines()[0], mutate: Boolean = true) {
+		private inner class Strategy internal constructor(input: String, mutate: Boolean = true) {
+			var canceled = false
+			
 			internal var params: DoubleArray
 			internal var variation: DoubleArray
 			internal var winrate: Double = 0.0
@@ -102,29 +102,6 @@ object Evolution : EvolutionBase() {
 			internal val bestLine by lazy { bestFile.readLines().size }
 			
 			init {
-				val split = input.split(separator)
-				params = split[0].split(',').map { it.toDouble() }.toDoubleArray()
-				variation = split[1].split(',').map { it.toDouble() }.toDoubleArray()
-				if (mutate)
-					mutate()
-				else {
-					var c = 2
-					fun parseInput(s: List<String>) = if (s.size > ++c) s[c].toInt() else 0
-					score = parseInput(split)
-					games = parseInput(split)
-					won = parseInput(split)
-				}
-				write("-1 0")
-			}
-			
-			internal fun mutate() {
-				for (i in params.indices) {
-					variation[i] = ((Math.random() * 2.2 - 1.1) * variation[i]).round()
-					params[i] += variation[i]
-				}
-				games = 0
-				won = 0
-				score = 0
 			}
 			
 			internal fun write(result: String) {
@@ -146,15 +123,14 @@ object Evolution : EvolutionBase() {
 						if (winrate < 0.5) {
 							resetStrategy()
 						} else if (winrate > 0.54) {
-							bestFile.safe { write(bestLine, s) }
+							bestFile.write(bestLine, s)
 						}
 					}
 				}
 			}
 			
 			internal fun writeEnd(msg: String) {
-				println("Done: $msg")
-				println()
+				println("Fertig!")
 				outputFile.writeText(toString() + separator + msg)
 			}
 			
@@ -169,4 +145,4 @@ object Evolution : EvolutionBase() {
 		
 	}
 	
-}
+}*/

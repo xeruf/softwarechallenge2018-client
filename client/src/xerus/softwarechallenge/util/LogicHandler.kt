@@ -269,7 +269,7 @@ abstract class LogicHandler : IGameHandler {
 		return null
 	}
 	
-	protected inline fun GameState.nextPlayer(forward: Boolean = true) {
+	protected fun GameState.nextPlayer(forward: Boolean = true) {
 		turn += if (forward) 1 else -1
 		switchCurrentPlayer()
 	}
@@ -285,11 +285,11 @@ abstract class LogicHandler : IGameHandler {
 		val winner = (data.winners[0] as Player).playerColor
 		val score = getScore(scores, color)
 		if (data.isRegular)
-			logger.warn("Spiel beendet! Gewinner: %s Punkte: %s Gegner: %s".format(winner.identify(), score, getScore(scores, color.opponent())))
+			logger.warn("Spiel beendet! Gewinner: ${winner.identify()} Punkte: $score Gegner: ${getScore(scores, color.opponent())}")
 		else
-			logger.warn("Spiel unregulaer beendet! Punkte: %s Grund: %s".format(score, cause))
+			logger.warn("Spiel unregulaer beendet! Punkte: $score Grund: $cause")
 		evolution?.let {
-			File("evolution/result$it").writeText("${(color == winner).toInt()} $score")
+			File("result$it").writeText("${(color == winner).toInt()} $score")
 		}
 	}
 	
