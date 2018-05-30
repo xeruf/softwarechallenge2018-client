@@ -15,7 +15,7 @@ object Jumper1_9 : CommonLogic() {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = posParam * player.fieldIndex + 100 - state.turn * 2
+		var points = params[2] * player.fieldIndex + 100 - state.turn * 2
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		
 		// Salat und Karten

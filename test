@@ -51,4 +51,4 @@ tests="$projects_dir/softwarechallenge2018/logs/tests$c"
 mkdir -p $tests
 log="$tests/$stamp-$new-$old.log"
 echo "$1 vs $2" > $log
-source ./duel -g ${games:-50} -p ${port:-13060} $new $old | tee -ia $log
+source ./duel -g ${games:-50} -p ${port:-13057} $new $old | tee -ia $log

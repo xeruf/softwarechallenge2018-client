@@ -1,9 +1,13 @@
 #!/bin/zsh
 
+port=13056
+params=()
 while [[ $# -gt 0 ]]; do
 	case $1 in
-		-g) games="-g $2"; shift 2;;
 		-p) port=$2; shift 2;;
+		-g|-min) params+=($1 $2); shift 2;;
+		
+		-nodocker|-v|-vv) params+=($1); shift 1;;
 		-*) echo "Unknown argument: \"$1\""; exit 1;;
 		*) break;;
 	esac
@@ -12,7 +16,7 @@ done
 vs() {
 	battlefile="logs/battles/$1 vs $2"
 	[ -f $battlefile ] && mv "$battlefile" "$(dirname $battlefile)/archiv/$(basename $battlefile)"
-	./duel -e -p ${port:-13055} $games $1 $2 | tee $battlefile
+	./duel -e -p $port $params $1 $2 | tee $battlefile
 }
 
 number() {

@@ -20,7 +20,6 @@ abstract class CommonLogic : LogicBase() {
 	
 	@F val carrotParam = params[0]
 	@F val saladParam = params[1]
-	@F val posParam = if (params.size > 2) params[2] else -100.0
 	
 	override fun GameState.findMoves(): List<Move> {
 		val player = currentPlayer

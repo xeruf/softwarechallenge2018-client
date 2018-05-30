@@ -15,7 +15,7 @@ object Jumper1_8 : CommonLogic() {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = posParam * player.fieldIndex + 100 - state.turn * 2
+		var points = player.fieldIndex + 120.0 - state.turn * 2
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		
 		// Salat und Karten
@@ -26,14 +26,13 @@ object Jumper1_8 : CommonLogic() {
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
 		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		return points + goalPoints(player)
 	}
 	
-	/** Karotten, Salat, Weite */
-	override fun defaultParams() = doubleArrayOf(1.0, 25.0, 1.0)
+	/** Karotten, Salat, Threshold */
+	override fun defaultParams() = doubleArrayOf(3.0, 30.0, 40.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
@@ -48,8 +47,7 @@ object Jumper1_8 : CommonLogic() {
 			val points = evaluate(newState)
 			mp.update(move, points)
 			// Queue
-			if (!newState.otherPlayer.gewonnen() || myColor == PlayerColor.BLUE)
-				queue.add(Node(move, newState, points))
+			queue.add(Node(move, newState, points))
 		}
 		
 		var bestMove = mp.obj
@@ -85,7 +83,7 @@ object Jumper1_8 : CommonLogic() {
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
 					// Points
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 40 / divider)
+					if (points < mp.points - params[2] / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
