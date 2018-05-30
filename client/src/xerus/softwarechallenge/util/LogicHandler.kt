@@ -236,7 +236,7 @@ abstract class LogicHandler : IGameHandler {
 	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
 	 */
 	protected fun GameState.test(move: Move, clone: Boolean = true, moveOther: Boolean = true): GameState? {
-		val newState = if (clone) clone() else this
+		val newState = clone()
 		try {
 			move.setOrderInActions()
 			move.perform(newState)

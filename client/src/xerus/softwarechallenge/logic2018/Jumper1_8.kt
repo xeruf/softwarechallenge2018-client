@@ -33,7 +33,7 @@ object Jumper1_8 : CommonLogic() {
 	}
 	
 	/** Karotten, Salat, Weite */
-	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 2.0)
+	override fun defaultParams() = doubleArrayOf(1.0, 25.0, 1.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
