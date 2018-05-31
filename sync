@@ -1,0 +1,1 @@
+rsync -rLt --progress --exclude={.git,.gradle,.idea,archiv,carrots,build,out,log,logs,games} ~/Daten/Projects/softwarechallenge2018 /media/janek/FF98-BAD1
