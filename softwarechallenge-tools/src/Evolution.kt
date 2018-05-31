@@ -8,8 +8,10 @@ object Evolution : EvolutionBase() {
 	private const val GAMES = 100
 	
 	override lateinit var basepath: File
-	override lateinit var strategies: File
-	private lateinit var aiLocation: String
+	override lateinit var strategiesDir: File
+	val garbageDir: File
+		get() = strategiesDir.resolve("garbage")
+	private lateinit var aiFile: File
 	private lateinit var bestFile: File
 	
 	private var debug: Boolean = false
@@ -18,34 +20,43 @@ object Evolution : EvolutionBase() {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		val parser = CmdLineParser()
-		val path = parser.addStringOption('p', "path")
+		val pathOption = parser.addStringOption("path")
 		val aiOption = parser.addStringOption("ai")
+		val serverOption = parser.addStringOption('s', "server")
+		
 		val idOption = parser.addIntegerOption('i', "id")
 		val debugOption = parser.addBooleanOption('d', "debug")
+		val portOption = parser.addStringOption("port")
 		
 		parser.parse(args)
 		
-		basepath = parser.getValue(path, File(System.getProperty("user.dir"))) { File(it as String) }
+		basepath = parser.getValue(pathOption, File(System.getProperty("user.dir"))) { File(it as String) }
+		strategiesDir = basepath.resolve("evolution")
+		garbageDir.mkdirs()
+		bestFile = strategiesDir.resolve("best.csv")
+		
+		port = parser.getValue(portOption, port)
+		serverPath = parser.getValue(serverOption, serverPath)
 		server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
 			server.destroyForcibly()
-		}))
-		strategies = basepath.resolve("evolution")
-		strategies.resolve("failed").mkdirs()
-		bestFile = strategies.resolve("best")
+		}, "Server terminator"))
 		
 		debug = parser.getValue(debugOption, false)
-		aiLocation = parser.getValue(aiOption, basepath.resolve("docker-client.sh").toString())
+		aiFile = parser.getValue(aiOption, basepath.resolve("docker-client.sh")) { File(it as String) }.absoluteFile
 		
-		Evolve(parser.getValue(idOption, getNextId())).start()
-		while (server.isAlive)
-			Evolve().start()
+		var result = Evolve(parser.getValue(idOption) ?: getNextId()).start()
+		while (server.isAlive && result)
+			result = Evolve().start()
 	}
 	
 	private fun buildAI(): ProcessBuilder {
-		val builder =
-				if (aiLocation.endsWith(".jar")) ProcessBuilder("java", "-jar", aiLocation)
-				else ProcessBuilder(aiLocation)
+		val builder = if (aiFile.endsWith("jar"))
+			ProcessBuilder("java", "-jar", aiFile.toString())
+		else
+			ProcessBuilder(aiFile.toString())
+		builder.directory(aiFile.parentFile)
+		builder.command().addAll("--port", "13055")
 		if (!debug)
 			builder.command().addAll("-d", "0")
 		return builder
@@ -61,14 +72,18 @@ object Evolution : EvolutionBase() {
 			Strategy()
 		}
 		
-		fun start() {
+		fun start(): Boolean {
 			try {
 				while (strategy.games < GAMES) {
 					val ai = startAI()
+					if (ai.waitFor(4, TimeUnit.SECONDS)) {
+						println("$ai exited unexpectedly with exit code ${ai.exitValue()}!")
+						return false
+					}
 					if (ai.waitFor(2, TimeUnit.MINUTES)) {
-						if(!server.isAlive)
-							return
-						val result = File("clients/result$id")
+						if (!server.isAlive)
+							return false
+						val result = aiFile.resolveSibling("result$id")
 						strategy.write(result.readText())
 						result.delete()
 					}
@@ -77,6 +92,7 @@ object Evolution : EvolutionBase() {
 			} catch (e: Exception) {
 				strategy.writeEnd("Error - $e")
 			}
+			return true
 		}
 		
 		private fun startAI(): Process {
@@ -87,11 +103,11 @@ object Evolution : EvolutionBase() {
 		}
 		
 		internal fun resetStrategy() {
-			outputFile.renameTo(File(strategies, "failed/${outputFile.name}"))
+			outputFile.renameTo(garbageDir.resolve("$id-${System.currentTimeMillis()}"))
 			strategy = Strategy()
 		}
 		
-		private inner class Strategy internal constructor(input: String = bestFile.readLines()[0], mutate: Boolean = true) {
+		private inner class Strategy internal constructor(input: String = bestFile.safe { readLines()[0] }, mutate: Boolean = true) {
 			internal var params: DoubleArray
 			internal var variation: DoubleArray
 			internal var winrate: Double = 0.0
@@ -99,7 +115,7 @@ object Evolution : EvolutionBase() {
 			internal var won: Int = 0
 			internal var score: Int = 0
 			
-			internal val bestLine by lazy { bestFile.readLines().size }
+			internal val bestLine = lazy(LazyThreadSafetyMode.NONE) { bestFile.readLines().size }
 			
 			init {
 				val split = input.split(separator)
@@ -139,14 +155,14 @@ object Evolution : EvolutionBase() {
 				val s = toString()
 				outputFile.writeText(s)
 				println("\"$s\" in $outputFile geschrieben")
-				if (games > 10) {
-					if (winrate < 0.3 || (games > 30 && winrate < 0.45))
+				if (games > 15) {
+					val bcd = binominalCD(won, games)
+					if (bcd < 0.3)
 						resetStrategy()
-					if (games > 50) {
-						if (winrate < 0.5) {
-							resetStrategy()
-						} else if (winrate > 0.54) {
-							bestFile.safe { write(bestLine, s) }
+					if (bestLine.isInitialized() || (games > 40 && bcd > 0.9)) {
+						bestFile.safe {
+							println("Good Strategy - Writing to $bestFile line ${bestLine.value}")
+							write(bestLine.value, s)
 						}
 					}
 				}
@@ -159,7 +175,7 @@ object Evolution : EvolutionBase() {
 			}
 			
 			override fun toString(): String {
-				winrate = (won.toDouble() / games)
+				winrate = won.toDouble() / games
 				return arrayOf(joinparams(), variation.joinToString(",") { it.format(2) }, winrate.format(2), score, games, won, formattedTime()).joinToString(separator)
 			}
 			
