@@ -176,19 +176,6 @@ abstract class LogicHandler : IGameHandler {
 		logger.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
 	}
 	
-	/*public static void display(GameState state) {
-		JFrame frame = new JFrame();
-		String fieldString = state.getBoard().toString();
-		MyTable table = new ScrollableJTable("Index", "Field").addToComponent(frame, null);
-		String[] fields = fieldString.split("index \\d+");
-		for (int i = 1; i < fields.length - 1; i++) {
-			table.addRow(i + "", fields[i]);
-		}
-		table.fitColumns(0);
-		frame.pack();
-		frame.setVisible(true);
-	}*/
-	
 	abstract fun Player.str(): String
 	
 	fun GameState.str() =
@@ -284,12 +271,13 @@ abstract class LogicHandler : IGameHandler {
 			logger.warn("Kein Gewinner! Grund: {}", cause)
 		val winner = (data.winners[0] as Player).playerColor
 		val score = getScore(scores, color)
-		if (data.isRegular)
+		val regular = data.isRegular
+		if (regular)
 			logger.warn("Spiel beendet! Gewinner: ${winner.identify()} Punkte: $score Gegner: ${getScore(scores, color.opponent())}")
 		else
 			logger.warn("Spiel unregulaer beendet! Punkte: $score Grund: $cause")
 		evolution?.let {
-			File("result$it").writeText("${(color == winner).toInt()} $score")
+			File("result$it").writeText("${regular.to((color == winner).toInt(), -1)} $score")
 		}
 	}
 	

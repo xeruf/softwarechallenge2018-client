@@ -10,7 +10,8 @@ val c = properties["c"] as String? ?: "1_8"
 val client = "Jumper$c"
 val clientParams = listOf("-c", client)
 
-version = properties["j"]?.toString() ?: "${Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()}-${properties["n"]?.toString() ?: Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)}"
+version = properties["j"]?.toString() ?: "${Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()}-${properties["n"]?.toString()
+		?: Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)}"
 println("Version: $version")
 
 plugins {
@@ -43,7 +44,7 @@ val cms = listOf("-XX:+UseConcMarkSweepGC"
 		, "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
 		, "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
-val gcDebugParams = if(properties["nogc"] != null) emptyList() else listOf(
+val gcDebugParams = if (properties["nogc"] != null) emptyList() else listOf(
 		"-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
 		, "-XX:+PrintPromotionFailure", "-noverify"
 )
@@ -125,12 +126,14 @@ tasks {
 		}
 	}
 	
+	"clean"{
+		delete("games", "out", "../testserver/logs", "../clients/games")
+	}
+	
 	tasks.replace("jar").apply {
 		group = MAIN
 		dependsOn("shadowJar", "scripts")
-		doFirst {
-			//file("..").listFiles { _, name -> name.startsWith("Jumper") && name.endsWith("jar") && name != "$jumper.jar" }.forEach { it.renameTo(file("../Archiv/Jumper/${it.name}").also { it.delete() }) }
-		}
 	}
-	
+
 }
+

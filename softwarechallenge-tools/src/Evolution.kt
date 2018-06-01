@@ -16,20 +16,24 @@ object Evolution : EvolutionBase() {
 	
 	private var debug: Boolean = false
 	private lateinit var server: Process
+	private var running = true
+		get() = server.isAlive && field
 	
 	@JvmStatic
 	fun main(args: Array<String>) {
 		val parser = CmdLineParser()
 		val pathOption = parser.addStringOption("path")
 		val aiOption = parser.addStringOption("ai")
-		val serverOption = parser.addStringOption('s', "server")
+		val serverOption = parser.addStringOption("server")
 		
-		val idOption = parser.addIntegerOption('i', "id")
 		val debugOption = parser.addBooleanOption('d', "debug")
-		val portOption = parser.addStringOption("port")
+		val schoolOption = parser.addBooleanOption("school")
+		val idOption = parser.addIntegerOption('i', "id")
+		val portOption = parser.addStringOption('p', "port")
 		
 		parser.parse(args)
 		
+		school = parser.getValue(schoolOption, false)
 		basepath = parser.getValue(pathOption, File(System.getProperty("user.dir"))) { File(it as String) }
 		strategiesDir = basepath.resolve("evolution")
 		garbageDir.mkdirs()
@@ -39,14 +43,18 @@ object Evolution : EvolutionBase() {
 		serverPath = parser.getValue(serverOption, serverPath)
 		server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
-			server.destroyForcibly()
+			running = false
+			server.destroy()
+			println("Stopping server...")
+			server.waitFor()
 		}, "Server terminator"))
 		
 		debug = parser.getValue(debugOption, false)
-		aiFile = parser.getValue(aiOption, basepath.resolve("docker-client.sh")) { File(it as String) }.absoluteFile
+		aiFile = parser.getValue(aiOption, basepath.resolve(if(school) "clients/start-client.sh" else "docker-client.sh")) { File(it as String) }.absoluteFile
+		println("AI: $aiFile")
 		
 		var result = Evolve(parser.getValue(idOption) ?: getNextId()).start()
-		while (server.isAlive && result)
+		while (result)
 			result = Evolve().start()
 	}
 	
@@ -56,7 +64,7 @@ object Evolution : EvolutionBase() {
 		else
 			ProcessBuilder(aiFile.toString())
 		builder.directory(aiFile.parentFile)
-		builder.command().addAll("--port", "13055")
+		builder.command().addAll("--port", port)
 		if (!debug)
 			builder.command().addAll("-d", "0")
 		return builder
@@ -65,34 +73,41 @@ object Evolution : EvolutionBase() {
 	class Evolve constructor(private val id: Int = getNextId()) {
 		
 		private val outputFile = file(id)
-		private var strategy = if (file(id).exists()) {
+		private var strategy = if (outputFile.exists()) {
 			println("Reading id $id")
 			Strategy(file(id).readText(), false)
 		} else {
+			println("Got id $id")
 			Strategy()
 		}
 		
 		fun start(): Boolean {
 			try {
 				while (strategy.games < GAMES) {
+					if (!running)
+						return false
 					val ai = startAI()
-					if (ai.waitFor(4, TimeUnit.SECONDS)) {
+					if (ai.waitFor(10, TimeUnit.SECONDS)) {
 						println("$ai exited unexpectedly with exit code ${ai.exitValue()}!")
 						return false
 					}
-					if (ai.waitFor(2, TimeUnit.MINUTES)) {
-						if (!server.isAlive)
+					if (ai.waitFor(3, TimeUnit.MINUTES)) {
+						if (!running)
 							return false
-						val result = aiFile.resolveSibling("result$id")
+						val result = basepath.resolve("clients/result$id")
 						strategy.write(result.readText())
 						result.delete()
+					} else {
+						println("The game did not finish in time!")
+						return false
 					}
 				}
 				strategy.writeEnd("Finished")
 			} catch (e: Exception) {
 				strategy.writeEnd("Error - $e")
+				running = false
 			}
-			return true
+			return running
 		}
 		
 		private fun startAI(): Process {
@@ -104,6 +119,7 @@ object Evolution : EvolutionBase() {
 		
 		internal fun resetStrategy() {
 			outputFile.renameTo(garbageDir.resolve("$id-${System.currentTimeMillis()}"))
+			println("Resetting!")
 			strategy = Strategy()
 		}
 		
@@ -154,7 +170,7 @@ object Evolution : EvolutionBase() {
 				
 				val s = toString()
 				outputFile.writeText(s)
-				println("\"$s\" in $outputFile geschrieben")
+				println("Wrote \"$s\" to $outputFile")
 				if (games > 15) {
 					val bcd = binominalCD(won, games)
 					if (bcd < 0.3)

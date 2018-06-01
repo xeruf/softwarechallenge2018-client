@@ -27,7 +27,7 @@ abstract class LogicBase : LogicHandler() {
 	protected inline val Player.hasSalad
 		get() = salads > 0
 	
-	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64) 1000 - player.carrots * 10 else 0
+	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64) 10000 - player.carrots * 10 else 0
 	
 	/** clones the move and adds a Card Action to it */
 	protected fun Move.addCard(card: CardType, value: Int = 0) =

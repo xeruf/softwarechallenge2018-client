@@ -32,7 +32,7 @@ object Jumper1_8 : CommonLogic() {
 	}
 	
 	/** Karotten, Salat, Threshold */
-	override fun defaultParams() = doubleArrayOf(3.0, 30.0, 40.0)
+	override fun defaultParams() = doubleArrayOf(3.76, 21.31, 46.69)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
@@ -103,7 +103,7 @@ object Jumper1_8 : CommonLogic() {
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
-			if(bestMove != mp.obj!!) {
+			if (bestMove != mp.obj!!) {
 				depthUsed = depth
 				bestMove = mp.obj!!
 			}

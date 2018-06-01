@@ -1,8 +1,6 @@
 import jargs.gnu.CmdLineParser
-import xerus.ktutil.factorial
 import xerus.ktutil.safe
 import java.io.File
-import java.lang.Math.pow
 
 @Suppress("UNCHECKED_CAST")
 fun <T> CmdLineParser.getValue(option: CmdLineParser.Option, default: T, converter: (Any) -> T? = { it as? T }) =
@@ -16,7 +14,8 @@ abstract class EvolutionBase {
 	
 	val separator = " ; "
 	var serverPath = "testserver/start.sh"
-	var port = "13055"
+	var port = "13054"
+	var school = false
 	
 	abstract var basepath: File
 	abstract var strategiesDir: File
@@ -24,6 +23,9 @@ abstract class EvolutionBase {
 	fun startServer(): Process {
 		val serverBuilder = ProcessBuilder(basepath.resolve(serverPath).toString(), "--port", port)
 		serverBuilder.directory(File(serverPath).parentFile)
+		serverBuilder.redirectErrorStream(true)
+		if (!school)
+			serverBuilder.redirectOutput(strategiesDir.resolve("server.log"))
 		return serverBuilder.start()
 	}
 	
