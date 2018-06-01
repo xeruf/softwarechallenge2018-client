@@ -15,25 +15,25 @@ object Jumper1_9 : CommonLogic() {
 	
 	override fun evaluate(state: GameState): Double {
 		val player = state.currentPlayer
-		var points = params[2] * player.fieldIndex + 100 - state.turn * 2
+		var points = player.fieldIndex + 120.0 - state.turn * 2
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		
 		// Salat und Karten
 		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += saladParam * (player.ownsCardOfType(CardType.EAT_SALAD).to(0.6, 0.0) + player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam / 10, 0.0))
+		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
+		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
 		points += player.cards.size * 2
 		
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
 		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		points -= (fieldTypeAt(player.fieldIndex) == FieldType.CARROT).toInt()
 		
 		// Zieleinlauf
 		return points + goalPoints(player)
 	}
 	
-	/** Karotten, Salat, Weite */
-	override fun defaultParams() = doubleArrayOf(2.0, 30.0, 2.0)
+	/** Karotten, Salat, Threshold */
+	override fun defaultParams() = doubleArrayOf(3.0, 30.0, 50.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
@@ -86,7 +86,7 @@ object Jumper1_9 : CommonLogic() {
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
 					// Points
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 40 / divider)
+					if (points < mp.points - params[2] / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
@@ -106,7 +106,7 @@ object Jumper1_9 : CommonLogic() {
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)
-			if(bestMove != mp.obj!!) {
+			if (bestMove != mp.obj!!) {
 				depthUsed = depth
 				bestMove = mp.obj!!
 			}

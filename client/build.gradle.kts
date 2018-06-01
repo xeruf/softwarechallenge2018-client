@@ -6,12 +6,12 @@ import java.io.Writer
 import java.util.Arrays
 import java.util.Scanner
 
-val c = properties["c"] as String? ?: "1_8"
+val c = properties["c"] as String? ?: "1_9"
 val client = "Jumper$c"
 val clientParams = listOf("-c", client)
 
 version = properties["j"]?.toString() ?: "${Scanner(Runtime.getRuntime().exec("git rev-list --count HEAD").inputStream).next()}-${properties["n"]?.toString()
-		?: Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)}"
+		?: Scanner(Runtime.getRuntime().exec("git rev-parse --short HEAD").inputStream).next().substring(0, 4)}-$c"
 println("Version: $version")
 
 plugins {
@@ -83,7 +83,6 @@ tasks {
 	}
 	
 	withType<KotlinCompile> {
-		mustRunAfter("clean")
 		kotlinOptions {
 			jvmTarget = "1.8"
 			freeCompilerArgs = listOf("-Xno-param-assertions", "-Xno-call-assertions")
@@ -127,7 +126,7 @@ tasks {
 	}
 	
 	"clean"{
-		delete("games", "out", "../testserver/logs", "../clients/games")
+		delete("out", "../clients/games")
 	}
 	
 	tasks.replace("jar").apply {
