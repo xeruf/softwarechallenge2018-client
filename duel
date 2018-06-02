@@ -2,7 +2,7 @@
 cd testserver
 
 port=13055
-mingames=30
+mingames=40
 games=100
 prefix="./starters/docker-"
 while [[ $# -gt 0 ]]; do
@@ -15,6 +15,7 @@ while [[ $# -gt 0 ]]; do
 		-nodocker) start="cd clients && ./start-client.sh"; prefix="./starters/start-"; shift 1;;
 		-v) loglevel="info"; shift 1;;
 		-vv) loglevel="debug"; shift 1;;
+		-vvv) loglevel="trace"; shift 1;;
 		
 		-*) echo "Unknown argument: \"$1\""; exit 1;;
 		*) break;;
@@ -31,11 +32,9 @@ ${start:-"./docker-client.sh"} Jumper-$2.jar \"\$@\"" > "$prefix$2"
 chmod +x $prefix$1 $prefix$2
 
 logs="../logs/duels"
-gameLogs="../clients/games/"
-mkdir -p $gameLogs $logs
-chmod 777 $gameLogs
+mkdir -p $logs
 ( ((echo==1)) || [[ -t 1 ]] ) && echo -e "\e[1mPlaying $mingames-$games games of $1 vs $2 on port $port\e[m"
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
-    --name1 "$1" --player1 "$prefix$1" --name2 "$2" --player2 "$prefix$2" --no-timeout \
-    --tests $games --min-tests $mingames --significance 0.06 --loglevel ${loglevel:-warn} \
-    --start-server --port $port "${@:3}" | tee -ia "$logs/$1 vs $2"
+    --name1 "$1" --player1 "$prefix$1" --name2 "$2" --player2 "$prefix$2" \
+    --min-tests $mingames --significance 0.06 --loglevel ${loglevel:-warn} \
+    --tests $games --start-server --port $port "${@:3}" | tee -ia "$logs/$1 vs $2"

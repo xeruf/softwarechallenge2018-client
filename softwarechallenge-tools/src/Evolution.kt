@@ -43,6 +43,7 @@ object Evolution : EvolutionBase() {
 		bestFile = evolutionDir.resolve("best.csv")
 		
 		port = parser.getValue(portOption, port)
+		println("Port: $port")
 		serverlocation = parser.getValue(serverlocationOption, if (school) "testserver/start.bat" else serverlocation)
 		server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
