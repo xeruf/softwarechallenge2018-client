@@ -4,6 +4,7 @@ import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
 import xerus.ktutil.forRange
 import xerus.ktutil.square
+import xerus.ktutil.to
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.addMove
 import java.util.*
@@ -21,29 +22,58 @@ abstract class CommonLogic : LogicBase() {
 	@F val carrotParam = params[0]
 	@F val saladParam = params[1]
 	
+	override fun evaluate(state: GameState): Double {
+		val player = state.currentPlayer
+		var points = player.fieldIndex + 120.0 - state.turn * 3
+		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
+		
+		// Salat und Karten
+		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
+		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
+		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
+		points += player.cards.size * 2
+		
+		// Karotten
+		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
+		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
+		
+		// Zieleinlauf
+		return points + goalPoints(player)
+	}
+	
+	fun shouldDropCarrots(amount: Int, carrots: Int, pos: Int) = carrots > amount + 74 - pos && pos > 42
+	
 	override fun GameState.findMoves(): List<Move> {
 		val player = currentPlayer
-		val fieldIndex = player.fieldIndex
-		val currentField = fieldTypeAt(fieldIndex)
+		val index = player.fieldIndex
+		val currentField = fieldTypeAt(index)
 		if (currentField == FieldType.SALAD && player.lastNonSkipAction !is EatSalad)
 			return listOf(Move(EatSalad()))
 		
+		//val allMoves = ArrayList<Move>()
 		val moves = ArrayList<Move>()
 		if (currentField == FieldType.CARROT) {
-			if (fieldIndex > 42 && player.carrots > 74 - fieldIndex)
+			if (shouldDropCarrots(10, player.carrots, index))
 				moves.addMove(ExchangeCarrots(-10))
 			moves.addMove(ExchangeCarrots(10))
 		}
 		
-		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, fieldIndex)
+		fun newMove(move: Move, condition: Boolean) {
+			//if (condition)
+			moves.add(move)
+			//else if (moves.isEmpty())
+			//	allMoves.add(move)
+		}
+		
+		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, index)
 		if (hedgehog != -1 && !isOccupied(hedgehog))
 			moves.addMove(FallBack())
 		
 		val otherPos = otherPos
 		forRange(1, GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - player.fieldIndex) + 1) { i ->
-			val newPos = fieldIndex + i
+			val newPos = index + i
 			val newType = fieldTypeAt(newPos)
-			if (otherPos == newPos || newType == FieldType.HEDGEHOG)
+			if ((otherPos == newPos && newPos != 64) || newType == FieldType.HEDGEHOG)
 				return@forRange
 			val advance = Move(Advance(i))
 			val newCarrots = player.carrots - GameRuleLogic.calculateCarrots(i)
@@ -60,55 +90,56 @@ abstract class CommonLogic : LogicBase() {
 					val cards = player.cards
 					if (cards.isEmpty())
 						return@forRange
-					if (CardType.EAT_SALAD in cards && player.hasSalad && (newPos > 42 || otherPos > newPos || player.salads == 1))
-						moves.add(advance.addCard(CardType.EAT_SALAD))
+					if (CardType.EAT_SALAD in cards && player.hasSalad)
+						newMove(advance.addCard(CardType.EAT_SALAD), newPos > 42 || newPos < otherPos || player.salads == 1)
 					if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-						if (CardType.EAT_SALAD !in cards || newPos > otherPos)
-							moves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
-						if (newCarrots > 84 - newPos && newPos > 42)
+						newMove(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 20), CardType.EAT_SALAD !in cards || newPos > otherPos)
+						if (shouldDropCarrots(20, newCarrots, newPos))
 							moves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-						if (newCarrots > 74 - newPos)
+						if (shouldDropCarrots(0, newCarrots, newPos))
 							moves.add(advance.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 					}
-					if (CardType.HURRY_AHEAD in cards && otherPos > newPos && accessible(otherPos + 1)) {
+					if (CardType.HURRY_AHEAD in cards && otherPos > newPos && accessible(otherPos + 1, newCarrots)) {
 						val hurry = advance.addCard(CardType.HURRY_AHEAD)
 						when (fieldTypeAt(otherPos + 1)) {
 							FieldType.HARE -> {
 								if (cards.size > 1) {
-									/* todo bug
-									if (CardType.FALL_BACK in cards && fieldTypeAt(otherPos - 1).isNot(FieldType.HEDGEHOG, FieldType.HARE))
-									possibleMoves.add(hurry.addCard(CardType.FALL_BACK))*/
-									if (otherPos > 41 && CardType.EAT_SALAD in cards)
-										moves.add(hurry.addCard(CardType.EAT_SALAD))
+									if (CardType.FALL_BACK in cards && accessible(otherPos - 1, newCarrots)) {
+										val newField = fieldTypeAt(otherPos - 1)
+										if (newField != FieldType.HARE)
+											moves.add(hurry.addCard(CardType.FALL_BACK))
+									}
 									if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-										if (newCarrots > 84 - otherPos && otherPos > 41)
-											moves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-										if (newCarrots > 74 - otherPos)
-											moves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 										moves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
+										if (shouldDropCarrots(20, newCarrots, otherPos + 1))
+											moves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
+										if (shouldDropCarrots(0, newCarrots, otherPos + 1))
+											moves.add(hurry.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 									}
 								}
 							}
 							else -> moves.add(hurry)
 						}
 					}
-					if (CardType.FALL_BACK in cards && otherPos < newPos && accessible(otherPos - 1)) {
+					if (CardType.FALL_BACK in cards && otherPos < newPos && accessible(otherPos - 1, newCarrots)) {
 						val fall = advance.addCard(CardType.FALL_BACK)
 						when (fieldTypeAt(otherPos - 1)) {
 							FieldType.HARE -> {
 								if (cards.size > 1) {
-									/* todo bug
-									if (CardType.HURRY_AHEAD in cards && fieldTypeAt(otherPos + 1) == FieldType.SALAD)
-									possibleMoves.add(fall.addCard(CardType.HURRY_AHEAD)) */
-									if (CardType.EAT_SALAD in cards)
+									if (CardType.HURRY_AHEAD in cards && accessible(otherPos + 1, newCarrots)) {
+										val newField = fieldTypeAt(otherPos + 1)
+										if (newField != FieldType.HARE)
+											newMove(fall.addCard(CardType.HURRY_AHEAD), newField == FieldType.SALAD)
+									}
+									if (CardType.EAT_SALAD in cards && player.hasSalad)
 										moves.add(fall.addCard(CardType.EAT_SALAD))
 									if (CardType.TAKE_OR_DROP_CARROTS in cards) {
-										if (newCarrots > 84 - otherPos && otherPos > 43)
-											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
-										if (newCarrots > 74 - otherPos)
-											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 										if (CardType.EAT_SALAD !in cards)
 											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 20))
+										if (shouldDropCarrots(20, newCarrots, otherPos - 1))
+											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, -20))
+										if (shouldDropCarrots(0, newCarrots, otherPos - 1))
+											moves.add(fall.addCard(CardType.TAKE_OR_DROP_CARROTS, 0))
 									}
 								}
 							}
@@ -120,14 +151,11 @@ abstract class CommonLogic : LogicBase() {
 			}
 		}
 		
-		/*if (debugLevel > 1) {
-			val double = moves.find { moves.indexOf(it) != moves.lastIndexOf(it) }
-			if (double != null)
-				logger.error("Double Move: $double")
-		}*/
-		
-		return if (moves.isNotEmpty()) moves
-		else listOf(Move(Skip()))
+		return when {
+			moves.isNotEmpty() -> moves
+			//allMoves.isNotEmpty() -> allMoves
+			else -> skip
+		}
 	}
 	
 	override fun GameState.predefinedMove(): Move? {
@@ -136,17 +164,6 @@ abstract class CommonLogic : LogicBase() {
 		val otherPos = otherPos
 		if (pos == 0 && fieldTypeAt(1) == FieldType.POSITION_2 && otherPos != 1)
 			return advanceTo(1)
-		
-		if (fieldTypeAt(pos) == FieldType.SALAD && player.lastNonSkipAction !is EatSalad)
-			return Move(EatSalad())
-		
-		/*if (otherPos < 11 && otherEatingSalad < 2) {
-			val pos1 = findField(FieldType.POSITION_1)
-			if(player.hasCarrotsTo(pos1))
-				return advanceTo(pos1)
-		}*/
-		
-		//if (otherPos == 57 && pos > 57 && otherEatingSalad == 2 && player.hasSalad) return Move(FallBack())
 		
 		return null
 	}

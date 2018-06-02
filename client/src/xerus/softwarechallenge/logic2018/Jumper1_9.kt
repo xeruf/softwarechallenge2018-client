@@ -1,8 +1,10 @@
 package xerus.softwarechallenge.logic2018
 
-import sc.plugin2018.*
-import sc.shared.PlayerColor
-import xerus.ktutil.*
+import sc.plugin2018.GameState
+import sc.plugin2018.Move
+import xerus.ktutil.createDir
+import xerus.ktutil.createFile
+import xerus.ktutil.forRange
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
@@ -13,27 +15,8 @@ import kotlin.math.pow
 
 object Jumper1_9 : CommonLogic() {
 	
-	override fun evaluate(state: GameState): Double {
-		val player = state.currentPlayer
-		var points = player.fieldIndex + 120.0 - state.turn * 2
-		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
-		
-		// Salat und Karten
-		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
-		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
-		points += player.cards.size * 2
-		
-		// Karotten
-		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
-		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		
-		// Zieleinlauf
-		return points + goalPoints(player)
-	}
-	
 	/** Karotten, Salat, Threshold */
-	override fun defaultParams() = doubleArrayOf(3.0, 30.0, 50.0)
+	override fun defaultParams() = doubleArrayOf(4.05, 32.79, 55.21)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
@@ -52,6 +35,8 @@ object Jumper1_9 : CommonLogic() {
 		}
 		
 		var bestMove = mp.obj
+		if (currentTurn > 57)
+			return bestMove
 		if (queue.size < 2) {
 			if (bestMove != null) {
 				logger.info("Nur einen validen Zug gefunden: ${bestMove.str()}")
@@ -73,14 +58,24 @@ object Jumper1_9 : CommonLogic() {
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
+			if (node.gamestate.turn > 57)
+				maxDepth = depth
 			val divider = depth.toDouble().pow(0.3)
 			do {
+<<<<<<< Updated upstream
 				nodeState = node.gamestate
 				nodeState.nextPlayer(false)
 				nodeState = nodeState.quickMove().second
+				if(nodeState.otherPlayer.gewonnen() && nodeState.startPlayerColor == myColor)
+=======
+				val nodeState = node.gamestate.quickMove().second
+				if(nodeState.otherPlayer.gewonnen() && nodeState.startPlayerColor == myColor) {
+					node = queue.poll() ?: break
+>>>>>>> Stashed changes
+					continue
+				}
+				// todo explore other possible enemy moves
 				moves = nodeState.findMoves()
-				if (nodeState.turn > 57)
-					maxDepth = depth
 				forRange(0, moves.size) { i ->
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
@@ -94,12 +89,12 @@ object Jumper1_9 : CommonLogic() {
 					if (isDebug) {
 						if (update)
 							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
-						subDir = node.dir?.resolve("%.1f - %s - %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
+						subDir = node.dir?.resolve("%.1f - %s to %s".format(points, move.str(), newState.currentPlayer.strShort()))?.createDir()
 					}
 					// Queue
 					if (newState.currentPlayer.gewonnen())
 						maxDepth = depth
-					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
+					if (depth < maxDepth)
 						queue.add(node.update(newState, points, subDir))
 				}
 				if (Timer.runtime() > 1700)
@@ -120,7 +115,6 @@ object Jumper1_9 : CommonLogic() {
 	}
 	
 	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
-	
 	
 	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		

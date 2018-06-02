@@ -4,9 +4,7 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
-import xerus.softwarechallenge.util.LogicHandler
-import xerus.softwarechallenge.util.add
-import xerus.softwarechallenge.util.str
+import xerus.softwarechallenge.util.*
 import java.util.*
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel
@@ -14,6 +12,8 @@ import java.util.*
  * - Igel: 11, 15, 19, 24, 30, 37, 43, 50, 56
  * - Salate: 10, 22, 42, 57  */
 abstract class LogicBase : LogicHandler() {
+	
+	@F val skip = listOf(Move(Skip()))
 	
 	override fun Player.str() =
 			this.strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
@@ -34,16 +34,19 @@ abstract class LogicBase : LogicHandler() {
 			Move(this.actions).add(Card(card, value, 0))
 	
 	/** checks if the currentPlayer could jump on the Field at the given index */
-	protected fun GameState.accessible(field: Int) =
+	protected fun GameState.accessible(field: Int, carrots: Int = currentPlayer.carrots) =
 			field in 1..64 && !isOccupied(field) && when (fieldTypeAt(field)) {
 				FieldType.HEDGEHOG -> false
+				FieldType.HARE -> currentPlayer.cards.size > 0
 				FieldType.SALAD -> currentPlayer.hasSalad
-				FieldType.GOAL -> currentPlayer.carrots <= 10 && currentPlayer.salads == 0
+				FieldType.GOAL -> carrots <= 10 && currentPlayer.salads == 0
 				else -> true
 			}
 	
-	/** checks if the player owns sufficient carrots to move to that field,
-	 * that it isn't blocked by the other player and that it is actually before the player */
+	/** returns true if
+	 * - the player owns sufficient carrots to move to that field
+	 * - it isn't blocked by the other player
+	 * - it is ahead of the player */
 	protected fun GameState.canAdvanceTo(field: Int) =
 			field > currentPlayer.fieldIndex && field != otherPlayer.fieldIndex && currentPlayer.hasCarrotsTo(field)
 	

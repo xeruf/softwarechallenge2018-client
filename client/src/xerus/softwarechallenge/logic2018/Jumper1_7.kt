@@ -314,7 +314,7 @@ object Jumper1_7 : LogicBase() {
 		}
 		
 		return if (possibleMoves.isNotEmpty()) possibleMoves
-		else listOf(Move(Skip()))
+		else skip
 	}
 	
 	override fun clear() {

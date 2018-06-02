@@ -81,12 +81,7 @@ abstract class LogicHandler : IGameHandler {
 		if (move.invalid()) {
 			if (move != null)
 				logger.error("Invalid findBestMove: ${move.str()}")
-			move = try {
-				currentState.quickMove().first
-			} catch (e: Throwable) {
-				logger.error("Error in quickMove!", e)
-				null
-			}
+			move = currentState.quickMove().first
 		}
 		
 		if (move.invalid()) {
@@ -100,7 +95,7 @@ abstract class LogicHandler : IGameHandler {
 		}
 		sendAction(move)
 		logger.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
-		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()}"))
+		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()} - ${currentPlayer.str()}"))
 		clear()
 	}
 	
@@ -118,11 +113,15 @@ abstract class LogicHandler : IGameHandler {
 		for (move in moves) {
 			val moveState = clone()
 			move.setOrderInActions()
-			move.perform(moveState)
-			moveState.nextPlayer(false)
-			if (best.points < evaluate(moveState)) {
-				moveState.nextPlayer()
-				best.obj = Pair(move, moveState)
+			try {
+				move.perform(moveState)
+				moveState.nextPlayer(false)
+				if (best.points < evaluate(moveState)) {
+					moveState.nextPlayer()
+					best.obj = Pair(move, moveState)
+				}
+			} catch (exception: Exception) {
+				logger.warn("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
 			}
 		}
 		return best.obj!!
@@ -179,7 +178,9 @@ abstract class LogicHandler : IGameHandler {
 	abstract fun Player.str(): String
 	
 	fun GameState.str() =
-			"GameState: Zug %d\n - current: %s\n - other: %s".format(turn, currentPlayer.str(), otherPlayer.str())
+			("GameState: Zug $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +
+					" - current: ${currentPlayer.str()}\n" +
+					" - other: ${otherPlayer.str()}")
 	
 	protected fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
@@ -245,9 +246,13 @@ abstract class LogicHandler : IGameHandler {
 			
 			validMoves++
 			return bestState.obj ?: newState.apply {
-				turn += 1
-				switchCurrentPlayer()
+				if(newState.turn < 60) {
+					turn += 1
+					switchCurrentPlayer()
+				}
 			}
+		} catch (e: InvalidGameStateException) {
+			logger.error(e.toString())
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)

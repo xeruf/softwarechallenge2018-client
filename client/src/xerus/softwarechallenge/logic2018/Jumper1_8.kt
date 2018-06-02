@@ -13,25 +13,6 @@ import kotlin.math.pow
 
 object Jumper1_8 : CommonLogic() {
 	
-	override fun evaluate(state: GameState): Double {
-		val player = state.currentPlayer
-		var points = player.fieldIndex + 120.0 - state.turn * 2
-		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
-		
-		// Salat und Karten
-		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
-		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
-		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
-		points += player.cards.size * 2
-		
-		// Karotten
-		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
-		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
-		
-		// Zieleinlauf
-		return points + goalPoints(player)
-	}
-	
 	/** Karotten, Salat, Threshold */
 	override fun defaultParams() = doubleArrayOf(3.0, 30.0, 50.0)
 	
@@ -73,12 +54,12 @@ object Jumper1_8 : CommonLogic() {
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
+			if (node.gamestate.turn > 57)
+				maxDepth = depth
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
 				moves = nodeState.findMoves()
-				if (nodeState.turn > 57)
-					maxDepth = depth
 				forRange(0, moves.size) { i ->
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
