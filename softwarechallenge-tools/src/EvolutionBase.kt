@@ -13,27 +13,30 @@ fun <T> CmdLineParser.getValue(option: CmdLineParser.Option, converter: (Any) ->
 abstract class EvolutionBase {
 	
 	val separator = " ; "
-	var serverPath = "testserver/start.sh"
+	var serverlocation = "testserver/start.sh"
 	var port = "13054"
 	var school = false
 	
-	abstract var basepath: File
-	abstract var strategiesDir: File
+	abstract var baseDir: File
+	abstract var evolutionDir: File
+	val logDir
+		get() = if(school) File("C:\\Users\\fischerja\\Desktop\\logs\\") else evolutionDir.resolve("logs")
+	val archiveDir: File
+		get() = evolutionDir.resolve("archiv")
 	
 	fun startServer(): Process {
-		val serverBuilder = ProcessBuilder(basepath.resolve(serverPath).toString(), "--port", port)
-		serverBuilder.directory(File(serverPath).parentFile)
+		val serverBuilder = ProcessBuilder(baseDir.resolve(serverlocation).toString(), "--port", port)
+		serverBuilder.directory(File(serverlocation).parentFile)
 		serverBuilder.redirectErrorStream(true)
-		if (!school)
-			serverBuilder.redirectOutput(strategiesDir.resolve("server.log"))
+		serverBuilder.redirectOutput(logDir.apply { mkdir() }.resolve("server.log"))
 		return serverBuilder.start()
 	}
 	
-	fun file(id: Int) = strategiesDir.resolve(id.toString())
+	fun file(id: Int) = evolutionDir.resolve(id.toString())
 	
 	fun getNextId(): Int {
 		var id = 1
-		val nextid = strategiesDir.resolve("nextid")
+		val nextid = evolutionDir.resolve("nextid")
 		nextid.safe {
 			try {
 				id = readText().toInt()

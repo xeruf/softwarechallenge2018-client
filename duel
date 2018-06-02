@@ -2,7 +2,7 @@
 cd testserver
 
 port=13055
-mingames=20
+mingames=30
 games=100
 prefix="./starters/docker-"
 while [[ $# -gt 0 ]]; do
@@ -37,5 +37,5 @@ chmod 777 $gameLogs
 ( ((echo==1)) || [[ -t 1 ]] ) && echo -e "\e[1mPlaying $mingames-$games games of $1 vs $2 on port $port\e[m"
 java -jar -Dlogback.configurationFile=logback-tests.xml test_client.jar \
     --name1 "$1" --player1 "$prefix$1" --name2 "$2" --player2 "$prefix$2" --no-timeout \
-    --tests $games --min-tests $mingames --significance 0.07 --loglevel ${loglevel:-warn} \
+    --tests $games --min-tests $mingames --significance 0.06 --loglevel ${loglevel:-warn} \
     --start-server --port $port "${@:3}" | tee -ia "$logs/$1 vs $2"

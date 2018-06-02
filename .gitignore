@@ -7,11 +7,13 @@ start*
 /client/resources/activeclient
 version
 
+/issues
 /clients
 /*.zip
 /*.jar
+/softwarechallenge-tools/*.jar
 
-/evolution
+/evolution*
 
 **/.idea/workspace.xml
 **/.idea/libraries

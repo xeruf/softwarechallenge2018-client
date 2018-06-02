@@ -7,14 +7,14 @@ object Evolution : EvolutionBase() {
 	
 	private const val GAMES = 100
 	
-	override lateinit var basepath: File
-	override lateinit var strategiesDir: File
-	val garbageDir: File
-		get() = strategiesDir.resolve("garbage")
+	override lateinit var baseDir: File
+	override lateinit var evolutionDir: File
 	private lateinit var aiFile: File
 	private lateinit var bestFile: File
 	
-	private var debug: Boolean = false
+	private var debug = false
+	private var mutator = false
+	
 	private lateinit var server: Process
 	private var running = true
 		get() = server.isAlive && field
@@ -22,9 +22,11 @@ object Evolution : EvolutionBase() {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		val parser = CmdLineParser()
-		val pathOption = parser.addStringOption("path")
+		val basedirOption = parser.addStringOption("basedir")
+		val evolutiondirOption = parser.addStringOption("evolutiondir")
 		val aiOption = parser.addStringOption("ai")
-		val serverOption = parser.addStringOption("server")
+		val serverlocationOption = parser.addStringOption("server")
+		val mutatorOption = parser.addBooleanOption("mutator")
 		
 		val debugOption = parser.addBooleanOption('d', "debug")
 		val schoolOption = parser.addBooleanOption("school")
@@ -33,14 +35,15 @@ object Evolution : EvolutionBase() {
 		
 		parser.parse(args)
 		
+		mutator = parser.getValue(mutatorOption, false)
 		school = parser.getValue(schoolOption, false)
-		basepath = parser.getValue(pathOption, File(System.getProperty("user.dir"))) { File(it as String) }
-		strategiesDir = basepath.resolve("evolution")
-		garbageDir.mkdirs()
-		bestFile = strategiesDir.resolve("best.csv")
+		baseDir = parser.getValue(basedirOption, File(System.getProperty("user.dir"))) { File(it as String) }
+		evolutionDir = File(baseDir, parser.getValue(evolutiondirOption, "evolution"))
+		archiveDir.mkdirs()
+		bestFile = evolutionDir.resolve("best.csv")
 		
 		port = parser.getValue(portOption, port)
-		serverPath = parser.getValue(serverOption, serverPath)
+		serverlocation = parser.getValue(serverlocationOption, if (school) "testserver/start.bat" else serverlocation)
 		server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
 			running = false
@@ -50,7 +53,7 @@ object Evolution : EvolutionBase() {
 		}, "Server terminator"))
 		
 		debug = parser.getValue(debugOption, false)
-		aiFile = parser.getValue(aiOption, basepath.resolve(if(school) "clients/start-client.sh" else "docker-client.sh")) { File(it as String) }.absoluteFile
+		aiFile = parser.getValue(aiOption, baseDir.resolve(if (school) "clients/start-client.bat" else "docker-client.sh")) { File(it as String) }.absoluteFile
 		println("AI: $aiFile")
 		
 		var result = Evolve(parser.getValue(idOption) ?: getNextId()).start()
@@ -63,6 +66,9 @@ object Evolution : EvolutionBase() {
 			ProcessBuilder("java", "-jar", aiFile.toString())
 		else
 			ProcessBuilder(aiFile.toString())
+		builder.redirectOutput(logDir.resolve("${aiFile.name}-${System.currentTimeMillis()}.log"))
+		if (debug)
+			builder.redirectError(ProcessBuilder.Redirect.INHERIT)
 		builder.directory(aiFile.parentFile)
 		builder.command().addAll("--port", port)
 		if (!debug)
@@ -84,23 +90,25 @@ object Evolution : EvolutionBase() {
 		fun start(): Boolean {
 			try {
 				while (strategy.games < GAMES) {
+					if (school) logDir.mkdirs()
 					if (!running)
 						return false
 					val ai = startAI()
-					if (ai.waitFor(10, TimeUnit.SECONDS)) {
+					if (ai.waitFor(1, TimeUnit.SECONDS) && ai.exitValue() != 0) {
 						println("$ai exited unexpectedly with exit code ${ai.exitValue()}!")
 						return false
 					}
 					if (ai.waitFor(3, TimeUnit.MINUTES)) {
 						if (!running)
 							return false
-						val result = basepath.resolve("clients/result$id")
+						val result = baseDir.resolve("clients/result$id")
 						strategy.write(result.readText())
 						result.delete()
 					} else {
 						println("The game did not finish in time!")
 						return false
 					}
+					if (school) logDir.deleteRecursively()
 				}
 				strategy.writeEnd("Finished")
 			} catch (e: Exception) {
@@ -118,12 +126,12 @@ object Evolution : EvolutionBase() {
 		}
 		
 		internal fun resetStrategy() {
-			outputFile.renameTo(garbageDir.resolve("$id-${System.currentTimeMillis()}"))
+			outputFile.renameTo(archiveDir.resolve("$id-${System.currentTimeMillis()}"))
 			println("Resetting!")
 			strategy = Strategy()
 		}
 		
-		private inner class Strategy internal constructor(input: String = bestFile.safe { readLines()[0] }, mutate: Boolean = true) {
+		private inner class Strategy internal constructor(input: String = bestFile.safe { readLines().let { if (mutator) it[(Math.random() * it.size).toInt()] else it[0] } }, mutate: Boolean = true) {
 			internal var params: DoubleArray
 			internal var variation: DoubleArray
 			internal var winrate: Double = 0.0
@@ -175,7 +183,7 @@ object Evolution : EvolutionBase() {
 					val bcd = binominalCD(won, games)
 					if (bcd < 0.3)
 						resetStrategy()
-					if (bestLine.isInitialized() || (games > 40 && bcd > 0.9)) {
+					if (bestLine.isInitialized() || (games > 50 && bcd > 0.95)) {
 						bestFile.safe {
 							println("Good Strategy - Writing to $bestFile line ${bestLine.value}")
 							write(bestLine.value, s)

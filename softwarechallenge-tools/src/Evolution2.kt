@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 /*
 object Evolution2 : EvolutionBase() {
 	
-	override lateinit var basepath: File
+	override lateinit var baseDir: File
 	override lateinit var strategies: File
 	private lateinit var starter: String
 	private lateinit var bestFile: File
@@ -22,16 +22,16 @@ object Evolution2 : EvolutionBase() {
 		
 		parser.parse(args)
 		
-		basepath = parser.getValue(path, File(System.getProperty("user.dir"))) { File(it as String) }
+		baseDir = parser.getValue(path, File(System.getProperty("user.dir"))) { File(it as String) }
 		val server = startServer()
 		Runtime.getRuntime().addShutdownHook(Thread({
 			server.destroyForcibly()
 		}))
-		strategies = basepath.resolve("evolution")
+		strategies = baseDir.resolve("evolution")
 		bestFile = strategies.resolve("best.csv")
 		
 		debug = parser.getValue(debugOption, false)
-		starter = parser.getValue(aiOption, basepath.resolve("start-client.sh").toString())
+		starter = parser.getValue(aiOption, baseDir.resolve("start-client.sh").toString())
 		
 		Evolve(parser.getValue(idOption, getNextId())).start()
 		while (true)

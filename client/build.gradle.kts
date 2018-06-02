@@ -44,7 +44,7 @@ val cms = listOf("-XX:+UseConcMarkSweepGC"
 		, "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
 		, "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
-val gcDebugParams = if (properties["nogc"] != null) emptyList() else listOf(
+val gcDebugParams = if (properties["gc"] == null) emptyList() else listOf(
 		"-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
 		, "-XX:+PrintPromotionFailure", "-noverify"
 )
@@ -67,7 +67,7 @@ tasks {
 			script.bufferedWriter().run {
 				write("""
 					#!/usr/bin/env bash
-					if [ -f $1 ]
+					if [ $1 ] && [ -f $1 ]
 					then client=$1
 					args=2
 					else
@@ -102,8 +102,9 @@ tasks {
 		dependsOn("classes")
 	}
 	
-	"processResources" {
-		setOnlyIf { true }
+	getByName("processResources").dependsOn("writeResources")
+	
+	"writeResources" {
 		doFirst {
 			sync {
 				from("src/xerus/softwarechallenge")
@@ -125,8 +126,8 @@ tasks {
 		}
 	}
 	
-	"clean"{
-		delete("out", "../clients/games")
+	"clean"(Delete::class) {
+		delete.addAll(arrayOf("games", "../clients/games", "../testserver/logs", "../testserver/starters", "out"))
 	}
 	
 	tasks.replace("jar").apply {
