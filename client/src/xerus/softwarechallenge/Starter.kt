@@ -18,9 +18,6 @@ lateinit var client: Client
 fun main(args: Array<String>) {
 	System.setProperty("file.encoding", "UTF-8")
 	
-	val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
-	rootLogger.level = ch.qos.logback.classic.Level.WARN
-	
 	val parser = CmdLineParser()
 	val hostOption = parser.addStringOption('h', "host")
 	val portOption = parser.addIntegerOption('p', "port")

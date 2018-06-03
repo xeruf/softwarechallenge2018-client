@@ -127,13 +127,14 @@ tasks {
 	}
 	
 	"clean"(Delete::class) {
-		delete.addAll(arrayOf("games", "../clients/games", "../testserver/logs", "../testserver/starters", "out"))
+		delete.addAll(arrayOf("out", "games", "../clients/games", "../testserver/logs", "../testserver/starters",
+				"../softwarechallenge-tools/out", "../softwarechallenge-tools/build", "../softwarechallenge-tools/.gradle"))
 	}
 	
 	tasks.replace("jar").apply {
 		group = MAIN
 		dependsOn("shadowJar", "scripts")
 	}
-
+	
 }
 

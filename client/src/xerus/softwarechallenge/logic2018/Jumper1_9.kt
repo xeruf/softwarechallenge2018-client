@@ -16,7 +16,7 @@ import kotlin.math.pow
 object Jumper1_9 : CommonLogic() {
 	
 	/** Karotten, Salat, Threshold */
-	override fun defaultParams() = doubleArrayOf(4.05, 32.79, 55.21)
+	override fun defaultParams() = doubleArrayOf(3.0, 30.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
@@ -49,17 +49,17 @@ object Jumper1_9 : CommonLogic() {
 		
 		// Breitensuche
 		depth = 1
-		var maxDepth = 5.coerceAtMost(61.minus(currentTurn) / 2)
+		var maxDepth = 5.coerceAtMost(60.minus(currentTurn) / 2)
 		var node = queue.poll()
 		var subDir: Path? = null
 		var acceptedMoves: Int
-		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
+		loop@ while (depth < maxDepth && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				val nodeState = node.gamestate.quickMove().second
-				if(nodeState.otherPlayer.gewonnen() && nodeState.startPlayerColor == myColor) {
+				if (nodeState.otherPlayer.gewonnen() && nodeState.startPlayerColor == myColor) {
 					node = queue.poll() ?: break
 					continue
 				}
@@ -70,23 +70,26 @@ object Jumper1_9 : CommonLogic() {
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
 					// Points
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - params[2] / divider)
+					if (points < mp.points - 50.0 / divider)
 						return@forRange
 					val update = mp.update(node.move, points)
 					// Debug
 					acceptedMoves++
 					if (isDebug) {
-						if (update)
+						subDir = node.dir?.resolve("%.1f: %s ㊝%s ✖%s ${newState.enemy.lastNonSkipAction.str()}"
+								.format(points, move.str(), newState.me.strShortest(), newState.enemy.strShortest()))?.createDir()
+						if (update) {
 							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
-						subDir = node.dir?.resolve("%.1f - %s to %s".format(points, move.str(), newState.getPlayer(myColor).strShort()))?.createDir()
+							println(currentLogDir?.relativize(subDir))
+						}
 					}
 					// Queue
-					if (newState.getPlayer(myColor).gewonnen())
+					if (Timer.runtime() > 1000 || newState.getPlayer(myColor).gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth)
 						queue.add(node.update(newState, points, subDir))
 				}
-				if (Timer.runtime() > 1700)
+				if (Timer.runtime() > 1600)
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)

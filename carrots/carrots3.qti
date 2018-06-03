@@ -1,6 +1,6 @@
 QtiPlot 0.9.8 project file
 <scripting-lang>	muParser
-<windows>	2
+<windows>	3
 <SurfacePlot>
 Grafik1	04.05.18 16:11
 geometry	0	0	558	473	
@@ -17,7 +17,7 @@ numbersFont	Noto Sans	11	50	0
 xAxisLabelFont	Noto Sans	9	50	0
 yAxisLabelFont	Noto Sans	9	50	0
 zAxisLabelFont	Noto Sans	9	50	0
-rotation	19	0	55
+rotation	64	0	55
 zoom	234.117
 scaling	0.0025	0.015625	0.0545637
 shift	0	0	0
@@ -41,7 +41,7 @@ axisType	0	0	0
 </SurfacePlot>
 <SurfacePlot>
 Grafik2	04.05.18 16:13
-geometry	558	0	558	473	active
+geometry	558	0	558	473	
 SurfaceFunction	1.1^(-((x - y^(1.6)) / (40 + y))^2) * 5 + x / (100 - y);40;40	0	400	0	64	2.11684	12.5492
 Style	box	nofloor	filledmesh
 grids	0
@@ -55,7 +55,7 @@ numbersFont	Noto Sans	11	50	0
 xAxisLabelFont	Noto Sans	9	50	0
 yAxisLabelFont	Noto Sans	9	50	0
 zAxisLabelFont	Noto Sans	9	50	0
-rotation	7	0	47
+rotation	27	0	55
 zoom	233.955
 scaling	0.0025	0.015625	0.0958554
 shift	0	0	0
@@ -77,4 +77,110 @@ axisType	0	0	0
 </Grid>
 <AxesNumberFormat>0	6	0	6	0	6	</AxesNumberFormat>
 </SurfacePlot>
+<multiLayer>
+Grafik3	1	1	04.06.18 00:03
+geometry	8	375	556	478	active
+WindowLabel		2
+Margins	5	5	5	5
+Spacing	5	5
+LayerCanvasSize	400	300
+Alignement	0	0
+<AlignPolicy>0</AlignPolicy>
+<CommonAxes>0</CommonAxes>
+<graph>
+ggeometry	5	5	538	415
+<PageGeometry>0.00912409	0.0116279	0.981752	0.965116</PageGeometry>
+PlotTitle	Titel	#000000	4228
+<Antialiasing>0</Antialiasing>
+<Autoscaling>0</Autoscaling>
+<ScaleFonts>1</ScaleFonts>
+<GridOnTop>0</GridOnTop>
+<MissingDataGap>1</MissingDataGap>
+Background	#000000	0
+Margin	0
+Border	0	#000000
+grid	0	0	0	0	#0000ff	0	0.5	#a0a0a4	2	0.4	#0000ff	0	0.5	#a0a0a4	2	0.4	0	0	2	0	0
+EnabledAxes	1	1	1	1	
+AxesTitles	%(?X)	%(?Y)		%(?Y)	
+AxesTitleColors	#000000	#000000	#000000	#000000	
+AxesTitleAlignment	5124	5124	5124	5124
+AxesTitleDistance	2	2	2	2
+InvertedTitle	0	0	0	0
+TitleFont	Noto Sans	12	75	0	0	0
+ScaleFont0	Noto Sans	10	75	0	0	0
+ScaleFont1	Noto Sans	10	75	0	0	0
+ScaleFont2	Noto Sans	10	75	0	0	0
+ScaleFont3	Noto Sans	10	75	0	0	0
+AxisFont0	Noto Sans	10	50	0	0	0
+AxisFont1	Noto Sans	10	50	0	0	0
+AxisFont2	Noto Sans	10	50	0	0	0
+AxisFont3	Noto Sans	10	50	0	0	0
+AxesColors	#000000	#000000	#000000	#000000
+AxesNumberColors	#eff0f1	#eff0f1	#eff0f1	#eff0f1
+AxesBaseline	0	0	0	0	
+CanvasBackground	#000000	0
+<Function>
+<Type>0</Type>
+<Title>F1</Title>
+<Expression>1.1^(-((x - y^(1.6)) / (40 + y))^2) * 5 + x / (100 - y)</Expression>
+<Variable>x</Variable>
+<Range>0	200</Range>
+<Points>100</Points>
+<Constant>y	46</Constant>
+<Style>0</Style>
+<LineStyle>1</LineStyle>
+<Pen>
+	<Color>#000000</Color>
+	<Style>0</Style>
+	<Width>1</Width>
+</Pen>
+<xAxis>2</xAxis>
+<yAxis>0</yAxis>
+<CurveType>0</CurveType>
+<Visible>1</Visible>
+</Function>
+scale	0	0	6	0	7	5	0	0
+scale	1	0	6	0	7	5	0	0
+scale	2	-50	250	0	7	5	0	0
+scale	3	-50	250	0	7	5	0	0
+LabelsFormat	0	6	0	6	0	6	0	6
+AxisType	0	0	0	0	
+MajorTicks	1	1	1	1
+MinorTicks	1	1	1	1
+TicksLength	5	9
+DrawAxesBackbone	1	1	1	1	1
+AxesLineWidth	1
+LabelsRotation	0	0	0	0
+LabelsPrefix				
+LabelsSuffix				
+TickLabelsSpace	4	4	4	4
+ShowTicksPolicy	0	0	0	0
+EnabledTickLabels	1	1	1	1
+<Legend>
+<Frame>1</Frame>
+<Color>#000000</Color>
+<FrameWidth>1</FrameWidth>
+<LineStyle>0</LineStyle>
+<x>27.700831024931</x>
+<y>964.78873239437</y>
+<right>301.939058171745</right>
+<bottom>862.676056338028</bottom>
+<attachTo>1</attachTo>
+<onTop>1</onTop>
+<visible>1</visible>
+<Text>
+\l(1)%(1)
+</Text>
+<Font>Noto Sans	10	50	0	0	0</Font>
+<TextColor>#000000</TextColor>
+<Background>#ffffff</Background>
+<Alpha>0</Alpha>
+<Angle>0</Angle>
+<AutoUpdate>1</AutoUpdate>
+<TeXOutput>0</TeXOutput>
+</Legend>
+</graph>
+<LinkXAxes>0</LinkXAxes>
+<ScaleLayers>1</ScaleLayers>
+</multiLayer>
 <open>1</open>

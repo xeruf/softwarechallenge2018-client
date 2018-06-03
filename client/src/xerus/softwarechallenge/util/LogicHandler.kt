@@ -115,8 +115,7 @@ abstract class LogicHandler : IGameHandler {
 			move.setOrderInActions()
 			try {
 				move.perform(moveState)
-				if (evaluate(moveState, otherPlayerColor) > best.points)
-					best.obj = Pair(move, moveState)
+				best.update(Pair(move, moveState), evaluate(moveState, currentPlayerColor))
 			} catch (exception: Exception) {
 				logger.warn("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
 			}
@@ -246,7 +245,7 @@ abstract class LogicHandler : IGameHandler {
 			validMoves++
 			return bestState.obj ?: newState
 		} catch (e: InvalidGameStateException) {
-			logger.error("$e in ${this.str()}")
+			logger.error("$e current: $currentTurn")
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)

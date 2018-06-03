@@ -19,7 +19,20 @@ abstract class LogicBase : LogicHandler() {
 			this.strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
 	
 	protected inline fun Player.strShort() =
-			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex)} S:$salads K:$carrots"
+			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots ❀$salads"
+	
+	protected inline fun Player.strShortest() =
+			"$fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots"
+	
+	protected inline fun FieldType.str() = when (this) {
+		FieldType.POSITION_1 -> "P1"
+		FieldType.POSITION_2 -> "P2"
+		FieldType.HEDGEHOG -> "☼"
+		FieldType.CARROT -> "❦"
+		FieldType.SALAD -> "❀"
+		FieldType.HARE -> "✌"
+		else -> toString()
+	}
 	
 	protected inline fun Player.gewonnen() = fieldIndex == 64
 	
@@ -52,6 +65,11 @@ abstract class LogicBase : LogicHandler() {
 	protected fun GameState.canAdvanceTo(field: Int) =
 			field > currentPlayer.fieldIndex && field != otherPlayer.fieldIndex && currentPlayer.hasCarrotsTo(field)
 	
+	protected inline val GameState.me: Player
+		get() = getPlayer(myColor)
+	
+	protected inline val GameState.enemy: Player
+		get() = getPlayer(myColor.opponent())
 	
 	/** position of the otherPlayer for this GameState */
 	protected inline val GameState.otherPos

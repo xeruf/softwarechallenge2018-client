@@ -87,12 +87,12 @@ object Jumper2 : CommonLogic() {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5.coerceAtMost(61.minus(currentTurn) / 2)
+		var maxDepth = 5.coerceAtMost(59.minus(currentTurn) / 2)
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path? = null
 		var acceptedMoves: Int
-		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
+		loop@ while (depth < maxDepth && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
 			do {
@@ -115,12 +115,12 @@ object Jumper2 : CommonLogic() {
 						subDir = node.dir?.resolve("%.1f - %s to %s".format(evaluation, move.str(), newState.currentPlayer.strShort()))?.createDir()
 					}
 					// Queue
-					if (newState.currentPlayer.gewonnen())
+					if (Timer.runtime() > 1000 || newState.currentPlayer.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
 						queue.add(node.update(newState, points + evaluation / 3, subDir))
 				}
-				if (Timer.runtime() > 1700)
+				if (Timer.runtime() > 1600)
 					break@loop
 				node = queue.poll() ?: break
 			} while (depth == node.depth)

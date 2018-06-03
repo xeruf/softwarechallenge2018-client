@@ -21,7 +21,9 @@ fun Collection<Move>.str(): String = joinToString(prefix = "| ", separator = "\n
 fun Move.str() = "Move[${actions.joinToString { it.str() }}]"
 
 fun Action.str() = when (this) {
-	is Advance -> "Advance $distance"
+	is Advance -> "Advance$distance"
+	is Card -> "$type${if(value != 0) value.toString() else ""}"
+	is ExchangeCarrots -> "Exchange$value"
 	else -> toString().substringBefore(" order")
 }
 

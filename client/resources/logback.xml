@@ -7,8 +7,7 @@
 		</layout>
 	</appender>
 	
-	<logger name="sc.networking.clients.XStreamClient" level="warn" />
-	<root level="info">
+	<root level="WARN">
 		<appender-ref ref="STDOUT" />
 	</root>
 	
