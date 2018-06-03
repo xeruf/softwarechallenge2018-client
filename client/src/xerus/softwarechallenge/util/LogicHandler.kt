@@ -115,11 +115,8 @@ abstract class LogicHandler : IGameHandler {
 			move.setOrderInActions()
 			try {
 				move.perform(moveState)
-				moveState.nextPlayer(false)
-				if (best.points < evaluate(moveState)) {
-					moveState.nextPlayer()
+				if (evaluate(moveState, otherPlayerColor) > best.points)
 					best.obj = Pair(move, moveState)
-				}
 			} catch (exception: Exception) {
 				logger.warn("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
 			}
@@ -143,7 +140,7 @@ abstract class LogicHandler : IGameHandler {
 	
 	/** bewertet die gegebene Situation
 	 * @return Einschätzung der gegebenen Situation in Punkten */
-	abstract fun evaluate(state: GameState): Double
+	abstract fun evaluate(state: GameState, color: PlayerColor = myColor): Double
 	
 	abstract fun defaultParams(): DoubleArray
 	
@@ -178,9 +175,9 @@ abstract class LogicHandler : IGameHandler {
 	abstract fun Player.str(): String
 	
 	fun GameState.str() =
-			("GameState: Zug $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +
+			"GameState: Zug $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +
 					" - current: ${currentPlayer.str()}\n" +
-					" - other: ${otherPlayer.str()}")
+					" - other: ${otherPlayer.str()}"
 	
 	protected fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
@@ -216,12 +213,11 @@ abstract class LogicHandler : IGameHandler {
 			}
 	
 	/**
-	 * tests a Move against this [GameState] and then executes a move for the enemy player
+	 * tests a Move against this [GameState] and then executes a move for the enemy player if requested
 	 *
-	 * @param state gegebener State
-	 * @param move  der zu testende Move
 	 * @param clone if the state should be cloned prior to performing
-	 * @return null, wenn der Move fehlerhaft ist, sonst den GameState nach dem Move
+	 * @param moveOther
+	 * @return null if there was an error, otherwise the GameState after the performing the Move
 	 */
 	protected fun GameState.test(move: Move, clone: Boolean = true, moveOther: Boolean = true): GameState? {
 		val newState = clone()
@@ -229,30 +225,28 @@ abstract class LogicHandler : IGameHandler {
 			move.setOrderInActions()
 			move.perform(newState)
 			val bestState = Rater<GameState>()
-			if (moveOther && newState.turn < 60 && newState.otherPlayer.fieldIndex != 64) {
-				for (otherMove in newState.findMoves()) {
-					val moveState = newState.clone()
-					otherMove.setOrderInActions()
-					try {
-						otherMove.perform(moveState)
-						moveState.nextPlayer(false)
-						if (bestState.update(moveState, evaluate(moveState)))
-							moveState.nextPlayer()
-					} catch (exception: Throwable) {
-						logger.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
+			if (moveOther) {
+				if (newState.turn < 60 && newState.otherPlayer.fieldIndex != 64) {
+					for (otherMove in newState.findMoves()) {
+						val moveState = newState.clone()
+						otherMove.setOrderInActions()
+						try {
+							otherMove.perform(moveState)
+							bestState.update(moveState, evaluate(moveState, myColor.opponent()))
+						} catch (exception: Throwable) {
+							logger.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
+							newState.nextPlayer(newState.turn < 60)
+						}
 					}
+				} else {
+					newState.nextPlayer(newState.turn < 60)
 				}
 			}
 			
 			validMoves++
-			return bestState.obj ?: newState.apply {
-				if(newState.turn < 60) {
-					turn += 1
-					switchCurrentPlayer()
-				}
-			}
+			return bestState.obj ?: newState
 		} catch (e: InvalidGameStateException) {
-			logger.error(e.toString())
+			logger.error("$e in ${this.str()}")
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)

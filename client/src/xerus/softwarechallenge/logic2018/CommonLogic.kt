@@ -2,6 +2,7 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
+import sc.shared.PlayerColor
 import xerus.ktutil.forRange
 import xerus.ktutil.square
 import xerus.ktutil.to
@@ -22,26 +23,25 @@ abstract class CommonLogic : LogicBase() {
 	@F val carrotParam = params[0]
 	@F val saladParam = params[1]
 	
-	override fun evaluate(state: GameState): Double {
-		val player = state.currentPlayer
+	override fun evaluate(state: GameState, color: PlayerColor): Double {
+		val player = state.getPlayer(color)
 		var points = player.fieldIndex + 120.0 - state.turn * 3
 		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
 		
 		// Salat und Karten
-		points -= saladParam * player.salads * (-Math.log(distanceToGoal) + 5)
+		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
 		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
 		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
 		points += player.cards.size * 2
 		
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
-		points -= carrotPoints(state.otherPlayer.carrots.toDouble(), 65.minus(state.otherPos).toDouble())
+		val opponent = state.getPlayer(color.opponent())
+		points -= carrotPoints(opponent.carrots.toDouble(), 65.minus(opponent.fieldIndex).toDouble())
 		
 		// Zieleinlauf
 		return points + goalPoints(player)
 	}
-	
-	fun shouldDropCarrots(amount: Int, carrots: Int, pos: Int) = carrots > amount + 74 - pos && pos > 42
 	
 	override fun GameState.findMoves(): List<Move> {
 		val player = currentPlayer
@@ -50,7 +50,7 @@ abstract class CommonLogic : LogicBase() {
 		if (currentField == FieldType.SALAD && player.lastNonSkipAction !is EatSalad)
 			return listOf(Move(EatSalad()))
 		
-		//val allMoves = ArrayList<Move>()
+		val allMoves = ArrayList<Move>()
 		val moves = ArrayList<Move>()
 		if (currentField == FieldType.CARROT) {
 			if (shouldDropCarrots(10, player.carrots, index))
@@ -59,10 +59,10 @@ abstract class CommonLogic : LogicBase() {
 		}
 		
 		fun newMove(move: Move, condition: Boolean) {
-			//if (condition)
-			moves.add(move)
-			//else if (moves.isEmpty())
-			//	allMoves.add(move)
+			if (condition)
+				moves.add(move)
+			else if (moves.isEmpty())
+				allMoves.add(move)
 		}
 		
 		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, index)
@@ -153,7 +153,7 @@ abstract class CommonLogic : LogicBase() {
 		
 		return when {
 			moves.isNotEmpty() -> moves
-			//allMoves.isNotEmpty() -> allMoves
+			allMoves.isNotEmpty() -> allMoves
 			else -> skip
 		}
 	}

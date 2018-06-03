@@ -3,7 +3,6 @@
 package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
-import sc.shared.PlayerColor
 import xerus.ktutil.createDir
 import xerus.ktutil.createFile
 import xerus.ktutil.forRange
@@ -17,11 +16,13 @@ import java.util.*
 object Jumper2 : CommonLogic() {
 	
 	/** Karotten, Salat */
-	override fun defaultParams() = doubleArrayOf(10.0, 10.0)
+	override fun defaultParams() = doubleArrayOf(10.0, 8.0)
 	
 	fun statePoints(state: GameState): Double {
 		val player = state.currentPlayer
-		return player.fieldIndex + carrotPoints(player.carrots.toDouble(), 64.minus(player.fieldIndex).toDouble())
+		return player.fieldIndex + carrotPoints(player.carrots.toDouble(), 64.minus(player.fieldIndex).toDouble()) +
+				(currentPlayer.salads - state.currentPlayer.salads) * saladParam * (5 - Math.log(65.0 - state.currentPlayer.fieldIndex)) +
+				goalPoints(state.currentPlayer)
 	}
 	
 	fun points(actions: List<Action>, state: GameState) =
@@ -31,19 +32,14 @@ object Jumper2 : CommonLogic() {
 				actions.sumByDouble {
 					if (it is Card)
 						-when (it.type) {
-							CardType.TAKE_OR_DROP_CARROTS -> carrotParam / 2
-							CardType.EAT_SALAD -> saladParam / 2
+							CardType.TAKE_OR_DROP_CARROTS -> carrotParam
+							CardType.EAT_SALAD -> saladParam
 							else -> 2.0
 						}
 					else
 						0.0
-				} + when (state.fieldOfCurrentPlayer()) {
-					FieldType.GOAL -> 100.0
-					FieldType.CARROT -> -1.0
-					FieldType.SALAD -> saladParam
-					else -> 0.0
 				}
-			} + (currentPlayer.salads - state.currentPlayer.salads) * saladParam
+			}
 	
 	// 1.7: (1.1.pow(-((x - y * 5) / (30 + y)).square) * 10 + (x / (100 - y)))
 	// 1.6: (1.01).pow((player.carrots.minus(distance * 4)).square / (- 30 - distance))
@@ -66,10 +62,10 @@ object Jumper2 : CommonLogic() {
 			val otherField = fieldTypeAt(currentState.otherPos)
 			if (otherField == FieldType.POSITION_1) {
 				if (newState.currentPlayer.fieldIndex > currentState.otherPos)
-					evaluation -= carrotParam / 3
+					evaluation += carrotParam / 3
 			} else if (otherField == FieldType.POSITION_2)
-				if (currentState.otherPos > newState.currentPlayer.fieldIndex)
-					evaluation -= carrotParam
+				if (newState.currentPlayer.fieldIndex < currentState.otherPos)
+					evaluation += carrotParam
 			mp.update(move, evaluation)
 			// Queue
 			queue.add(Node(move, newState, points, evaluation))
@@ -91,7 +87,7 @@ object Jumper2 : CommonLogic() {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5
+		var maxDepth = 5.coerceAtMost(61.minus(currentTurn) / 2)
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path? = null
@@ -99,8 +95,6 @@ object Jumper2 : CommonLogic() {
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
-			if (node.gamestate.turn > 57)
-				maxDepth = depth
 			do {
 				nodeState = node.gamestate
 				moves = nodeState.findMoves()
@@ -110,7 +104,7 @@ object Jumper2 : CommonLogic() {
 					// Evaluation
 					val points = node.points + points(move.actions, newState)
 					val evaluation = points + statePoints(newState)
-					if (evaluation < mp.points - 50)
+					if (evaluation < mp.points - 20)
 						return@forRange
 					val update = mp.update(node.move, evaluation)
 					// Debug
@@ -124,7 +118,7 @@ object Jumper2 : CommonLogic() {
 					if (newState.currentPlayer.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
-						queue.add(node.update(newState, points, subDir))
+						queue.add(node.update(newState, points + evaluation / 3, subDir))
 				}
 				if (Timer.runtime() > 1700)
 					break@loop
@@ -143,7 +137,7 @@ object Jumper2 : CommonLogic() {
 		queue.clear()
 	}
 	
-	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
+	private val queue: Queue<Node> = ArrayDeque<Node>(8000)
 	
 	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
 		

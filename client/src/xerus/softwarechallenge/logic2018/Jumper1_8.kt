@@ -46,7 +46,7 @@ object Jumper1_8 : CommonLogic() {
 		// Breitensuche
 		mp.clear()
 		depth = 1
-		var maxDepth = 5
+		var maxDepth = 5.coerceAtMost(61.minus(currentTurn) / 2)
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path? = null
@@ -54,8 +54,6 @@ object Jumper1_8 : CommonLogic() {
 		loop@ while (depth < maxDepth && Timer.runtime() < 1000 && queue.size > 0) {
 			acceptedMoves = 0
 			depth = node.depth
-			if (node.gamestate.turn > 57)
-				maxDepth = depth
 			val divider = depth.toDouble().pow(0.3)
 			do {
 				nodeState = node.gamestate
@@ -98,7 +96,7 @@ object Jumper1_8 : CommonLogic() {
 		queue.clear()
 	}
 	
-	private val queue: Queue<Node> = ArrayDeque<Node>(16000)
+	private val queue: Queue<Node> = ArrayDeque<Node>(8000)
 	
 	
 	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
