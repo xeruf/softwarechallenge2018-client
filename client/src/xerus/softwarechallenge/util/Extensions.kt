@@ -27,3 +27,13 @@ fun Action.str() = when (this) {
 	else -> toString().substringBefore(" order")
 }
 
+
+inline fun FieldType.str() = when (this) {
+	FieldType.POSITION_1 -> "P1"
+	FieldType.POSITION_2 -> "P2"
+	FieldType.HEDGEHOG -> "☼"
+	FieldType.CARROT -> "❦"
+	FieldType.SALAD -> "❀"
+	FieldType.HARE -> "✌"
+	else -> toString()
+}

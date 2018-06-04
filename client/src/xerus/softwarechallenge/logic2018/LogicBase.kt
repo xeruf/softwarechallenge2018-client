@@ -4,7 +4,9 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
-import xerus.softwarechallenge.util.*
+import xerus.softwarechallenge.util.F
+import xerus.softwarechallenge.util.LogicHandler
+import xerus.softwarechallenge.util.add
 import java.util.*
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel
@@ -14,25 +16,6 @@ import java.util.*
 abstract class LogicBase : LogicHandler() {
 	
 	@F val skip = listOf(Move(Skip()))
-	
-	override fun Player.str() =
-			this.strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
-	
-	protected inline fun Player.strShort() =
-			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots ❀$salads"
-	
-	protected inline fun Player.strShortest() =
-			"$fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots"
-	
-	protected inline fun FieldType.str() = when (this) {
-		FieldType.POSITION_1 -> "P1"
-		FieldType.POSITION_2 -> "P2"
-		FieldType.HEDGEHOG -> "☼"
-		FieldType.CARROT -> "❦"
-		FieldType.SALAD -> "❀"
-		FieldType.HARE -> "✌"
-		else -> toString()
-	}
 	
 	protected inline fun Player.gewonnen() = fieldIndex == 64
 	

@@ -181,13 +181,18 @@ abstract class LogicHandler : IGameHandler {
 		val dran = state.currentPlayer
 		if (!::myColor.isInitialized && client.color != null) {
 			myColor = client.color
-			logger.info("Ich bin {}", myColor)
-			logger.info(state.str())
+			logger.info("Ich bin {}, " + state.str(), myColor)
 		}
 		logger.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
 	}
 	
-	abstract fun Player.str(): String
+	fun Player.str() = strShort() + " [${cards.joinToString { it.name }}] Last: ${lastNonSkipAction?.str()}"
+	
+	protected inline fun Player.strShort() =
+			"$playerColor on $fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots ❀$salads"
+	
+	protected inline fun Player.strShortest() =
+			"$fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots"
 	
 	fun GameState.str() =
 			"GameState: Zug $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +

@@ -52,7 +52,7 @@ val gcDebugParams = listOf(
 application {
 	applicationName = "Jumper 1"
 	mainClassName = "xerus.softwarechallenge.StarterKt"
-	applicationDefaultJvmArgs = javaArgs + cms + gcDebugParams
+	applicationDefaultJvmArgs = javaArgs + cms + (if (properties["gc"] != null) gcDebugParams else emptyList())
 }
 
 tasks {
@@ -74,7 +74,7 @@ tasks {
 					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar
 					args=1
 					fi
-					java ${(javaArgs + cms + (if (properties["gc"] == null) "" else gcDebugParams)).joinToString(" ")} -jar ${'$'}client "${'$'}{@:${'$'}args}"
+					java ${(javaArgs + cms + (if (properties["nogc"] == null) gcDebugParams else emptyList())).joinToString(" ")} -jar ${'$'}client "${'$'}{@:${'$'}args}"
 				""".trimIndent())
 				close()
 			}

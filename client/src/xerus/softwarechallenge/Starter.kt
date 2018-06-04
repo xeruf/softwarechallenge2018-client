@@ -1,14 +1,11 @@
 package xerus.softwarechallenge
 
 import jargs.gnu.CmdLineParser
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import sc.plugin2018.AbstractClient
 import sc.plugin2018.IGameHandler
 import sc.shared.SharedConfiguration
 import xerus.ktutil.getResource
 import xerus.ktutil.nullIfEmpty
-import xerus.ktutil.reflectField
 import xerus.softwarechallenge.util.debugLevel
 import xerus.softwarechallenge.util.evolution
 import xerus.softwarechallenge.util.strategy
@@ -44,8 +41,9 @@ fun main(args: Array<String>) {
 	evolution = parser.getOptionValue(evolutionOption) as Int?
 	
 	val clientClass = (parser.getOptionValue(clientOption) as String?)
-	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass 
-			?: getResource("activeclient")?.readText()?.nullIfEmpty() ?: "Jumper1_8"}").kotlin.objectInstance as IGameHandler
+	val handler = Class.forName("xerus.softwarechallenge.logic2018.${clientClass
+			?: getResource("activeclient")?.readText()?.nullIfEmpty()
+			?: "Jumper1_9"}").kotlin.objectInstance as IGameHandler
 	
 	// einen neuen Client erzeugen
 	try {
@@ -68,8 +66,7 @@ java -jar mississippi_queen_player.jar
 				[{-c,--client} client]
 				
 Example:
-java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy 10.0,5.0 --client Special
-""")
+java -jar player.jar --host 127.0.0.1 --port 10500 --reservation MQ --strategy 10.0,5.0 --client Special""")
 }
 
 

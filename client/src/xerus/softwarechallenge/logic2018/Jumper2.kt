@@ -25,7 +25,7 @@ object Jumper2 : CommonLogic() {
 				goalPoints(state.currentPlayer)
 	}
 	
-	fun points(actions: List<Action>, state: GameState) =
+	fun points(actions: List<Action>) =
 			if (actions[0] is EatSalad) {
 				1.0
 			} else {
@@ -41,12 +41,6 @@ object Jumper2 : CommonLogic() {
 				}
 			}
 	
-	// 1.7: (1.1.pow(-((x - y * 5) / (30 + y)).square) * 10 + (x / (100 - y)))
-	// 1.6: (1.01).pow((player.carrots.minus(distance * 4)).square / (- 30 - distance))
-	// 1.5: 1.2.pow(-((x-d*4)/(30+d)).square)
-	// 1.5: 1.01.pow(-(x-d*4).square/(100+d))
-	// 1.4: -(x/65-fieldIndex-4)²+10+fieldIndex
-	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
 	override fun findBestMove(): Move? {
 		val mp = MP()
@@ -54,25 +48,23 @@ object Jumper2 : CommonLogic() {
 		var moves = currentState.findMoves()
 		for (move in moves) {
 			val newState = currentState.test(move) ?: continue
-			if (newState.currentPlayer.gewonnen())
+			if (newState.me.gewonnen())
 				return move
 			// Evaluation
-			val points = points(move.actions, newState)
+			val points = points(move.actions)
 			var evaluation = points + statePoints(newState)
 			val otherField = fieldTypeAt(currentState.otherPos)
-			if (otherField == FieldType.POSITION_1) {
-				if (newState.currentPlayer.fieldIndex > currentState.otherPos)
-					evaluation += carrotParam / 3
-			} else if (otherField == FieldType.POSITION_2)
-				if (newState.currentPlayer.fieldIndex < currentState.otherPos)
-					evaluation += carrotParam
+			if (otherField == FieldType.POSITION_1 && newState.me.fieldIndex > currentState.otherPos)
+				evaluation += carrotParam / 3
+			if (otherField == FieldType.POSITION_2 && newState.me.fieldIndex < currentState.otherPos)
+				evaluation += carrotParam
 			mp.update(move, evaluation)
 			// Queue
 			queue.add(Node(move, newState, points, evaluation))
 		}
 		
 		var bestMove = mp.obj
-		if (currentState.turn > 57)
+		if (currentTurn > 57)
 			return bestMove
 		if (queue.size < 2) {
 			if (bestMove != null) {
@@ -85,7 +77,6 @@ object Jumper2 : CommonLogic() {
 		}
 		
 		// Breitensuche
-		mp.clear()
 		depth = 1
 		var maxDepth = 5.coerceAtMost(59.minus(currentTurn) / 2)
 		var node = queue.poll()
@@ -102,7 +93,7 @@ object Jumper2 : CommonLogic() {
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex) ?: return@forRange
 					// Evaluation
-					val points = node.points + points(move.actions, newState)
+					val points = node.points + points(move.actions)
 					val evaluation = points + statePoints(newState)
 					if (evaluation < mp.points - 20)
 						return@forRange
@@ -110,12 +101,15 @@ object Jumper2 : CommonLogic() {
 					// Debug
 					acceptedMoves++
 					if (isDebug) {
-						if (update)
+						subDir = node.dir?.resolve("%.1f: %s ㊝%s ✖%s ${newState.enemy.lastNonSkipAction.str()}"
+								.format(evaluation, move.str(), newState.me.strShortest(), newState.enemy.strShortest()))?.createDir()
+						if (update) {
 							node.dir?.resolve("Best: %.1f - %s".format(evaluation, move.str()))?.createFile()
-						subDir = node.dir?.resolve("%.1f - %s to %s".format(evaluation, move.str(), newState.currentPlayer.strShort()))?.createDir()
+							println(currentLogDir?.relativize(subDir))
+						}
 					}
 					// Queue
-					if (Timer.runtime() > 1000 || newState.currentPlayer.gewonnen())
+					if (Timer.runtime() > 1000 || newState.me.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
 						queue.add(node.update(newState, points + evaluation / 3, subDir))
