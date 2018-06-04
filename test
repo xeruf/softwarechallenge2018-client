@@ -30,7 +30,7 @@ dir="/tmp/softwarechallenge2018_$stamp"
 
 cd /tmp
 git clone file://$projects_dir/softwarechallenge2018 $dir --depth $depth
-trap 'rm -rf $dir' INT TERM EXIT
+trap 'cp -r "$dir/testserver/logs" "$tests" && rm -rf $dir' INT TERM EXIT
 if [ -d util ]
 then git -C util fetch && echo "util: $(git -C util reset --hard origin/master)"
 else git clone file://$projects_dir/util --depth 1
@@ -53,5 +53,5 @@ tests="$projects_dir/softwarechallenge2018/logs/tests$c"
 mkdir -p $tests
 log="$tests/$stamp-$new-$old.log"
 echo "$1 vs $2" > $log
-./duel $params -p $port $new $old | tee -ia $log
-cp "$dir/testserver/logs" "tests/logs"
+. ./duel $params -p $port $new $old | tee -ia $log
+

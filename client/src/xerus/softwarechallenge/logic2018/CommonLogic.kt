@@ -70,7 +70,7 @@ abstract class CommonLogic : LogicBase() {
 			moves.addMove(FallBack())
 		
 		val otherPos = otherPos
-		forRange(1, GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - player.fieldIndex) + 1) { i ->
+		forRange(1, GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - index) + 1) { i ->
 			val newPos = index + i
 			val newType = fieldTypeAt(newPos)
 			if ((otherPos == newPos && newPos != 64) || newType == FieldType.HEDGEHOG)

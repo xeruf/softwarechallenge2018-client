@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+	compile(fileTree("../client/lib"))
 	compile("xerus.util", "javafx")
 	compile("xerus.util", "utilities")
 	compile("jargs", "jargs", "1.0")

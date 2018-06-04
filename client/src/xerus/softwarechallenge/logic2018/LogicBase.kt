@@ -93,7 +93,7 @@ abstract class LogicBase : LogicHandler() {
 			advanceTo(field).addCard(card, value)
 	
 	override fun GameState.simpleMove(): Move {
-		val possibleMoves = findMoves()
+		val possibleMoves = possibleMoves
 		val winningMoves = ArrayList<Move>(4)
 		val selectedMoves = ArrayList<Move>()
 		val player = currentPlayer

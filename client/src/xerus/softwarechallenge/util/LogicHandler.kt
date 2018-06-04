@@ -81,11 +81,11 @@ abstract class LogicHandler : IGameHandler {
 		if (move.invalid()) {
 			if (move != null)
 				logger.error("Invalid findBestMove: ${move.str()}")
-			move = currentState.quickMove().first
+			move = currentState.quickMove()?.first
 		}
 		
 		if (move.invalid()) {
-			logger.info("No valid Move: {} - using simpleMove!", move)
+			logger.error("No valid quickMove: {} - using simpleMove!", move)
 			move = currentState.simpleMove()
 		}
 		
@@ -107,7 +107,7 @@ abstract class LogicHandler : IGameHandler {
 	val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
-	protected fun GameState.quickMove(): Pair<Move, GameState> {
+	protected fun GameState.quickMove(): Pair<Move, GameState>? {
 		val moves = findMoves()
 		val best = Rater<Pair<Move, GameState>>()
 		for (move in moves) {
@@ -115,12 +115,27 @@ abstract class LogicHandler : IGameHandler {
 			move.setOrderInActions()
 			try {
 				move.perform(moveState)
-				best.update(Pair(move, moveState), evaluate(moveState, currentPlayerColor))
+				if(turn < 58) {
+					moveState.nextPlayer()
+					for (move2 in moveState.findMoves()) {
+						val moveState2 = moveState.clone()
+						move2.setOrderInActions()
+						try {
+							move2.perform(moveState2)
+							best.update(Pair(move, moveState), evaluate(moveState2, currentPlayerColor))
+						} catch (exception: Exception) {
+							logger.error("Fehler bei quickMove2: ${move2.str()} caused $exception\n" + str())
+						}
+					}
+					moveState.nextPlayer(false)
+				} else {
+					best.update(Pair(move, moveState), evaluate(moveState, currentPlayerColor))
+				}
 			} catch (exception: Exception) {
-				logger.warn("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
+				logger.error("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
 			}
 		}
-		return best.obj!!
+		return best.obj
 	}
 	
 	/** if a predefined Move is appropriate then this method can return it, otherwise null */
@@ -167,6 +182,7 @@ abstract class LogicHandler : IGameHandler {
 		if (!::myColor.isInitialized && client.color != null) {
 			myColor = client.color
 			logger.info("Ich bin {}", myColor)
+			logger.info(state.str())
 		}
 		logger.info("Zug: {} Dran: {} - " + dran.str(), state.turn, dran.playerColor.identify())
 	}
@@ -233,7 +249,7 @@ abstract class LogicHandler : IGameHandler {
 							otherMove.perform(moveState)
 							bestState.update(moveState, evaluate(moveState, myColor.opponent()))
 						} catch (exception: Throwable) {
-							logger.warn("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
+							logger.error("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
 							newState.nextPlayer(newState.turn < 60)
 						}
 					}
@@ -245,11 +261,13 @@ abstract class LogicHandler : IGameHandler {
 			validMoves++
 			return bestState.obj ?: newState
 		} catch (e: InvalidGameStateException) {
-			logger.error("$e current: $currentTurn")
+			logger.error("$e ${move.str()} current: $currentTurn")
 		} catch (e: InvalidMoveException) {
 			invalidMoves++
 			if (debugLevel > 0)
-				logger.warn("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
+				logger.error("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
+		} catch (e: Throwable) {
+			logger.error("Testing ${move.str()} failed!", e)
 		}
 		return null
 	}

@@ -102,7 +102,6 @@ class TurnExtractor : Base() {
 						testserver.destroy()
 					}
 				})
-			turnFile.deleteOnExit()
 			return "Testerver läuft mit " + turnFile.name
 		}
 		return "Turn in $turnFile geschrieben"

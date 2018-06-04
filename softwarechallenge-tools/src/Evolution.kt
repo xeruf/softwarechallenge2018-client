@@ -182,7 +182,7 @@ object Evolution : EvolutionBase() {
 				println("Wrote \"$s\" to $outputFile")
 				if (games > 15) {
 					val bcd = binominalCD(won, games)
-					if (bcd < 0.3)
+					if (bcd < 0.4)
 						resetStrategy()
 					if (bestLine.isInitialized() || (games > 50 && bcd > 0.95)) {
 						bestFile.safe {

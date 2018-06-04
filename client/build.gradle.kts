@@ -44,7 +44,7 @@ val cms = listOf("-XX:+UseConcMarkSweepGC"
 		, "-XX:CMSInitiatingOccupancyFraction=80", "-XX:+UseCMSInitiatingOccupancyOnly"
 		, "-XX:+ScavengeBeforeFullGC", "-XX:+CMSScavengeBeforeRemark")
 
-val gcDebugParams = if (properties["gc"] == null) emptyList() else listOf(
+val gcDebugParams = listOf(
 		"-XX:+PrintGCDetails", "-XX:+PrintGCTimeStamps"
 		, "-XX:+PrintPromotionFailure", "-noverify"
 )
@@ -74,7 +74,7 @@ tasks {
 					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar
 					args=1
 					fi
-					java ${(javaArgs + cms + gcDebugParams).joinToString(" ")} -jar ${'$'}client "${'$'}{@:${'$'}args}"
+					java ${(javaArgs + cms + (if (properties["gc"] == null) "" else gcDebugParams)).joinToString(" ")} -jar ${'$'}client "${'$'}{@:${'$'}args}"
 				""".trimIndent())
 				close()
 			}
