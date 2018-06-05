@@ -26,7 +26,7 @@ abstract class LogicBase : LogicHandler() {
 	fun shouldDropCarrots(amount: Int, carrots: Int, pos: Int) = carrots > amount + 74 - pos && pos > 42
 	
 	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64){
-		1000 - player.carrots * 10 - if((player.lastNonSkipAction as? Advance)?.let { fieldTypeAt(64 - it.distance) in positions } == true) 100 else 0
+		1000 - player.carrots * 10 - if((player.lastNonSkipAction as? Advance)?.let { fieldTypeAt(64 - it.distance) in positions } == true) 50 else 0
 	} else 0
 	
 	/** clones the move and adds a Card Action to it */

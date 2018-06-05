@@ -36,7 +36,7 @@ abstract class CommonLogic : LogicBase() {
 	override fun evaluate(state: GameState, color: PlayerColor): Double {
 		val player = state.getPlayer(color)
 		var points = player.fieldIndex + 120.0 - state.turn * 3
-		val distanceToGoal = 65.minus(player.fieldIndex).toDouble()
+		val distanceToGoal = player.distanceToGoal
 		
 		// Salat und Karten
 		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
@@ -46,8 +46,7 @@ abstract class CommonLogic : LogicBase() {
 		
 		// Karotten
 		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
-		val opponent = state.getPlayer(color.opponent())
-		points -= carrotPoints(opponent.carrots.toDouble(), 65.minus(opponent.fieldIndex).toDouble())
+		points -= carrotPoints(state.getPlayer(color.opponent()))
 		
 		// Zieleinlauf
 		return points + goalPoints(player)

@@ -3,6 +3,7 @@ package xerus.softwarechallenge.logic2018
 import sc.plugin2018.CardType
 import sc.plugin2018.GameState
 import sc.plugin2018.Move
+import sc.shared.PlayerColor
 import xerus.ktutil.*
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.util.F
@@ -14,7 +15,26 @@ import kotlin.math.pow
 
 object Jumper1_9 : CommonLogic() {
 	
-	/** Karotten, Salat, Threshold */
+	fun evaluate(state: GameState): Double {
+		val player = state.me
+		var points = 120.0 - state.turn * 3
+		val distanceToGoal = player.distanceToGoal
+		
+		// Salat und Karten
+		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
+		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
+		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
+		points += player.cards.size * 2
+		
+		// Karotten
+		points += carrotPoints(player.carrots.toDouble(), distanceToGoal) * 3
+		points -= carrotPoints(state.enemy)
+		
+		// Zieleinlauf
+		return points + goalPoints(player)
+	}
+	
+	/** Karotten, Salat */
 	override fun defaultParams() = doubleArrayOf(3.0, 30.0)
 	
 	/** sucht den besten Move per Breitensuche basierend auf dem aktuellen GameState */
@@ -28,7 +48,8 @@ object Jumper1_9 : CommonLogic() {
 				return move
 			// Evaluation
 			val points = evaluate(newState)
-			mp.update(move, points)
+			val evaluation = points + newState.me.fieldIndex
+			mp.update(move, evaluation)
 			// Queue
 			queue.add(Node(move, newState, points))
 		}
@@ -70,16 +91,17 @@ object Jumper1_9 : CommonLogic() {
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
 					// Evaluation
 					val points = evaluate(newState) / divider + node.points
-					if (points < mp.points - 50.0 / divider)
+					val evaluation = points + newState.me.fieldIndex
+					if (evaluation < mp.points - 50.0 / divider)
 						return@forRange
-					val update = mp.update(node.move, points)
+					val update = mp.update(node.move, evaluation)
 					// Debug
 					acceptedMoves++
 					if (isDebug) {
 						subDir = node.dir?.resolve("%.1f: %s ㊝%s ✖%s ${newState.enemy.lastNonSkipAction.str()}"
-								.format(points, move.str(), newState.me.strShortest(), newState.enemy.strShortest()))?.createDir()
+								.format(evaluation, move.str(), newState.me.strShortest(), newState.enemy.strShortest()))?.createDir()
 						if (update) {
-							node.dir?.resolve("Best: %.1f - %s".format(points, move.str()))?.createFile()
+							node.dir?.resolve("Best: %.1f - %s".format(evaluation, move.str()))?.createFile()
 							println(currentLogDir?.relativize(subDir))
 						}
 					}
