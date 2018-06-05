@@ -41,7 +41,7 @@ abstract class CommonLogic : LogicBase() {
 		// Salat und Karten
 		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
 		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
-		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
+		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam, 0.0)
 		points += player.cards.size * 2
 		
 		// Karotten
@@ -76,7 +76,7 @@ abstract class CommonLogic : LogicBase() {
 		
 		val hedgehog = getPreviousFieldByType(FieldType.HEDGEHOG, index)
 		if (hedgehog != -1 && !isOccupied(hedgehog))
-			moves.addMove(FallBack())
+			moves.add(fallback)
 		
 		val otherPos = otherPos
 		forRange(1, GameRuleLogic.calculateMoveableFields(player.carrots).coerceAtMost(64 - index) + 1) { i ->

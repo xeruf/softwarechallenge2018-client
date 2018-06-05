@@ -6,7 +6,7 @@ import java.io.Writer
 import java.util.Arrays
 import java.util.Scanner
 
-val c = properties["c"] as String? ?: "1_9"
+val c = properties["c"] as String? ?: "3"
 val client = "Jumper$c"
 val clientParams = listOf("-c", client)
 
@@ -52,7 +52,7 @@ val gcDebugParams = listOf(
 application {
 	applicationName = "Jumper 1"
 	mainClassName = "xerus.softwarechallenge.StarterKt"
-	applicationDefaultJvmArgs = javaArgs + cms + (if (properties["gc"] != null) gcDebugParams else emptyList())
+	applicationDefaultJvmArgs = javaArgs + cms + (if (properties["nogc"] == null) gcDebugParams else emptyList())
 }
 
 tasks {
@@ -68,7 +68,7 @@ tasks {
 				write("""
 					#!/usr/bin/env bash
 					if [ $1 ] && [ -f $1 ]
-					then client=$1
+					then client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$1
 					args=2
 					else
 					client=$(dirname "${'$'}{BASH_SOURCE[0]}")/$jumper.jar

@@ -14,6 +14,7 @@ import java.util.*
 abstract class LogicBase : LogicHandler() {
 	
 	@F val skip = listOf(Move(Skip()))
+	@F val fallback = Move(FallBack())
 	
 	@F val positions = arrayOf(FieldType.POSITION_1, FieldType.POSITION_2)
 	

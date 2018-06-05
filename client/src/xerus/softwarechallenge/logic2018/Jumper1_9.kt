@@ -23,7 +23,7 @@ object Jumper1_9 : CommonLogic() {
 		// Salat und Karten
 		points -= saladParam * player.salads * (5 - Math.log(distanceToGoal))
 		points += player.ownsCardOfType(CardType.EAT_SALAD).to(saladParam * 0.8, 0.0)
-		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam * 1.3, 0.0)
+		points += player.ownsCardOfType(CardType.TAKE_OR_DROP_CARROTS).to(carrotParam, 0.0)
 		points += player.cards.size * 2
 		
 		// Karotten

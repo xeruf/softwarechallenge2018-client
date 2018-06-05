@@ -1,19 +1,15 @@
 **/log/
 **/logs/
 **/*.log*
-/client/games
 start*
+/client/games
 /client/resources/sources
 /client/resources/activeclient
 version
 
-/issues
 /clients
 /*.zip
 /*.jar
 /softwarechallenge-tools/*.jar
 
 /evolution*
-
-**/.idea/workspace.xml
-**/.idea/libraries

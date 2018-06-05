@@ -1,10 +1,9 @@
 package xerus.softwarechallenge.logic2018
 
-import sc.plugin2018.GameState
-import sc.plugin2018.Move
+import sc.plugin2018.*
 import xerus.ktutil.createDir
-import xerus.ktutil.forRange
 import xerus.ktutil.helpers.Timer
+import xerus.ktutil.to
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
 import xerus.softwarechallenge.util.str
@@ -23,12 +22,16 @@ object Jumper3 : CommonLogic() {
 		val mp = MP()
 		
 		var moves = currentState.findMoves()
+		var faller = currentPlayer.lastNonSkipAction is FallBack
+		var feeder = currentPlayer.lastNonSkipAction is ExchangeCarrots
+		println("Feeder: $feeder")
 		for (move in moves) {
 			val newState = currentState.test(move, moveOther = false) ?: continue
 			if (newState.me.gewonnen())
 				return move
 			// Evaluation
-			val points = evaluate(newState)
+			val points = evaluate(newState) +
+					(faller && move == fallback).to(-3, 0) + (feeder && move.actions[0] is ExchangeCarrots).to(-10, 0)
 			mp.update(move, points)
 			// Queue
 			queue.add(rootNode.rootChild(move, newState, points))
@@ -56,9 +59,15 @@ object Jumper3 : CommonLogic() {
 		var maxDepth = 5.coerceAtMost(60.minus(currentTurn) / 2)
 		var node = queue.pop()
 		var best = 0.0
-		loop@ while (depth < maxDepth && queue.size > 0) {
+		timelog.add("${Timer.runtime()} started breadth-first search")
+		loop@ while (depth <= maxDepth && queue.size > 0 && Timer.runtime() < 1600) {
 			val nodeState = node.popState()
+			timelog.add("${Timer.runtime()} Started node")
+			faller = nodeState.getLastNonSkipAction(myColor) is FallBack
+			feeder = nodeState.getLastNonSkipAction(myColor) is ExchangeCarrots
 			nodeState.findMoves().mapNotNullTo(ArrayList()) { move ->
+				if (Timer.runtime() > 1700)
+					return@mapNotNullTo null
 				val moveState = nodeState.clone()
 				move.setOrderInActions()
 				try {
@@ -77,38 +86,50 @@ object Jumper3 : CommonLogic() {
 					null
 				}
 			}.apply { sortDescending() }.take(2).forEach { stateNode ->
+				if (Timer.runtime() > 1700)
+					return@forEach
 				node.children.add(stateNode)
 				val state = stateNode.popState()
 				var bestLocal = Double.NEGATIVE_INFINITY
 				moves = state.findMoves()
-				forRange(0, moves.size) { i ->
+				val size = moves.size
+				timelog.add("${Timer.runtime()} Processing stateNode, size: $size")
+				var i = 0
+				while (i < size) {
+					timelog.add("$i ${System.currentTimeMillis()}")
 					if (Timer.runtime() > 1700)
-						return@forRange
-					val move = moves[i]
-					val newState = state.test(move, i < moves.lastIndex, false) ?: return@forRange
+						break
+					val move = moves[i++]
+					val newState = state.test(move, i < moves.lastIndex, false) ?: continue
+					timelog.add(System.currentTimeMillis().toString())
 					// Evaluation
-					val points = evaluate(newState) / divider + node.points
+					val points = evaluate(newState) / divider + node.points +
+							(faller && move == fallback).to(-3, 0) + (feeder && move.actions[0] is ExchangeCarrots).to(-10, 0)
+					timelog.add(System.currentTimeMillis().toString())
 					if (points > bestLocal)
 						bestLocal = points
-					if (points < best - 40.0 / divider)
-						return@forRange
+					if (points < best - 35.0 / divider)
+						continue
 					if (points > best)
 						best = points
 					// Debug
 					acceptedMoves++
 					if (isDebug) subDir = node.dir?.resolve("%.1f: %s ㊝%s ✖%s %s".format(points, move.str(), newState.me.strShortest(), newState.enemy.strShortest(), newState.enemy.lastNonSkipAction.str()))?.createDir()
 					// Queue
-					if (Timer.runtime() > 1000 || newState.me.gewonnen())
-						maxDepth = depth + 1
-					if (depth < maxDepth && !state.enemy.gewonnen())
+					if (maxDepth > depth && Timer.runtime() > 1000 || newState.me.gewonnen())
+						maxDepth = depth
+					if (depth < maxDepth)
 						queue.add(stateNode.child(newState, points, subDir, move))
+					timelog.add(System.currentTimeMillis().toString())
 				}
 				stateNode.points = bestLocal
 			}
-			if (Timer.runtime() > 1600)
+			timelog.add("${Timer.runtime()} Finished node")
+			if (Timer.runtime() > 1700)
 				break
 			node = queue.pop()
 			if (node.depth != depth) {
+				timelog.add("${Timer.runtime()} calculating best")
 				val bestNode = rootNode.calculateBest()
 				if (mp.obj != bestNode.move)
 					depthUsed = depth
@@ -119,6 +140,8 @@ object Jumper3 : CommonLogic() {
 				divider = depth.toDouble().pow(0.3)
 			}
 		}
+		if (queue.isEmpty() && depth < 5)
+			logger.warn("Queue empty at depth $depth!")
 		return mp.obj
 	}
 	

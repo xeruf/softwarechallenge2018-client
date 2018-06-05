@@ -58,6 +58,7 @@ abstract class LogicHandler : IGameHandler {
 	
 	override fun onRequestAction() {
 		Timer.start()
+		timelog.clear()
 		validMoves = 0
 		invalidMoves = 0
 		depth = 0
@@ -95,12 +96,12 @@ abstract class LogicHandler : IGameHandler {
 			move = currentState.simpleMove()
 		}
 		
-		if (Timer.runtime() < 100) {
+		if (Timer.runtime() < 300) {
 			logger.info("Invoking GC at ${Timer.runtime()}ms")
 			System.gc()
 		}
 		sendAction(move)
-		logger.info("Zeit: %sms Moves: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
+		logger.info("Zeit: %sms Moves tested: %s/%s Tiefe: %s Genutzt: %s".format(Timer.runtime(), validMoves, invalidMoves, depth, depthUsed))
 		currentLogDir?.renameTo(gameLogDir!!.resolve("turn$currentTurn - ${move?.str()} - ${currentPlayer.str()}"))
 		clear()
 	}
@@ -170,6 +171,7 @@ abstract class LogicHandler : IGameHandler {
 	
 	@F protected var depth: Int = 0
 	@F protected var depthUsed: Int = 0
+	@F protected val timelog = ArrayList<String>()
 	
 	// GRUNDLAGEN
 	
@@ -300,16 +302,19 @@ abstract class LogicHandler : IGameHandler {
 	
 	override fun gameEnded(data: GameResult, color: PlayerColor, errorMessage: String?) {
 		val scores = data.scores
-		val cause = "Ich %s Gegner %s".format(scores[color.ordinal].cause, scores[color.opponent().ordinal].cause)
+		val cause = "Ich %s %s Gegner %s %s".format(scores[color.ordinal].cause, scores[color.ordinal].reason ?: "", scores[color.opponent().ordinal].cause, scores[color.opponent().ordinal].reason ?: "")
 		if (data.winners.isEmpty())
 			logger.warn("Kein Gewinner! Grund: {}", cause)
 		val winner = (data.winners[0] as Player).playerColor
 		val score = getScore(scores, color)
 		val regular = data.isRegular
-		if (regular)
+		if (regular) {
 			logger.warn("Spiel beendet! Gewinner: ${winner.identify()} Punkte: $score Gegner: ${getScore(scores, color.opponent())}")
-		else
+		} else {
 			logger.warn("Spiel unregulaer beendet! Punkte: $score Grund: $cause")
+			if (scores[color.ordinal].cause.name != "REGULAR")
+				println(timelog.joinToString("\n"))
+		}
 		evolution?.let {
 			File("result$it").writeText("${regular.to((color == winner).toInt(), -1)} $score")
 		}
