@@ -88,19 +88,17 @@ object Jumper2_1 : CommonLogic() {
 				nodeState = node.gamestate.quickMove()?.second ?: continue
 				if (Timer.runtime() > 1600)
 					break@loop
-				if (nodeState.otherPlayer.gewonnen() && nodeState.startPlayerColor == myColor) {
-					node = queue.poll() ?: break
-					continue
-				}
 				// todo explore other possible enemy moves
 				moves = nodeState.findMoves()
 				forRange(0, moves.size) { i ->
+					if (Timer.runtime() > 1700)
+						return@forRange
 					val move = moves[i]
 					val newState = nodeState.test(move, i < moves.lastIndex, false) ?: return@forRange
 					// Evaluation
 					val points = node.points + points(move.actions)
 					val evaluation = points + statePoints(newState)
-					if (evaluation < mp.points - 30.0)
+					if (evaluation < mp.points - 30)
 						return@forRange
 					val update = mp.update(node.move, evaluation)
 					// Debug
@@ -116,7 +114,7 @@ object Jumper2_1 : CommonLogic() {
 					// Queue
 					if (Timer.runtime() > 1000 || newState.me.gewonnen())
 						maxDepth = depth
-					if (depth < maxDepth)
+					if (depth < maxDepth && !nodeState.enemy.gewonnen())
 						queue.add(node.update(newState, points, subDir))
 				}
 				if (Timer.runtime() > 1600)

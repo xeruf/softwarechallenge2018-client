@@ -16,7 +16,7 @@ done
 vs() {
 	battlefile="logs/battles/$1 vs $2"
 	[ -f $battlefile ] && mv "$battlefile" "$(dirname $battlefile)/archiv/$(basename $battlefile)"
-	./duel -e -p $port $params $1 $2 | tee -i $battlefile
+	duel -e -p $port $params $1 $2 | tee -i $battlefile
 }
 
 number() {

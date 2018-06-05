@@ -1,10 +1,9 @@
 package xerus.softwarechallenge.logic2018
 
+import sc.plugin2018.CardType
 import sc.plugin2018.GameState
 import sc.plugin2018.Move
-import xerus.ktutil.createDir
-import xerus.ktutil.createFile
-import xerus.ktutil.forRange
+import xerus.ktutil.*
 import xerus.ktutil.helpers.Timer
 import xerus.softwarechallenge.util.F
 import xerus.softwarechallenge.util.MP
@@ -49,7 +48,7 @@ object Jumper1_9 : CommonLogic() {
 		
 		// Breitensuche
 		depth = 1
-		var maxDepth = 5.coerceAtMost(60.minus(currentTurn) / 2)
+		var maxDepth = 5.coerceAtMost(59.minus(currentTurn) / 2)
 		var node = queue.poll()
 		var nodeState: GameState
 		var subDir: Path? = null
@@ -103,13 +102,11 @@ object Jumper1_9 : CommonLogic() {
 		return bestMove
 	}
 	
-	override fun clear() {
-		queue.clear()
-	}
+	private val queue = ArrayDeque<Node>(8000)
 	
-	private val queue: Queue<Node> = ArrayDeque<Node>(8000)
+	override fun clear() = queue.clear()
 	
-	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?) {
+	private class Node(@F val move: Move, @F val gamestate: GameState, @F val points: Double, @F val depth: Int, @F val dir: Path?): Comparable<Node> {
 		
 		constructor(move: Move, state: GameState, points: Double) : this(move, state, points, 1,
 				currentLogDir?.resolve("%.1f - %s".format(points, move.str()))?.createDir())
@@ -117,8 +114,8 @@ object Jumper1_9 : CommonLogic() {
 		fun update(newState: GameState, newPoints: Double, dir: Path?) =
 				Node(move, newState, newPoints, depth + 1, dir)
 		
-		override fun toString() = "Node depth %d %s points %.1f".format(depth, move.str(), points)
-		
+		override fun toString() = "Node{%d for %s P %.1f}".format(depth, move.str(), points)
+		override fun compareTo(other: Node) = points.compareTo(other.points)
 	}
 	
 }

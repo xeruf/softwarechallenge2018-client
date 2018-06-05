@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
@@ -19,6 +21,14 @@ abstract class CommonLogic : LogicBase() {
 	 */
 	protected fun carrotPoints(x: Double, y: Double) =
 			(1.1.pow(-((x - y.pow(1.6)) / (40 + y)).square) * 5 + x / (100 - y)) * carrotParam
+	
+	protected inline fun carrotPoints(player: Player) = carrotPoints(player.carrots.toDouble(), player.distanceToGoal)
+	
+	protected fun saladPoints(salads: Int, distanceToGoal: Double) = saladParam * (currentPlayer.salads - salads) * (5 - Math.log(distanceToGoal))
+	
+	protected inline fun saladPoints(player: Player) = saladPoints(player.salads, player.distanceToGoal)
+	
+	protected inline val Player.distanceToGoal get() = 65.0 - fieldIndex
 	
 	@F val carrotParam = params[0]
 	@F val saladParam = params[1]

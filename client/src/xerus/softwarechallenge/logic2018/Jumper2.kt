@@ -19,10 +19,8 @@ object Jumper2 : CommonLogic() {
 	override fun defaultParams() = doubleArrayOf(10.0, 8.0)
 	
 	fun statePoints(state: GameState): Double {
-		val player = state.currentPlayer
-		return player.fieldIndex + carrotPoints(player.carrots.toDouble(), 64.minus(player.fieldIndex).toDouble()) +
-				(currentPlayer.salads - state.currentPlayer.salads) * saladParam * (5 - Math.log(65.0 - state.currentPlayer.fieldIndex)) +
-				goalPoints(state.currentPlayer)
+		val player = state.me
+		return player.fieldIndex + carrotPoints(player) + goalPoints(player) + saladPoints(player)
 	}
 	
 	fun points(actions: List<Action>) =
@@ -112,7 +110,7 @@ object Jumper2 : CommonLogic() {
 					if (Timer.runtime() > 1000 || newState.me.gewonnen())
 						maxDepth = depth
 					if (depth < maxDepth && !(newState.otherPlayer.gewonnen() && newState.startPlayerColor == myColor))
-						queue.add(node.update(newState, points + evaluation / 3, subDir))
+						queue.add(node.update(newState, points, subDir))
 				}
 				if (Timer.runtime() > 1600)
 					break@loop

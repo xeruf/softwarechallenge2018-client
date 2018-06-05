@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package xerus.softwarechallenge.util
 
 import ch.qos.logback.classic.Level
@@ -81,7 +83,11 @@ abstract class LogicHandler : IGameHandler {
 		if (move.invalid()) {
 			if (move != null)
 				logger.error("Invalid findBestMove: ${move.str()}")
-			move = currentState.quickMove()?.first
+			try {
+				move = currentState.quickMove()?.first
+			} catch (e: Throwable) {
+				logger.error("Error in quickMove!", e)
+			}
 		}
 		
 		if (move.invalid()) {
@@ -107,30 +113,34 @@ abstract class LogicHandler : IGameHandler {
 	val currentLogDir
 		get() = gameLogDir?.resolve("turn$currentTurn")?.createDirs()
 	
-	protected fun GameState.quickMove(): Pair<Move, GameState>? {
+	protected fun GameState.quickMove(recurse: Boolean = true): Pair<Move, GameState>? {
 		val moves = findMoves()
 		val best = Rater<Pair<Move, GameState>>()
+		var done: Boolean
 		for (move in moves) {
 			val moveState = clone()
 			move.setOrderInActions()
 			try {
 				move.perform(moveState)
-				if(turn < 58) {
-					moveState.nextPlayer()
-					for (move2 in moveState.findMoves()) {
-						val moveState2 = moveState.clone()
-						move2.setOrderInActions()
-						try {
-							move2.perform(moveState2)
-							best.update(Pair(move, moveState), evaluate(moveState2, currentPlayerColor))
-						} catch (exception: Exception) {
-							logger.error("Fehler bei quickMove2: ${move2.str()} caused $exception\n" + str())
+				done = false
+				if (turn < 58 && recurse) {
+					val newState = moveState.quickMove(false)?.second
+					if (newState != null) {
+						done = true
+						for (move2 in newState.findMoves()) {
+							val moveState2 = newState.clone()
+							move2.setOrderInActions()
+							try {
+								move2.perform(moveState2)
+								best.update(Pair(move, moveState), evaluate(moveState2, currentPlayerColor))
+							} catch (exception: Exception) {
+								logger.error("Fehler bei quickMove2: ${move2.str()} caused $exception\n" + str())
+							}
 						}
-					}
-					moveState.nextPlayer(false)
-				} else {
-					best.update(Pair(move, moveState), evaluate(moveState, currentPlayerColor))
+					} else logger.error("Fehler bei quickMove2: No quickmove found!\n" + str())
 				}
+				if (!done)
+					best.update(Pair(move, moveState), evaluate(moveState, currentPlayerColor))
 			} catch (exception: Exception) {
 				logger.error("Fehler bei quickMove: ${move.str()} caused $exception\n" + str())
 			}
@@ -195,9 +205,12 @@ abstract class LogicHandler : IGameHandler {
 			"$fieldIndex=${fieldTypeAt(fieldIndex).str()} ❦$carrots"
 	
 	fun GameState.str() =
-			"GameState: Zug $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +
+			"GameState: Turn $turn ${this.board.track.joinToString(", ", "Track[", "]") { "${it.index} ${it.type}" }}\n" +
 					" - current: ${currentPlayer.str()}\n" +
 					" - other: ${otherPlayer.str()}"
+	
+	fun GameState.strShort() =
+			"GameState: Turn $turn - Current: ${currentPlayer.strShort()} - Other: ${otherPlayer.strShort()}"
 	
 	protected fun fieldTypeAt(index: Int): FieldType = currentState.getTypeAt(index)
 	
@@ -255,7 +268,7 @@ abstract class LogicHandler : IGameHandler {
 							bestState.update(moveState, evaluate(moveState, myColor.opponent()))
 						} catch (exception: Throwable) {
 							logger.error("Fehler bei otherMove: ${otherMove.str()} for ${newState.currentPlayer.str()}: $exception\nnew ${newState.str()}\n" + if (clone) "prev " + this.str() else "Not cloned!")
-							newState.nextPlayer(newState.turn < 60)
+							newState.nextPlayer()
 						}
 					}
 				} else {
@@ -268,12 +281,12 @@ abstract class LogicHandler : IGameHandler {
 		} catch (e: InvalidGameStateException) {
 			logger.error("$e ${move.str()} current: $currentTurn")
 		} catch (e: InvalidMoveException) {
-			invalidMoves++
 			if (debugLevel > 0)
 				logger.error("FEHLERHAFTER ZUG: {} FEHLER: {}\n" + this.str(), move.str(), e.message)
 		} catch (e: Throwable) {
 			logger.error("Testing ${move.str()} failed!", e)
 		}
+		invalidMoves++
 		return null
 	}
 	

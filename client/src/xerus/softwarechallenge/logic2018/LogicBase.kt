@@ -4,9 +4,7 @@ package xerus.softwarechallenge.logic2018
 
 import sc.plugin2018.*
 import sc.plugin2018.util.GameRuleLogic
-import xerus.softwarechallenge.util.F
-import xerus.softwarechallenge.util.LogicHandler
-import xerus.softwarechallenge.util.add
+import xerus.softwarechallenge.util.*
 import java.util.*
 
 /** enthält Grundlagen für eine Logik für die Softwarechallenge 2018 - Hase und Igel
@@ -17,6 +15,8 @@ abstract class LogicBase : LogicHandler() {
 	
 	@F val skip = listOf(Move(Skip()))
 	
+	@F val positions = arrayOf(FieldType.POSITION_1, FieldType.POSITION_2)
+	
 	protected inline fun Player.gewonnen() = fieldIndex == 64
 	
 	/** @return whether the player has one or more salads */
@@ -25,7 +25,9 @@ abstract class LogicBase : LogicHandler() {
 	
 	fun shouldDropCarrots(amount: Int, carrots: Int, pos: Int) = carrots > amount + 74 - pos && pos > 42
 	
-	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64) 1000 - player.carrots * 10 else 0
+	protected inline fun goalPoints(player: Player) = if (player.fieldIndex == 64){
+		1000 - player.carrots * 10 - if((player.lastNonSkipAction as? Advance)?.let { fieldTypeAt(64 - it.distance) in positions } == true) 100 else 0
+	} else 0
 	
 	/** clones the move and adds a Card Action to it */
 	protected fun Move.addCard(card: CardType, value: Int = 0) =

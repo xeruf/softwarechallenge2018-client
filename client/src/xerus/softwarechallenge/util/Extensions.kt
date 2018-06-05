@@ -18,7 +18,7 @@ fun Move.add(action: Action) = also { it.actions.add(action) }
 
 fun Collection<Move>.str(): String = joinToString(prefix = "| ", separator = "\n| ", transform = { it.str() })
 
-fun Move.str() = "Move[${actions.joinToString { it.str() }}]"
+fun Move.str() = "Move(${actions.joinToString { it.str() }})"
 
 fun Action.str() = when (this) {
 	is Advance -> "Advance$distance"
