@@ -15,7 +15,7 @@ version = properties["j"]?.toString() ?: "${Scanner(Runtime.getRuntime().exec("g
 println("Version: $version")
 
 plugins {
-	kotlin("jvm") version "1.2.41"
+	kotlin("jvm") version "1.3.61"
 	id("com.github.johnrengelman.shadow") version "2.0.3"
 	id("com.dorongold.task-tree") version "1.3"
 	application

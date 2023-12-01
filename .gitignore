@@ -1,6 +1,7 @@
 **/log/
 **/logs/
 **/*.log*
+*~
 start*
 /client/games
 /client/resources/sources
