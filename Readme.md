@@ -13,13 +13,23 @@ Jumper uses an Alpha–beta pruning approach, with three basic components:
 
 [Sketch of my latest strategy (german)](Jumper3.md)
 
-The code is a bit messy, a lot was written in the final days, and some comments mix german and english.
+The code is a bit messy, a lot was written in the final days,
+and some comments mix german and english.
 Don't expect me to clean up, the contest is over ^^
+
+#### Training
+
+To finetune the parameters at the end,
+I put all computers of my school to work over a whole weekend.
+They ran the AI with different parameters against a reference version,
+from time to time updating the reference version with updated parameters if a particularly effective modification was found.
+Unfortunately the end results did not carry sufficient statistical significance to make a big difference.
+That is what the scripts without extension at the root of this repo are mostly for.
 
 ### The Team
 
-I am a german student in grade 12 and developed MANOS 12 Jackrabbit entirely by myself.
-Shoutout to my informatics teacher, without him I wouldn't even be aware of the competitions existence!
+I am a German student in grade 12 and developed MANOS 12 Jackrabbit entirely by myself.
+I give thanks to my informatics teacher, without him I wouldn't even be aware of the competitions existence!
 
 ### Results
 
